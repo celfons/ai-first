@@ -114,8 +114,14 @@ canônicos indicados.
 Estes são os **knobs ajustáveis** (P-15) — o humano pode mudá-los aqui e a qualquer momento depois.
 - **Git:** branches (default `feature → develop → main`, trabalho `claude/<slug>`); confirmar
   `develop` e `main`, e que `ci` + o gate de segurança + o `adversarial-reviewer` são *required checks*.
-- **`features_per_day`:** quantas features o `product-owner` cria e o `/daily-build` implementa por
-  rodada (default **1**). É a **cadência de crescimento** — comece baixo, suba com confiança.
+- **`features_per_day` (cadência):** quantas features o `product-owner` cria e o `/daily-build`
+  implementa por rodada (default **1**). É a **cadência de crescimento** — comece baixo, suba com
+  confiança.
+- **`parallelism` (desenvolvimento paralelo):** quantas features o build desenvolve **ao mesmo tempo**
+  em contextos/worktrees isolados (default **1** = sequencial). É o dial de **velocidade** — útil no
+  arranque para formar a base do produto rápido. O merge em `develop` é sempre **serializado** (uma de
+  cada vez), então subir o paralelismo acelera a implementação sem abrir mão dos gates. Pergunte junto
+  da cadência: "quer desenvolver 1 por vez, ou várias em paralelo para o produto nascer mais rápido?"
 - **`autonomy_level` (P-10):** `conservador` (humano aprova **tudo** — o gate único clássico) ·
   `progressivo` (🟢 baixo risco promove sozinha) · `amplo` (🟢🟡 promovem sozinhas; 🔴 sempre sobe).
   **Default conservador** — explique que o nível **sobe com o histórico** (baixa taxa de rejeição),
@@ -140,10 +146,31 @@ Estes são os **knobs ajustáveis** (P-15) — o humano pode mudá-los aqui e a 
 4. **Um resumo ao humano**: o que ficou definido, o que ficou `[A DEFINIR]`, e o **passo para armar
    a autonomia** — criar `develop`, marcar `ci` como required check, e agendar os crons. Ofereça
    fazer isso agora (com confirmação) ou deixar as instruções.
+5. **A oferta de arranque imediato** (ver Fase Final abaixo): perguntar se o humano quer **começar o
+   desenvolvimento agora** (`/kickoff`) em vez de esperar o primeiro cron.
+
+## Fase Final · ARRANQUE IMEDIATO (opcional — não espere o cron)
+Armar o organismo não é o mesmo que **ligá-lo**: por padrão, o primeiro desenvolvimento só roda quando
+o cron `/daily-backlog`+`/daily-build` dispara no horário agendado. Para o produto começar a nascer
+**na hora em que a gênese publica**, ofereça o arranque:
+
+1. **Confirme os pré-requisitos** que a gênese acabou de armar: genoma sem `[A DEFINIR]` bloqueante,
+   `develop` criada, `ci` como required check. Se algo falta, resolva antes (ou deixe claro o que
+   impede o arranque).
+2. **Pergunte** (`AskUserQuestion`): "Quer que eu **comece a construir o produto agora**, ou prefere
+   esperar o primeiro cron diário?" Se sim, pergunte também **quantas** fatias iniciais arrancar (a
+   base do produto — pode ser maior que `features_per_day` nesta primeira vez) e confirme o
+   **`parallelism`** definido na dimensão 8.
+3. **Com o OK, invoque a skill `/kickoff`** (com a quantidade combinada) — ela semeia o backlog inicial
+   pelo `product-owner` e desenvolve em paralelo pelo motor do `/daily-build`, honrando os knobs. A
+   partir daí, os crons diários assumem o ritmo sozinhos.
+4. **Se o humano preferir esperar**, não arranque — só registre no resumo que o organismo está armado e
+   que o primeiro ciclo roda no próximo cron (ou que ele pode disparar `/kickoff` quando quiser).
 
 ## Regras
-- **Não escreva código de produto** — esta skill define o **contexto**, não implementa features.
-  A primeira feature vem depois, pelo `/feature` ou pelo `/daily-build`.
+- **Não escreva código de produto** — esta skill define o **contexto**, não implementa features. A
+  gênese pode **disparar** o desenvolvimento (Fase Final · `/kickoff`), mas quem implementa é o motor do
+  ciclo (`/feature`/`/daily-build`), não a própria entrevista. A primeira feature nasce ali.
 - **Não invente stack/arquitetura.** Só grava o que o humano confirmou ou o que foi detectado no
   repo e confirmado.
 - **Preserve o método.** As Partes universais da constituição (P-1, P-2, P-5, P-6, P-8, P-10) e o
@@ -156,6 +183,9 @@ Estes são os **knobs ajustáveis** (P-15) — o humano pode mudá-los aqui e a 
 
 ## Depois da gênese
 O organismo está armado. A partir daqui:
+- **Arranque imediato (opcional):** `/kickoff` liga o desenvolvimento **na hora**, sem esperar o cron —
+  semeia o backlog inicial e desenvolve as primeiras fatias em paralelo (`parallelism`). Ideal logo
+  após a gênese, para o produto começar a nascer já.
 - **Ciclo de produção autônomo:** `/daily-backlog` → `/daily-build` produzem `features_per_day`
   evoluções/rodada até `develop`, com **verificação independente** (`adversarial-reviewer`) antes de
   todo merge e **promoção por tier de risco** conforme o `autonomy_level`.
