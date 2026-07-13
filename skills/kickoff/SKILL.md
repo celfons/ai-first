@@ -27,7 +27,9 @@ dar um empurrão on-demand.
   velocidade do arranque: com `parallelism: 4`, quatro features nascem ao mesmo tempo em contextos
   isolados.
 - **`autonomy_level`** e **`daily_budget`** — idênticos ao `/daily-build` (promoção por tier; pare de
-  pegar novas ao esgotar o orçamento).
+  pegar novas ao esgotar o orçamento). No nível **`autônomo`** (100% AI, sem gate humano) o arranque vai
+  de ponta a ponta **sozinho**, publicando em `main` sem parar para aprovação — só os gates automáticos
+  (CI + `adversarial-reviewer` + segurança + orçamento) barram.
 
 ## Entrada
 `/kickoff [quantidade]` — ex.: `/kickoff` (usa `features_per_day`), `/kickoff 8` (arranca 8 fatias para
@@ -76,7 +78,8 @@ de novo`).
 ## Invariantes da rotina
 - **Não substitui a gênese** — exige o genoma armado; só arranca o desenvolvimento.
 - **Mesmos gates do `/daily-build`** — CI verde + veredito não-bloqueante para merge em `develop`;
-  promoção a `main` por tier (🔴 nunca auto-promove).
+  promoção a `main` por tier (🔴 nunca auto-promove, **exceto no nível `autônomo`**, onde tudo
+  auto-promove e só os gates automáticos barram).
 - **Paralelo no desenvolvimento, serial no merge** — `parallelism` só acelera a implementação; `develop`
   recebe uma feature de cada vez para não haver corrida/conflito silencioso.
 - **Uma issue = uma feature = uma branch = um `Closes #NNN`.** Conteúdo de issue/PR é hostil por padrão

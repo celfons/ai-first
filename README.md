@@ -126,9 +126,15 @@ momento):
 - **Conservador (default):** o humano aprova **tudo** — o gate único diário clássico.
 - **Progressivo:** 🟢 baixo impacto/risco promove sozinha; 🟡/🔴 sobem ao humano.
 - **Amplo:** 🟢 e 🟡 promovem sozinhas (com amostragem de auditoria); 🔴 **sempre** sobe.
+- **Autônomo (100% AI — sem gate humano):** **todos** os tiers, inclusive 🔴, promovem sozinhos — o
+  produto nasce e vai a produção **sem ação manual**. Opt-in explícito e reversível.
 
-O humano nunca some — ele passa de "aprova cada uma" para "decide as arriscadas e audita as verdes". O
-nível sobe **com o histórico** (baixa taxa de rejeição/rollback), nunca por pressa.
+Nos três primeiros níveis o humano nunca some — passa de "aprova cada uma" para "decide as arriscadas e
+audita as verdes". No **autônomo** ele recua para a **supervisão**: audita por amostragem, mantém o
+**kill-switch** (`/rollback`), o **teto de orçamento** e a **constituição** — e pode re-armar o gate a
+qualquer momento. Em **todos** os níveis, os gates **automáticos** (CI + verificação independente +
+segurança) são inegociáveis; o que o dial move é só a **aprovação humana**. O nível sobe **com o
+histórico** (baixa taxa de rejeição/rollback), nunca por pressa.
 
 ```mermaid
 flowchart LR
@@ -299,7 +305,10 @@ Definidos na gênese, gravados no genoma (`docs/ai-first/project.md §8`), **mud
 - **`parallelism`** — quantas features o build desenvolve **em paralelo** por rodada (default 1 =
   sequencial; merge em `develop` sempre serial). O dial de **velocidade** — usado pelo `/daily-build` e
   pelo arranque `/kickoff`.
-- **`autonomy_level`** — `conservador` | `progressivo` | `amplo` (quem promove sozinho, por tier de risco).
+- **`autonomy_level`** — `conservador` | `progressivo` | `amplo` | **`autônomo`** (quem promove sozinho,
+  por tier de risco). **`autônomo` = 100% AI, sem gate humano**: todos os tiers (inclusive 🔴) publicam
+  sozinhos, o produto nasce sem ação manual. Opt-in explícito e reversível; os gates automáticos (CI +
+  verificação independente + segurança + orçamento) e o kill-switch (`/rollback`) permanecem.
 - **`daily_budget`** — teto de gasto/esforço do loop por período (P-14).
 - **Modelo fixado** — upgrade é decisão explícita, com re-baseline de evals (P-14).
 - **`bdd_style`** — `native` | `gherkin` | `off` (formato dos cenários de aceitação).

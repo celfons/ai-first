@@ -121,12 +121,25 @@ na gênese e **ajustável a qualquer momento**:
 - **Conservador (default):** o humano aprova **tudo** — é o gate único diário clássico.
 - **Progressivo:** 🟢 baixo impacto/risco promove sozinha; 🟡/🔴 sobem ao humano.
 - **Amplo:** 🟢 e 🟡 promovem sozinhas (com amostragem de auditoria); 🔴 **sempre** sobe.
+- **Autônomo (100% AI — sem gate humano):** **todos** os tiers, inclusive 🔴, promovem sozinhos. O
+  produto é construído e publicado **sem ação manual**. É uma escolha **explícita, opt-in e reversível**
+  do dono na gênese (ou depois, no genoma) — **nunca o default**.
 
-O humano nunca some — ele passa de "aprova cada uma" para "decide as arriscadas e audita as verdes".
-O nível sobe **com o histórico** (baixa taxa de rejeição → mais autonomia), nunca por pressa.
+Nos três primeiros níveis **o humano nunca some da promoção**: ele passa de "aprova cada uma" para
+"decide as arriscadas e audita as verdes". No nível **autônomo**, o humano recua da *aprovação por
+promoção* para a **supervisão**: continua **dono da constituição** e dos knobs, recebe o resumo do dia,
+audita por amostragem e mantém o **kill-switch** (`/rollback`) e o **teto de orçamento** (P-14) — pode
+**re-armar o gate a qualquer momento** subindo o nível de volta. **O que o modo autônomo remove é a
+aprovação humana da promoção, não a verificação:** os gates automáticos permanecem **inegociáveis** —
+CI verde, **verificação independente do `adversarial-reviewer` que pode BLOQUEAR** (P-11), *required
+checks* de segurança (P-13) e o orçamento (P-14) valem igual. Autonomia total **não** significa
+publicar sem verificação; significa publicar sem *humano no caminho*. O nível sobe **com o histórico**
+(baixa taxa de rejeição/rollback → mais autonomia), nunca por pressa.
 
 - *Enforcement:* CI (`typecheck`/`lint`/`test`/`eval`) + gate do `adversarial-reviewer` como
-  *required checks*; o tier de risco vem do `/daily-build` (P-11) e o nível de autonomia do genoma.
+  *required checks*; o tier de risco vem do `/daily-build` (P-11) e o nível de autonomia do genoma. No
+  nível `autônomo`, os *required checks* automáticos são a **única** barreira antes de `main` — por isso
+  não podem ser afrouxados junto com o gate humano.
 
 ### P-11 · Verificação independente (CI verde não basta)
 

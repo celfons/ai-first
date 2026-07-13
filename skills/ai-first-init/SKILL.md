@@ -59,10 +59,23 @@ nunca sobrescreve o que você já tem sem confirmar).
 Conduza nesta ordem. Cada bloco vira uma seção de `docs/ai-first/project.md` e alimenta os arquivos
 canônicos indicados.
 
-### 1 · Contexto de produto e personas
-- O que o produto faz, para quem, qual o valor central. As **personas** (usuário final, dono,
-  operador…). O que é sucesso para o negócio.
-- **Grava em:** `docs/sdd/specification.md` (§1 visão, §2 personas) + `CLAUDE.md` (“O que é”).
+### 1 · Produto a criar, estratégia e ponto de partida
+Esta é a dimensão que faz a gênese ser o **ponto de partida da criação da aplicação** — não só
+contexto, mas a **semente do que construir primeiro**. Pergunte:
+- **Produto a ser criado:** o que o produto faz, para quem, qual o valor central. Em **greenfield**
+  (produto do zero), é aqui que o dono descreve o produto que quer que a AI construa.
+- **Personas:** usuário final, dono/stakeholder, operador…
+- **Estratégia:** *como* o produto ganha — posicionamento, diferencial/cunha competitiva, escopo do
+  **MVP** (o mínimo que já entrega valor), a aposta que guia a **ordem** do que construir. É o que dá
+  direção ao `product-owner` em vez de ele só reagir a benchmarking.
+- **Ponto de partida (primeiras fatias):** com o dono, esboce as **capacidades iniciais** que formam o
+  MVP — 3 a 8 fatias verticais de valor, cada uma tamanho de um PR. **Grave-as em `docs/sdd/tasks.md`**
+  como candidatas de negócio priorizadas: é o backlog-semente de onde o `product-owner`/`/kickoff`
+  tiram as primeiras issues para **começar a aplicação na hora** (ver Fase Final · Arranque). Não
+  invente escopo — o que o dono não decidir vira `[A DEFINIR]`/`[NEEDS CLARIFICATION]`.
+- **Sucesso do negócio:** a métrica/evento observável que diz que o produto está funcionando.
+- **Grava em:** `docs/sdd/specification.md` (§1 visão + estratégia, §2 personas) + `docs/sdd/tasks.md`
+  (fatias-semente do MVP) + `CLAUDE.md` (“O que é”).
 
 ### 2 · Stack e linguagem
 - Linguagem/runtime, framework(s), gerenciador de pacotes. Bibliotecas centrais.
@@ -122,10 +135,21 @@ Estes são os **knobs ajustáveis** (P-15) — o humano pode mudá-los aqui e a 
   arranque para formar a base do produto rápido. O merge em `develop` é sempre **serializado** (uma de
   cada vez), então subir o paralelismo acelera a implementação sem abrir mão dos gates. Pergunte junto
   da cadência: "quer desenvolver 1 por vez, ou várias em paralelo para o produto nascer mais rápido?"
-- **`autonomy_level` (P-10):** `conservador` (humano aprova **tudo** — o gate único clássico) ·
-  `progressivo` (🟢 baixo risco promove sozinha) · `amplo` (🟢🟡 promovem sozinhas; 🔴 sempre sobe).
-  **Default conservador** — explique que o nível **sobe com o histórico** (baixa taxa de rejeição),
-  nunca por pressa. É o dial que troca "revisar cada uma" por "revisar só as arriscadas".
+- **`autonomy_level` (P-10) — INCLUI a decisão de ter ou não gate humano:** é o dial que vai de
+  "revisar cada uma" até "não revisar nenhuma". Quatro posições:
+  - `conservador` (default) — humano aprova **tudo** (o gate único clássico);
+  - `progressivo` — 🟢 baixo risco promove sozinha; 🟡/🔴 sobem ao humano;
+  - `amplo` — 🟢🟡 promovem sozinhas; 🔴 sempre sobe;
+  - **`autônomo` — 100% orientado a AI, SEM gate humano:** **todos** os tiers (inclusive 🔴) promovem
+    sozinhos; **a AF constrói e publica o produto sem ação manual**.
+  **Pergunte explicitamente** (`AskUserQuestion`): "Você quer aprovar o que vai para produção, ou quer
+  que a AI publique sozinha, sem gate humano (100% AI)?" Se o dono escolher `autônomo`, **explique com
+  clareza o trade-off**: os gates **automáticos** continuam (CI verde, verificação independente do
+  `adversarial-reviewer` que pode BLOQUEAR, *required checks* de segurança, teto de orçamento) e há
+  **kill-switch** (`/rollback`) — o que sai é só a **aprovação humana**, não a verificação. É
+  **reversível** a qualquer momento (basta baixar o nível) e o dono segue **dono da constituição**.
+  **Default conservador** — o nível **sobe com o histórico** (baixa taxa de rejeição/rollback), nunca
+  por pressa; recomende começar conservador e chegar a `autônomo` só com track record.
 - **`daily_budget` (P-14):** teto de gasto/esforço do loop por período. E o **modelo fixado** (upgrade
   é decisão explícita, com re-baseline de evals).
 - **Crons (cadência + fuso, espaçados):** `daily-backlog` → ~1h → `daily-build`; e, espaçados,
@@ -161,9 +185,11 @@ o cron `/daily-backlog`+`/daily-build` dispara no horário agendado. Para o prod
    esperar o primeiro cron diário?" Se sim, pergunte também **quantas** fatias iniciais arrancar (a
    base do produto — pode ser maior que `features_per_day` nesta primeira vez) e confirme o
    **`parallelism`** definido na dimensão 8.
-3. **Com o OK, invoque a skill `/kickoff`** (com a quantidade combinada) — ela semeia o backlog inicial
-   pelo `product-owner` e desenvolve em paralelo pelo motor do `/daily-build`, honrando os knobs. A
-   partir daí, os crons diários assumem o ritmo sozinhos.
+3. **Com o OK, invoque a skill `/kickoff`** (com a quantidade combinada) — ela lê as **fatias-semente do
+   MVP** que você gravou em `docs/sdd/tasks.md` (dimensão 1), o `product-owner` as vira issues e o motor
+   do `/daily-build` as desenvolve em paralelo, honrando os knobs. **Se o `autonomy_level` for
+   `autônomo`**, o arranque vai de ponta a ponta até produção **sem gate humano** — o produto nasce sem
+   ação manual. A partir daí, os crons diários assumem o ritmo sozinhos.
 4. **Se o humano preferir esperar**, não arranque — só registre no resumo que o organismo está armado e
    que o primeiro ciclo roda no próximo cron (ou que ele pode disparar `/kickoff` quando quiser).
 
@@ -176,6 +202,10 @@ o cron `/daily-backlog`+`/daily-build` dispara no horário agendado. Para o prod
 - **Preserve o método.** As Partes universais da constituição (P-1, P-2, P-5, P-6, P-8, P-10) e o
   fluxo SDD/roster/skills **não** são negociáveis na entrevista — o que se define é o *contexto*,
   não o *processo*. Se o humano quiser mudar o processo, isso é um PR na constituição, não aqui.
+  **Escolher o `autonomy_level` — inclusive `autônomo` (sem gate humano) — NÃO é mudar o processo:** é
+  usar o **knob** que P-10/P-15 já oferecem. O que permanece inegociável mesmo em `autônomo` são os
+  gates **automáticos** (CI + `adversarial-reviewer` que pode BLOQUEAR + *required checks* de segurança
+  + orçamento) e o kill-switch — esses a entrevista não afrouxa.
 - **Idempotente:** rodar de novo revisa, não recria do zero. Mudança em invariante já definida passa
   por confirmação (é mexer na constituição).
 - **Segurança:** nunca grave segredo/credencial em arquivo versionado — registre *qual* credencial o
@@ -194,4 +224,7 @@ O organismo está armado. A partir daqui:
 - **Contato humano:** o resumo do dia (o que foi publicado sozinho, o que espera OK, perguntas em
   aberto) chega ao dono, que **aprova** o que subiu por risco (`develop → main`) ou **reprova**
   (`/reject-feature`); incidente em produção sai por `/rollback`. Esse é o batimento cardíaco — o
-  humano não conduz o crescimento, só decide o que nasce em produção e ajusta os knobs (P-15).
+  humano não conduz o crescimento, só decide o que nasce em produção e ajusta os knobs (P-15). **No
+  nível `autônomo` não há aprovação a dar:** o resumo vira **relatório de auditoria** (o que a AI
+  publicou sozinha, com o risco traduzido) e o contato humano se resume a auditar, ajustar knobs ou
+  acionar o `/rollback` — o produto cresce e vai a produção 100% orientado a AI.

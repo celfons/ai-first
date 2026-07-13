@@ -10,10 +10,16 @@
 
 ---
 
-## 1 · Produto e personas
-- **O que é:** `[A DEFINIR]`
+## 1 · Produto, estratégia e ponto de partida
+- **Produto a ser criado:** `[A DEFINIR]` (a hipótese de produto — o que construir; em greenfield, é O
+  produto que a gênese semeia)
 - **Valor central:** `[A DEFINIR]`
 - **Personas:** `[A DEFINIR]` (usuário final · dono/stakeholder · operador · …)
+- **Estratégia:** `[A DEFINIR]` (como o produto ganha — posicionamento, diferencial/cunha, escopo do
+  MVP, a aposta que guia o que construir primeiro)
+- **Ponto de partida (primeiras fatias):** `[A DEFINIR]` (as capacidades iniciais que formam o MVP —
+  **semeadas em `docs/sdd/tasks.md`** como candidatas; é daqui que o `product-owner`/`/kickoff` tira o
+  backlog inicial para começar a aplicação)
 - **Sucesso do negócio:** `[A DEFINIR]` (métrica/evento observável)
 
 ## 2 · Stack e linguagem
@@ -66,8 +72,11 @@
 - **`parallelism`** (quantas features o build desenvolve **em paralelo** por rodada — contextos/worktrees
   isolados; o merge em `develop` é serializado): `[A DEFINIR]` (default **1** = sequencial). Vale para o
   `/daily-build` e para o arranque imediato `/kickoff`.
-- **`autonomy_level`** (P-10): `[conservador | progressivo | amplo]` (default **conservador** =
-  humano aprova tudo; suba conforme o histórico)
+- **`autonomy_level`** (P-10): `[conservador | progressivo | amplo | autônomo]` (default
+  **conservador** = humano aprova tudo; suba conforme o histórico). **`autônomo` = 100% AI, sem gate
+  humano** — todos os tiers (inclusive 🔴) promovem sozinhos; o produto é construído e publicado sem
+  ação manual. Opt-in explícito e reversível; os gates automáticos (CI + `adversarial-reviewer` +
+  segurança + orçamento) **permanecem**. Só a aprovação humana da promoção sai.
 - **`daily_budget`** (teto de gasto/esforço do loop, P-14): `[A DEFINIR]`
 - **Modelo fixado** (P-14 — upgrade é decisão explícita com re-baseline de evals): `[A DEFINIR]`
 - **Crons (cadência + fuso, espaçados):**
