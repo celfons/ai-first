@@ -46,7 +46,7 @@ trade-off. Nesses casos, o `plan.md` da feature já basta.
 
 | ADR | Título | Status | Feature/Issue | P-# |
 |---|---|---|---|---|
-| [0001](0001-adotar-metodo-ai-first.md) | Adotar o método `ai-first` (SDD + subagentes + gate único humano) | Accepted | baseline | P-1, P-2, P-10 |
+| [0001](0001-adotar-metodo-ai-first.md) | Adotar o método `ai-first` (SDD + subagentes + gate humano ajustável) | Accepted | baseline | P-1, P-2, P-10 |
 | [0002](0002-migracao-strangler-fig.md) | Migração/reescrita como capacidade de primeira classe (strangler-fig + caracterização) | Accepted | capacidade de migração | P-1, P-11, P-13 |
 
 > Ao criar um ADR, adicione a linha aqui (o `docs-writer` fecha isso no fim da feature).

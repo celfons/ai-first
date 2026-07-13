@@ -1,7 +1,14 @@
-# ADR-0001: Adotar o método `ai-first` (SDD + subagentes + gate único humano)
+# ADR-0001: Adotar o método `ai-first` (SDD + subagentes + gate humano ajustável)
 
 > Status: Accepted · Data: 2026-07-13
 > Feature/Issue: baseline · Princípios tocados: P-1, P-2, P-10 · Supersede: —
+
+> **Atualização (via mudança na constituição, P-10):** o `autonomy_level` ganhou um quarto nível,
+> **`autônomo` (100% IA, sem gate humano)** — todos os tiers, inclusive 🔴, auto-promovem. O texto
+> original abaixo descreve o default (gate humano por risco); onde ele diz "🔴 nunca auto-promove" ou
+> "uma única interação humana", leia **"exceto no nível `autônomo`"**. Os gates **automáticos** (CI +
+> `adversarial-reviewer` + segurança + orçamento) e o kill-switch (`/rollback`) permanecem em **todos**
+> os níveis. O nível continua sendo um dial reversível do genoma.
 
 ## Contexto
 
@@ -57,7 +64,8 @@ Adotamos o método `ai-first`, composto por:
   gargalo de throughput (mitigado subindo `autonomy_level`/`features_per_day` com o histórico).
 - **Restrições futuras:** toda feature respeita o ciclo SDD e a constituição; nenhuma mudança de
   comportamento entra sem spec nem sem verificação independente; o que chega a `main` sempre passou
-  pelo tier de risco (🔴 **nunca** auto-promove — sempre revisão humana).
+  pelo tier de risco (🔴 **nunca** auto-promove — sempre revisão humana; **exceto no nível `autônomo`**,
+  onde 🔴 também auto-promove e só os gates automáticos barram — ver a Atualização no topo).
 
 ## Relacionados
 

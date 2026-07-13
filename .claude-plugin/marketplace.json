@@ -6,7 +6,7 @@
     {
       "name": "ai-first",
       "source": "./",
-      "description": "SDD + subagentes + skills + governança; verificação independente, decomposição segura, aceitação em BDD e gate humano único na promoção para produção. Após instalar, rode /ai-first:ai-first-init para scaffoldar o projeto."
+      "description": "SDD + subagentes + skills + governança; verificação independente, decomposição segura, aceitação em BDD e gate humano ajustável na promoção para produção (do gate único ao 100% IA, sempre com os gates automáticos). Após instalar, rode /ai-first:ai-first-init para scaffoldar o projeto."
     }
   ]
 }
