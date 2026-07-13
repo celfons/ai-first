@@ -27,7 +27,7 @@ flowchart LR
   S["1 · SPECIFY<br/>features/NNN-slug/spec.md<br/>(user stories + RFs + aceite)"]
   P["2 · PLAN<br/>plan.md<br/>(design técnico, dados, riscos)"]
   T["3 · TASKS<br/>tasks.md<br/>(decomposição verificável)"]
-  I["4 · IMPLEMENT<br/>branch claude/&lt;slug&gt; · PR com Closes #NNN"]
+  I["4 · IMPLEMENT<br/>branch claude/&lt;slug&gt; · PR com Closes NNN"]
   V["5 · VERIFY<br/>typecheck + lint + test + evals"]
   D["6 · DOCS<br/>spec + docs refletem o entregue"]
 
