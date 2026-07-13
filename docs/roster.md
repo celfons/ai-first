@@ -29,6 +29,7 @@ descem abaixo de opus/alto, por mais que o custo-benefício empurre para baixo.
 | `product-owner` | (backlog) | propõe features de negócio e **cria issues** no board |
 | `tech-auditor` | (saúde do código) | varre bugs críticos + débito técnico e **cria issues** (não corrige) |
 | `ops-investigator` | (saúde de runtime) | investiga métricas/logs/DLQ e **cria issues** c/ sugestão (não corrige) |
+| `migration-analyst` | 0 · CARACTERIZAÇÃO (brownfield) | lê a solução de ORIGEM (qualquer stack) e destila comportamento observável em spec de caracterização + mapa de migração — **só em migração/reescrita** (skill `/migrate`) |
 | `sdd-orchestrator` | (entrada · **roteador**) | classifica tamanho; roteia **modelo+esforço** por etapa (custo-benefício); tag na issue. **Único de modelo fixo (opus/alto)** |
 | `feature-spec` | 1 · SPECIFY | `docs/sdd/features/NNN-slug/spec.md` |
 | `architect` | 2 · PLAN | `plan.md` + `tasks.md` (+ ADR se durável) |
@@ -128,6 +129,31 @@ sdd-orchestrator  → devolve o plano de delegação (roteia modelo+esforço)
   `backend-engineer` → `tester`.
 - **Grande / risco arquitetural** (novo módulo, nova porta, mudança de invariante):
   mesma cadeia, com **gate humano** após `feature-spec` e após `architect`.
+- **Migração/reescrita** (trazer uma solução que já existe de outra base/stack): fluxo *brownfield* da
+  skill `/migrate` (ver abaixo) — em vez de `feature-spec` **inventar** a spec, o `migration-analyst`
+  **captura** o comportamento da origem como oráculo, e o resto do roster faz o port por equivalência.
+
+## Fluxo brownfield (migração/reescrita) — skill `/migrate`
+
+Quando o trabalho é trazer uma solução **já implementada** de outra base/stack (não uma feature nova),
+o gargalo não é inventar o *o quê* — é **não perder o comportamento** que já existe. O fluxo troca a
+fase de descoberta por uma de **caracterização** e usa **equivalência** como critério de aceite:
+
+```
+migration-analyst (CARACTERIZAÇÃO) → characterization.md (RF observáveis) + migration-map.md (origem→alvo)
+  └─ sdd-orchestrator  → roteia modelo+esforço
+     └─ architect      (PLAN do ALVO) → encaixe nos pontos de extensão + flag + plano de equivalência (+ADR)
+        └─ task-decomposer (DECOMPOSE strangler-fig) → fatias na ordem do acoplamento, cada uma atrás de flag
+           └─ backend/frontend-engineer (PORT) → fatia a fatia, contexto isolado, árvore verde, origem ainda servindo
+              └─ tester (VERIFY por EQUIVALÊNCIA) → parallel-run/golden: alvo × origem, mesma entrada → mesma saída
+                 └─ adversarial-reviewer → tenta quebrar a paridade; veredito pode BLOQUEAR
+                    └─ docs-writer → caracterização vira spec viva do alvo; fecha ADRs; critério de desligar o legado
+```
+
+> **Strangler-fig, não big-bang** (ADR-0002): cada fatia migra **atrás de flag**, coexiste com a
+> origem e só vira o tráfego quando a **equivalência** é provada — árvore verde a cada passo,
+> reversível a qualquer momento. Prováveis defeitos do legado são **decisão humana no gate** (preservar
+> ou corrigir → ADR), nunca conserto silencioso. Mesmo fluxo `feature → develop → main`, mesmos gates.
 
 ## Retroalimentação — o que faz cada feature decidir à luz das anteriores
 
@@ -218,6 +244,11 @@ pronta para o fluxo. É a porta de entrada humana que espelha o que o PO produz 
 `skills/feature`). Roda no thread principal, lê a issue como requisito, cria a branch a
 partir de `develop` e dirige a cadeia inteira até o PR contra `develop` (`Closes #NNN`), parando
 nos gates após a spec e após o plan.
+
+**Migração/reescrita (brownfield):** `/migrate <origem>` (skill `skills/migrate`). Traz uma solução
+que já existe de outra base/stack, começando pela **caracterização** do comportamento da origem
+(`migration-analyst`) e conduzindo o port por **equivalência**, fatia a fatia (strangler-fig), até o
+PR contra `develop`. Ver ADR-0002.
 
 **Reprovar no gate:** `/reject-feature <issue#> [motivo]` — reverte de `develop` (revert commit,
 sem reescrever histórico) uma feature reprovada no PR `develop → main`, reabre a issue e registra

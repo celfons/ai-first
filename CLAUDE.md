@@ -90,6 +90,10 @@ reserva de idempotência, laço da fila, chamada de LLM com timeout+validação+
   no **mesmo padrão de issue do `product-owner`** (dedup + rejeições + gate + labels) e cria no board.
   O PO decide o quê (benchmarking); o intake só normaliza o que o humano já trouxe.
 - **Starter a partir do board:** skill `/feature <número-da-issue>`.
+- **Migração/reescrita (brownfield):** skill `/migrate <origem>` — traz uma solução JÁ implementada de
+  outra base/stack. Em vez de inventar a spec, o `migration-analyst` **captura** o comportamento da
+  origem como oráculo; o port é por **equivalência**, fatia a fatia (**strangler-fig, não big-bang**),
+  atrás de flag, mesmo fluxo `feature → develop → main`. Ver ADR-0002.
 - **Rotinas autônomas (crons):** `/daily-backlog` (cria `features_per_day` issues) → ~1h →
   `/daily-build` (implementa + verificação independente + auto-merge em develop + promoção por risco).
   Auditorias que só levantam issues: `/daily-tech-scan` (código + drift), `/daily-ops-scan` (runtime).
