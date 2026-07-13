@@ -17,8 +17,9 @@ dar um empurrão on-demand.
 > **desenvolvimento em paralelo** (`parallelism`).
 
 ## Pré-requisito
-- **Gênese feita:** `docs/ai-first/project.md` sem `[A DEFINIR]` bloqueante (rode `/ai-first-init`
-  antes). Se o genoma não está armado, **pare** e avise — não dá para desenvolver sem contexto.
+- **Genoma armado:** `docs/ai-first/project.md` sem `[A DEFINIR]` bloqueante (rode `/ai-first-init`
+  antes). Se o genoma não está armado, **pare** e avise — não dá para desenvolver sem contexto. (O
+  **scaffold** do corpo é garantido na Fase 0 abaixo, de forma idempotente.)
 - **`develop` existe** e `ci` é required check (a gênese arma isso). Se não, avise e ofereça criar.
 
 ## Parâmetros (do genoma — `docs/ai-first/project.md §8`)
@@ -35,18 +36,31 @@ dar um empurrão on-demand.
 `/kickoff [quantidade]` — ex.: `/kickoff` (usa `features_per_day`), `/kickoff 8` (arranca 8 fatias para
 formar a base do produto de uma vez). A quantidade sobrepõe `features_per_day` **só nesta rodada**.
 
-## Fase 1 · Semear o backlog inicial (se o board estiver seco)
-O arranque precisa de issues para implementar. Busque no board (`search_issues`) issues **prontas**
+## Fase 0 · Garantir o corpo montado (scaffold)
+Antes de qualquer coisa, **garanta que o scaffold existe** — o "corpo" que o método precisa
+(`docs/sdd/`, `docs/adr/`, `CLAUDE.md`, `.github/`, o genoma preenchido). Normalmente a gênese já o
+materializou (Fase 0 do `/ai-first-init`), então isto é **idempotente**: confirme que está lá.
+- **Se está tudo montado** → siga para a Fase 1.
+- **Se falta o scaffold** (ex.: o corpo não foi materializado) → materialize o que falta pelo mesmo
+  mecanismo da gênese, **sem sobrescrever** o que existe; se o **genoma não está preenchido**
+  (`[A DEFINIR]` bloqueante), **pare e mande rodar `/ai-first-init`** — sem contexto não há o que
+  construir.
+
+## Fase 1 · O PO escreve o board (cria as histórias/épicos do arranque)
+O arranque precisa de issues no board para puxar. Busque no board (`search_issues`) issues **prontas**
 (`open`, `po-suggested`, `size:trivial|media`, sem `needs-human-triage`, sem branch/PR).
 - **Se já há o bastante** (≥ o lote pedido) → pule para a Fase 2.
-- **Se falta** → acione o subagente **`product-owner`** (tier `opus`/`alto`) para criar as primeiras
-  apostas do produto **agora**, no mesmo padrão/labels do `/daily-backlog` (benchmarking + dedup +
-  gate constitucional). Para um lote inicial grande, use o modo sob demanda (equivalente a `/backlog N`):
-  peça exatamente a quantidade que falta para formar a base do produto. **Não** force issue fraca só
-  para completar — se o PO não achar N apostas boas, siga com as que valem.
+- **Se falta** → acione o subagente **`product-owner`** (tier `opus`/`alto`) para **escrever o board
+  agora**: criar as primeiras apostas do produto a partir das **fatias-semente do MVP**
+  (`docs/sdd/tasks.md`, gravadas na dimensão 1 da gênese), no mesmo padrão/labels do `/daily-backlog`
+  (dedup + gate constitucional). Para um lote inicial grande, use o modo sob demanda (equivalente a
+  `/backlog N`, inclusive **épicos decompostos em histórias-filhas**): peça exatamente a quantidade que
+  falta para formar a base do produto. **Não** force issue fraca só para completar — se o PO não achar N
+  apostas boas, siga com as que valem.
 
-## Fase 2 · Desenvolver EM PARALELO (motor do /daily-build, honrando `parallelism`)
-Implemente o lote pelo **mesmo fluxo do `/daily-build`** (Fases 2–6 daquela skill: `/feature` autônomo
+## Fase 2 · Puxar as tarefas do board e desenvolver EM PARALELO (motor do /daily-build, honrando `parallelism`)
+Agora **puxe do board as issues que o PO escreveu** (Fase 1) e implemente o lote pelo **mesmo fluxo do
+`/daily-build`** (Fases 2–6 daquela skill: `/feature` autônomo
 → verificação independente → impacto/risco/tier → auto-merge em `develop` → promoção por tier), com uma
 única diferença operacional: **concorrência**.
 - Desenvolva até **`parallelism`** features **ao mesmo tempo**, cada uma em **contexto isolado**

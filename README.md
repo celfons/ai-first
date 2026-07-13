@@ -267,8 +267,8 @@ convenções da sua fase, para o thread principal delegar com **escopo curto**. 
 
 | Skill | O que faz | Disparo |
 |---|---|---|
-| **`/ai-first-init`** | **A gênese** — scaffolda o corpo do método no repo + entrevista (stack/cloud/arquitetura/infra/produto/knobs, incl. cadência e **desenvolvimento paralelo**). Roda **uma vez** (revisa depois) e no fim **oferece arrancar o desenvolvimento na hora** (`/kickoff`) | Humano (setup) |
-| **`/kickoff [n]`** | **Arranque imediato** — liga o desenvolvimento **na hora** (não espera o cron): semeia o backlog inicial e desenvolve `n` fatias **em paralelo** (`parallelism`) pelo motor do `/daily-build`. Ideal logo após a gênese | Humano |
+| **`/ai-first-init`** | **A gênese** — scaffolda o corpo do método no repo + entrevista (stack/cloud/arquitetura/produto/knobs, incl. cadência, **desenvolvimento paralelo** e **`initial_backlog`** = quantas histórias/épicos criar de imediato). Roda **uma vez** e, no fim, **encadeia o `/kickoff` sozinha** com essa quantidade | Humano (setup) |
+| **`/kickoff [n]`** | **Arranque** — garante o scaffold, o `product-owner` **escreve o board** com `n` histórias/épicos e o motor do `/daily-build` **puxa as tarefas e desenvolve** em paralelo (`parallelism`) até a entrega. Encadeado pela gênese ou disparado sob demanda | Humano |
 | **`/feature-intake`** | **Porta de entrada do stakeholder** — formata uma ideia crua do humano no **padrão de issue do `product-owner`** e cria no board, pronta para o fluxo | Humano |
 | **`/backlog [n] [tema]`** | **On-demand, sem teto** — o humano pede ao `product-owner` **N histórias/épicos** de uma vez (histórias soltas ou épico decomposto em sub-issues), com o mesmo rigor do diário. Não amarrado a `features_per_day` | Humano |
 | `/feature <n>` | Leva **uma issue** ao PR pelo ciclo SDD (com gates após spec e plan) | Humano |

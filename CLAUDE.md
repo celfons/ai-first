@@ -87,11 +87,13 @@ reserva de idempotência, laço da fila, chamada de LLM com timeout+validação+
 - **Gênese (uma vez):** skill `/ai-first-init` — define contexto + knobs no genoma
   (`docs/ai-first/project.md`). Entrevista o **produto a criar + estratégia + ponto de partida** (semeia
   `docs/sdd/tasks.md` com as fatias do MVP), a **cadência** e o **desenvolvimento paralelo**, e a
-  decisão de **ter ou não gate humano** (`autonomy_level`, incl. o nível **`autônomo` = 100% AI**). Rode
-  antes de qualquer feature. No fim, **oferece o arranque imediato** (`/kickoff`) para começar na hora.
-- **Arranque imediato (não espera o cron):** skill `/kickoff [quantidade]` — liga o desenvolvimento na
-  hora: semeia o backlog inicial (PO) e desenvolve as primeiras fatias **em paralelo** (`parallelism`)
-  pelo motor do `/daily-build`. Exige o genoma armado. Ideal logo após a gênese.
+  decisão de **ter ou não gate humano** (`autonomy_level`, incl. o nível **`autônomo` = 100% AI**) e
+  **`initial_backlog`** (quantas histórias/épicos criar de imediato). Rode antes de qualquer feature. No
+  fim, **encadeia o `/kickoff` sozinha** com `initial_backlog` — fluxo contínuo até o produto começar.
+- **Arranque (encadeado pela gênese ou sob demanda):** skill `/kickoff [quantidade]` — garante o
+  scaffold, o `product-owner` **escreve o board** com as histórias/épicos e o motor do `/daily-build`
+  **puxa as tarefas e desenvolve** em paralelo (`parallelism`) até a entrega. Exige o genoma armado. A
+  gênese o **encadeia sozinha** com `initial_backlog` (fluxo contínuo: init → responder → constrói).
 - **Ideia do stakeholder → board:** skill `/feature-intake [ideia]` — formata uma ideia crua do humano
   no **mesmo padrão de issue do `product-owner`** (dedup + rejeições + gate + labels) e cria no board.
   O PO decide o quê (benchmarking); o intake só normaliza o que o humano já trouxe.

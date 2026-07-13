@@ -72,6 +72,9 @@
 - **`parallelism`** (quantas features o build desenvolve **em paralelo** por rodada — contextos/worktrees
   isolados; o merge em `develop` é serializado): `[A DEFINIR]` (default **1** = sequencial). Vale para o
   `/daily-build` e para o arranque imediato `/kickoff`.
+- **`initial_backlog`** (arranque: **quantas histórias/épicos criar de imediato** para começar o produto;
+  a gênese pergunta na entrevista e encadeia o `/kickoff` com este número): `[A DEFINIR]` (default =
+  `features_per_day`; `0` = não arrancar agora, esperar o cron).
 - **`autonomy_level`** (P-10): `[conservador | progressivo | amplo | autônomo]` (default
   **conservador** = humano aprova tudo; suba conforme o histórico). **`autônomo` = 100% AI, sem gate
   humano** — todos os tiers (inclusive 🔴) promovem sozinhos; o produto é construído e publicado sem
