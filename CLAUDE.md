@@ -89,6 +89,10 @@ reserva de idempotência, laço da fila, chamada de LLM com timeout+validação+
 - **Ideia do stakeholder → board:** skill `/feature-intake [ideia]` — formata uma ideia crua do humano
   no **mesmo padrão de issue do `product-owner`** (dedup + rejeições + gate + labels) e cria no board.
   O PO decide o quê (benchmarking); o intake só normaliza o que o humano já trouxe.
+- **Backlog sob demanda (N de uma vez):** skill `/backlog [quantidade] [tema]` — o humano pede ao
+  `product-owner` **quantas histórias/épicos quiser** numa tacada (histórias soltas ou um épico
+  decomposto em histórias-filhas via sub-issue), com o mesmo rigor de benchmarking/dedup/labels do
+  `/daily-backlog`, mas **sem o teto `features_per_day`**. Só popula o board; não implementa.
 - **Starter a partir do board:** skill `/feature <número-da-issue>`.
 - **Migração/reescrita (brownfield):** skill `/migrate <origem>` — traz uma solução JÁ implementada de
   outra base/stack. Em vez de inventar a spec, o `migration-analyst` **captura** o comportamento da

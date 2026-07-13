@@ -26,7 +26,7 @@ descem abaixo de opus/alto, por mais que o custo-benefício empurre para baixo.
 
 | Subagente | Fase SDD | Entrega |
 |---|---|---|
-| `product-owner` | (backlog) | propõe features de negócio e **cria issues** no board |
+| `product-owner` | (backlog) | propõe features de negócio e **cria issues** no board (histórias e **épicos → histórias-filhas** via sub-issue; quantidade do diário ou sob demanda via `/backlog`) |
 | `tech-auditor` | (saúde do código) | varre bugs críticos + débito técnico e **cria issues** (não corrige) |
 | `ops-investigator` | (saúde de runtime) | investiga métricas/logs/DLQ e **cria issues** c/ sugestão (não corrige) |
 | `migration-analyst` | 0 · CARACTERIZAÇÃO (brownfield) | lê a solução de ORIGEM (qualquer stack) e destila comportamento observável em spec de caracterização + mapa de migração — **só em migração/reescrita** (skill `/migrate`) |
@@ -239,6 +239,12 @@ silêncio** — encerra com um **alerta push/e-mail** dizendo o que falhou e a f
 **Ideia do stakeholder → board:** `/feature-intake [ideia]` (skill `skills/feature-intake`) —
 formata uma ideia crua do humano no **mesmo padrão de issue do `product-owner`** e a cria no board,
 pronta para o fluxo. É a porta de entrada humana que espelha o que o PO produz por benchmarking.
+
+**Backlog sob demanda (N de uma vez):** `/backlog [quantidade] [tema]` (skill `skills/backlog`) —
+aciona o `product-owner` para escrever **quantas histórias/épicos o humano pedir** numa tacada, sem o
+teto `features_per_day` do diário. Histórias soltas (fatias verticais) ou **épicos decompostos em
+histórias-filhas** vinculadas por sub-issue do GitHub (a issue-mãe leva `epic` + `needs-human-triage`;
+quem implementa são as filhas). Mesmo rigor de benchmarking, dedup, ledger e labels do `/daily-backlog`.
 
 **Starter recomendado — a partir de uma issue do board:** `/feature <número-da-issue>` (skill
 `skills/feature`). Roda no thread principal, lê a issue como requisito, cria a branch a

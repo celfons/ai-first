@@ -263,6 +263,7 @@ convenções da sua fase, para o thread principal delegar com **escopo curto**. 
 |---|---|---|
 | **`/ai-first-init`** | **A gênese** — scaffolda o corpo do método no repo + entrevista (stack/cloud/arquitetura/infra/produto/knobs). Roda **uma vez** (revisa depois) | Humano (setup) |
 | **`/feature-intake`** | **Porta de entrada do stakeholder** — formata uma ideia crua do humano no **padrão de issue do `product-owner`** e cria no board, pronta para o fluxo | Humano |
+| **`/backlog [n] [tema]`** | **On-demand, sem teto** — o humano pede ao `product-owner` **N histórias/épicos** de uma vez (histórias soltas ou épico decomposto em sub-issues), com o mesmo rigor do diário. Não amarrado a `features_per_day` | Humano |
 | `/feature <n>` | Leva **uma issue** ao PR pelo ciclo SDD (com gates após spec e plan) | Humano |
 | **`/migrate <origem>`** | **Migração/reescrita (brownfield)** — traz uma solução que já existe de outra base/stack: caracteriza o comportamento da origem e faz o port por **equivalência**, fatia a fatia (strangler-fig) | Humano |
 | `/reject-feature <n>` | Reverte de `develop` uma feature reprovada, reabre a issue, registra o motivo | Humano |
@@ -326,7 +327,7 @@ ai-first/                          · o repo É o plugin (source "./" no marketp
 │   ├── plugin.json                · manifesto do plugin (name, version, …)
 │   └── marketplace.json           · marketplace de plugin único (source "./")
 ├── agents/                        · o roster (16 subagentes) — descoberto pelo plugin
-├── skills/                        · ai-first-init, feature-intake, feature, migrate, reject-feature, rollback, daily-*, new-extension
+├── skills/                        · ai-first-init, feature-intake, backlog, feature, migrate, reject-feature, rollback, daily-*, new-extension
 ├── README.md                      · este arquivo
 ├── CLAUDE.md                      · índice-mãe (mapa de módulos + invariantes) — preenchido na gênese
 ├── docs/
