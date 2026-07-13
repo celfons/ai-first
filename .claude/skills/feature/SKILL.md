@@ -68,6 +68,14 @@ invoque-o com a `spec.md`+`plan.md`. Ele reescreve `tasks.md` como um **grafo de
 isoladas + a **slice de integração** (ver `tasks-template.md` Forma B). Se a feature for pequena, o
 orchestrator pula esta etapa e o `tasks.md` do `architect` já serve.
 
+### 4¾ · ACCEPTANCE (BDD — se `bdd_style ≠ off`)
+Invoque **`bdd-author`** com a `spec.md`. Ele converte os critérios de aceite (§4) em **cenários
+executáveis** (`acceptance.feature` ou `acceptance.md`, conforme `docs/ai-first/project.md §7`),
+cobrindo caminho feliz, variações e casos de borda, cada cenário rastreado a um RF. Esses cenários são
+o **oráculo** da feature — o `tester` os liga ao runner e o `adversarial-reviewer` os usa (e caça o que
+faltou). `[NEEDS CLARIFICATION]` num cenário → volte ao `feature-spec`. Pule esta etapa em mudança
+trivial sem comportamento novo, ou se o genoma tiver `bdd_style: off`.
+
 ### 5 · IMPLEMENT (slice a slice, em contexto ISOLADO)
 Percorra o `tasks.md` **na ordem do DAG**. Para **cada slice**, faça uma **invocação nova e separada**
 do **`backend-engineer`** (ou `ux-designer`→`frontend-engineer` se for UI), passando **só** o escopo
@@ -80,9 +88,10 @@ de contexto limpa** — é isso que reduz a janela e evita alucinação.
 - A **slice de integração** (última) liga tudo, remove os andaimes e é implementada por último.
 
 ### 6 · VERIFY (por slice + no agregado)
-1. Invoque **`tester`** para cobrir cada slice (idealmente logo após implementá-la, no mesmo contexto
-   estreito) e, no fim, o **teste de ponta a ponta da integração** que prova a feature inteira. Deixe
-   `typecheck`+`lint`+`test` (+`eval`) verdes. Bug de produção volta ao `backend-engineer`.
+1. Invoque **`tester`** para **ligar os cenários de aceitação (BDD) ao runner** e cobrir cada slice
+   (idealmente logo após implementá-la) + o **teste de ponta a ponta da integração** que prova a feature
+   inteira. Deixe `typecheck`+`lint`+`test` (+`eval`) verdes. Bug de produção volta ao
+   `backend-engineer`. Cenário de aceitação vermelho = comportamento não entregue, não "ajuste o teste".
 2. Invoque **`adversarial-reviewer`** sobre o **agregado** (a feature montada): ele tenta quebrá-la e
    dirige o runtime. Veredito **BLOQUEIA** → corrija antes de seguir (o bug vira regressão).
 

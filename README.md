@@ -168,7 +168,8 @@ atravessando os módulos necessários — sem reorganizar o código por feature.
 | 2 · **PLAN** | `plan.md` (design, dados, idempotência, riscos) + `tasks.md` + ADR se durável | `architect` |
 | 2½ · **DECOMPOSE** *(só se grande)* | quebra em **micro-slices** isoladas (contexto estreito, árvore verde) + slice de integração | `task-decomposer` |
 | 4 · **IMPLEMENT** | código na branch `claude/<slug>` — **slice a slice, cada uma em contexto isolado** | `backend`/`frontend-engineer` |
-| 5 · **VERIFY** | testes por slice + ponta-a-ponta da integração; `typecheck`+`lint`+`test` verdes | `tester` |
+| 4¾ · **ACCEPTANCE (BDD)** *(se `bdd_style ≠ off`)* | critérios de aceite → **cenários executáveis** (o oráculo) | `bdd-author` |
+| 5 · **VERIFY** | liga os cenários ao runner + testes por slice + integração; gate verde | `tester` |
 | 5½ · **VERIFY (independente)** | tenta quebrar + dirige runtime; **pode bloquear o merge** | `adversarial-reviewer` |
 | 6 · **DOCS** | spec e docs refletem o **entregue** | `docs-writer` |
 | ↻ · **OUTCOME** | mede pós-ship se a métrica de sucesso foi atingida | `outcome-analyst` |
@@ -194,7 +195,8 @@ convenções da sua fase, para o thread principal delegar com **escopo curto**. 
 | `ux-designer` | Brief de UI/UX (só em UI significativa) |
 | `backend-engineer` | Implementa o código de produção |
 | `frontend-engineer` | Implementa a interface |
-| `tester` | Escreve os testes/evals e deixa o gate verde |
+| **`bdd-author`** | Converte os critérios de aceite em **cenários BDD executáveis** (o oráculo) — se `bdd_style ≠ off` |
+| `tester` | Liga os cenários ao runner + testes/evals; deixa o gate verde |
 | **`adversarial-reviewer`** | **Verificação independente** — tenta quebrar; dirige runtime; **bloqueia o merge** |
 | `docs-writer` | Reflete o comportamento final nos docs |
 | **`outcome-analyst`** | **Mede o resultado real** pós-ship vs. a métrica declarada |
@@ -270,7 +272,7 @@ ai-first/
 ├── README.md                      · este arquivo
 ├── CLAUDE.md                      · índice-mãe (mapa de módulos + invariantes) — preenchido na gênese
 ├── .claude/
-│   ├── agents/                    · o roster (14 subagentes + README)
+│   ├── agents/                    · o roster (15 subagentes + README)
 │   └── skills/                    · ai-first-init, feature, reject-feature, rollback, daily-*, new-extension
 ├── docs/
 │   ├── ai-first/project.md        · 🧬 o GENOMA — contexto + knobs do projeto (preenchido na gênese)
@@ -320,6 +322,12 @@ coisas passando pela sua mão). Ambos são dials que você sobe conforme a confi
 cada uma é implementada numa **sessão de contexto limpa** (só a fatia que toca) — janela menor, menos
 alucinação, entrega mais rápida — e a **árvore fica verde a cada passo**. A **slice de integração**
 final agrega tudo e prova a feature inteira de ponta a ponta. Feature pequena não é decomposta.
+
+**Onde entra o BDD?** Os critérios de aceite da spec já são escritos em Dado/Quando/Então. O
+`bdd-author` os transforma em **cenários executáveis** (Gherkin `.feature` ou cenários nativos — knob
+`bdd_style`) que viram o **oráculo**: o `tester` os liga ao runner e o `adversarial-reviewer` os usa e
+caça o cenário que faltou. Assim a spec e o teste falam a mesma língua e não divergem. Quem não quer a
+camada BDD põe `bdd_style: off`.
 
 **E se a IA fizer besteira?** Cinco redes: **CI verde** obrigatória; **gate de segurança**
 (secret-scan/dep-review/SAST); **verificação independente** (`adversarial-reviewer` que tenta quebrar

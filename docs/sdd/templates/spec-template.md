@@ -22,7 +22,8 @@
 
 ## 4 · Critérios de aceite
 
-Para cada RF, ao menos um cenário falseável:
+Para cada RF, ao menos um cenário falseável (o `bdd-author` os transforma em **cenários de aceitação
+executáveis** — `acceptance.feature`/`acceptance.md`, conforme `bdd_style`):
 
 - **Dado** [estado inicial], **quando** [evento], **então** [resultado observável].
 

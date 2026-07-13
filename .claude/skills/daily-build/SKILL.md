@@ -32,8 +32,9 @@ sinal de que o `/daily-backlog` pode ter falhado ou o board está seco. **Avise*
 Para **cada** issue selecionada, rode o **fluxo `/feature`** em **modo autônomo** (branch
 `claude/<slug>` a partir de `develop`; uma issue = uma branch = um `Closes #NNN`):
 `sdd-orchestrator` (fixo opus/alto — roteia o resto) → `feature-spec` → `architect` →
-**`task-decomposer` (se grande/complexa)** → `backend-engineer` → `tester` → `adversarial-reviewer` →
-`docs-writer`. **Invoque cada subagente com o modelo (`haiku`/`sonnet`/`opus`/`fable`) e o esforço
+**`task-decomposer` (se grande/complexa)** → **`bdd-author` (cenários de aceitação, se `bdd_style ≠ off`)**
+→ `backend-engineer` → `tester` (liga os cenários ao runner) → `adversarial-reviewer` (usa os cenários
+como oráculo) → `docs-writer`. **Invoque cada subagente com o modelo (`haiku`/`sonnet`/`opus`/`fable`) e o esforço
 (`baixo`/`médio`/`alto`/`extra`) que o orchestrator roteou** (ele também aplica a tag `model:*`/
 `effort:*` na issue).
 - **Se a feature foi decomposta:** implemente **slice a slice, cada uma numa invocação isolada** do

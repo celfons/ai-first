@@ -23,6 +23,9 @@ comportamento errado. Seu papel é **desconfiar por profissão**.
 
 ## Leia primeiro
 - A `spec.md` da feature (os critérios de aceite são o contrato — o código bate com eles ou não?).
+- Os **cenários de aceitação (BDD)** do `bdd-author` (`acceptance.feature`/`acceptance.md`), quando
+  existirem: são o **oráculo**. Verifique que passam de verdade E **cace o cenário que faltou** — a
+  variação/borda que ninguém escreveu mas a spec (§5) implica. Um oráculo incompleto é uma brecha.
 - `docs/sdd/constitution.md` (P-#) + `CLAUDE.md` + a linha do domínio em `docs/context-map.md`.
 - O **diff da branch** e os **testes** que o `tester` escreveu (procure o que eles NÃO cobrem).
 

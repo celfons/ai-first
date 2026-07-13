@@ -12,7 +12,8 @@ Use quando a feature é trivial/pequena (1–3 arquivos, um efeito). O `architec
 - [ ] **T2 — [domínio/política]** … · *RF-XXX-01* · done: unit tests da política
 - [ ] **T3 — [repositório/porta]** … · *RF-XXX-02* · done: método na porta + teste (mock completo)
 - [ ] **T4 — [efeito/handler]** … · *RF-XXX-02* · done: teste de idempotência sob redelivery
-- [ ] **T5 — [eval/docs]** … · *P-10/P-11* · done: eval verde + spec reflete o entregue
+- [ ] **T5 — [aceitação/BDD]** cenários executáveis dos critérios (`bdd-author`) · *P-1* · done: cenários passam no CI (se `bdd_style ≠ off`)
+- [ ] **T6 — [eval/docs]** … · *P-10/P-11* · done: eval verde + spec reflete o entregue
 
 ## Forma B — grafo de execução (feature grande/complexa, decomposta)
 
