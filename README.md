@@ -233,6 +233,7 @@ convenções da sua fase, para o thread principal delegar com **escopo curto**. 
 | `product-owner` | Propõe features (mercado + resultado real) e cria issues |
 | `tech-auditor` | Varre bugs, débito **e drift arquitetural** → issues (não corrige) |
 | `ops-investigator` | Varre métricas/logs/DLQ → issues com sugestão (não corrige) |
+| **`migration-analyst`** | **Brownfield** — lê a solução de origem (qualquer stack) e **captura o comportamento** como oráculo + mapa de migração (skill `/migrate`) |
 | `sdd-orchestrator` | Classifica o tamanho e **roteia modelo+esforço por etapa** (custo-benefício); tag na issue. **Único de modelo fixo (opus/alto)** |
 | `feature-spec` | Escreve a spec (o quê/porquê + métrica de sucesso) |
 | `architect` | Desenha o plano técnico + tasks + ADR |
@@ -263,6 +264,7 @@ convenções da sua fase, para o thread principal delegar com **escopo curto**. 
 | **`/ai-first-init`** | **A gênese** — scaffolda o corpo do método no repo + entrevista (stack/cloud/arquitetura/infra/produto/knobs). Roda **uma vez** (revisa depois) | Humano (setup) |
 | **`/feature-intake`** | **Porta de entrada do stakeholder** — formata uma ideia crua do humano no **padrão de issue do `product-owner`** e cria no board, pronta para o fluxo | Humano |
 | `/feature <n>` | Leva **uma issue** ao PR pelo ciclo SDD (com gates após spec e plan) | Humano |
+| **`/migrate <origem>`** | **Migração/reescrita (brownfield)** — traz uma solução que já existe de outra base/stack: caracteriza o comportamento da origem e faz o port por **equivalência**, fatia a fatia (strangler-fig) | Humano |
 | `/reject-feature <n>` | Reverte de `develop` uma feature reprovada, reabre a issue, registra o motivo | Humano |
 | `/rollback <n>` | **Incidente em produção** — kill-switch/revert em `main` com segurança | Humano/alerta |
 | `/daily-backlog` | Cria `features_per_day` issues de negócio (PO + benchmarking + resultado) | Cron |
@@ -323,8 +325,8 @@ ai-first/                          · o repo É o plugin (source "./" no marketp
 ├── .claude-plugin/
 │   ├── plugin.json                · manifesto do plugin (name, version, …)
 │   └── marketplace.json           · marketplace de plugin único (source "./")
-├── agents/                        · o roster (15 subagentes) — descoberto pelo plugin
-├── skills/                        · ai-first-init, feature-intake, feature, reject-feature, rollback, daily-*, new-extension
+├── agents/                        · o roster (16 subagentes) — descoberto pelo plugin
+├── skills/                        · ai-first-init, feature-intake, feature, migrate, reject-feature, rollback, daily-*, new-extension
 ├── README.md                      · este arquivo
 ├── CLAUDE.md                      · índice-mãe (mapa de módulos + invariantes) — preenchido na gênese
 ├── docs/
@@ -337,9 +339,9 @@ ai-first/                          · o repo É o plugin (source "./" no marketp
 │   │   ├── tasks.md               · backlog vivo (esqueleto)
 │   │   ├── templates/             · spec / plan / tasks
 │   │   └── features/              · uma pasta NNN-slug por feature (com um exemplo)
-│   ├── adr/                       · README (índice) + template + ADR-0001 (adoção do método)
+│   ├── adr/                       · README (índice) + template + ADR-0001 (método) + ADR-0002 (migração)
 │   ├── context-map.md             · o context mesh leve
-│   ├── roster.md                  · visão geral dos 15 subagentes (fora de agents/ p/ não virar componente)
+│   ├── roster.md                  · visão geral dos 16 subagentes (fora de agents/ p/ não virar componente)
 │   └── product/rejections.md      · ledger de rejeições
 ├── scripts/
 │   └── validate-plugin.mjs        · TESTE do manifesto + inventário do plugin (zero-dep)

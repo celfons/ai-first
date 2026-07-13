@@ -33,23 +33,29 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
-          cache: "npm"
+          # Sem `cache: npm`: o setup-node falha alto quando não há lockfile. O passo abaixo só
+          # ativa cache/instala quando há projeto JS (a gênese adapta isto ao ecossistema real).
 
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Type check
-        run: npm run typecheck
-
-      - name: Lint
-        run: npm run lint
-
-      - name: Test
-        run: npm test
-
-      # Descomente se o projeto tem comportamento de IA/agente (evals determinísticos no CI):
-      # - name: Agent evals (deterministic, keyless)
-      #   run: npm run eval
+      # Gate de qualidade AGNÓSTICO: detecta o ecossistema.
+      #  • Projeto JS (tem package.json) → roda o CONTRATO typecheck + lint + test (adapte na gênese
+      #    para pnpm/yarn/cargo/go/poetry…).
+      #  • Repo do próprio método/plugin (sem app JS) → o gate é a VALIDAÇÃO DO PLUGIN (manifesto +
+      #    inventário de subagentes/skills), que é o que este repo de fato entrega.
+      - name: Quality gate (ecosystem-aware)
+        run: |
+          set -euo pipefail
+          if [ -f package.json ]; then
+            echo "→ Projeto JS detectado: rodando typecheck + lint + test."
+            if [ -f package-lock.json ] || [ -f npm-shrinkwrap.json ]; then npm ci; else npm install; fi
+            npm run typecheck --if-present
+            npm run lint --if-present
+            npm test --if-present
+            # Descomente na gênese se há comportamento de IA/agente (evals determinísticos):
+            # npm run eval --if-present
+          else
+            echo "→ Sem package.json: repo do método/plugin. Gate = validação do plugin."
+            node scripts/validate-plugin.mjs
+          fi
 
   # Gate de segurança (P-13 — separação de papéis e cadeia de suprimentos fechada).
   # Um agente que escreve E mergeia código precisa de trava de segurança independente do "está verde".
@@ -59,11 +65,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # gitleaks varre o histórico do PR — precisa dos commits, não só do HEAD
 
       # 1) Secret scanning — nenhum segredo entra em claro (P-6/P-13). Ex.: gitleaks.
+      #    A action exige GITHUB_TOKEN para ler os commits do PR.
       - name: Secret scan
         uses: gitleaks/gitleaks-action@v2
-        # env: { GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }} }  # se aplicável
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}  # só p/ organização (usuário não precisa)
 
       # 2) SAST — análise estática de segurança do código. Ex.: CodeQL, semgrep.
       #    Descomente e configure o `language:` do seu projeto.
@@ -73,13 +84,25 @@ jobs:
       # - uses: github/codeql-action/analyze@v3
 
   # Dependency review — bloqueia PR que introduz dependência vulnerável/licença proibida (P-13).
-  # Roda só em pull_request (a action exige o contexto do PR).
+  # Roda só em pull_request (a action exige o contexto do PR) E só quando há manifesto de dependências
+  # a revisar — num repo de docs/plugin (sem manifesto) não há o que revisar, então o passo é pulado
+  # em vez de falhar. Projetos JS/py/go reais têm manifesto e a revisão roda normalmente.
   dependency-review:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Detectar manifesto de dependências
+        id: manifests
+        run: |
+          if ls package.json requirements.txt pyproject.toml go.mod Cargo.toml pom.xml build.gradle 2>/dev/null | head -1 | grep -q .; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "Sem manifesto de dependências — nada a revisar (repo de docs/plugin)."
+          fi
       - name: Dependency review
+        if: steps.manifests.outputs.present == 'true'
         uses: actions/dependency-review-action@v4
         with:
           fail-on-severity: high
