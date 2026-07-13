@@ -40,7 +40,7 @@ seu projeto** (Parte B, P-16+ + `CLAUDE.md`):
 Estão em `CLAUDE.md`. Padrão típico: novo provedor externo → **porta + adapter**; novo efeito →
 **handler/Action + regra declarativa**; dado novo → **repositório atrás da porta de dados**;
 rota nova → o mecanismo de rotas do projeto. Se o projeto tem um mecanismo de plugin/strategy,
-use-o (ver a skill `.claude/skills/new-extension`).
+use-o (ver a skill `skills/new-extension`).
 
 ## Entrega
 1. `docs/sdd/features/NNN-slug/plan.md` — todas as 8 seções do template. Cada decisão técnica

@@ -1,13 +1,13 @@
 ---
 name: feature
-description: Use para IMPLEMENTAR uma issue do board do GitHub de ponta a ponta pelo ciclo SDD, dirigindo os subagentes de desenvolvimento (`.claude/agents/`). Invoque como `/feature <número-da-issue>` (ex.: `/feature 873`). Lê a issue como requisito, cria a branch, e conduz spec → plan → implement → verify → docs → PR contra `develop`, parando nos gates de aprovação. É o "starter" que conecta o board ao código.
+description: Use para IMPLEMENTAR uma issue do board do GitHub de ponta a ponta pelo ciclo SDD, dirigindo os subagentes de desenvolvimento (`agents/`). Invoque como `/feature <número-da-issue>` (ex.: `/feature 873`). Lê a issue como requisito, cria a branch, e conduz spec → plan → implement → verify → docs → PR contra `develop`, parando nos gates de aprovação. É o "starter" que conecta o board ao código.
 ---
 
 # /feature — driver do ciclo SDD a partir de uma issue
 
 Esta skill roda no **thread principal** (por isso pode orquestrar os subagentes — um subagente não
 spawna outro). Ela pega **uma issue do board** e a leva até um PR, dirigindo o roster de
-`.claude/agents/`. Board → código, uma fatia vertical por issue.
+`agents/`. Board → código, uma fatia vertical por issue.
 
 ## Entrada
 

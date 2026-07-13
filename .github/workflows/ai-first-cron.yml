@@ -1,0 +1,64 @@
+name: ai-first · rotinas autônomas
+
+# Faz o "organismo" girar sozinho: dispara as skills do ai-first em horários agendados,
+# via a action oficial `anthropics/claude-code-action`. Este arquivo é um TEMPLATE — o
+# `/ai-first:ai-first-init` o copia para o seu repositório na gênese. Ajuste os horários
+# (cron em UTC) e a autonomia ao seu projeto.
+#
+# Pré-requisitos no repositório que adota o método:
+#  - secret `ANTHROPIC_API_KEY` (ou credenciais Bedrock/Vertex).
+#  - o plugin `ai-first` publicado num marketplace (aqui: `celfons/ai-first`).
+#  - branches `develop` e `main`; `ci` como required check.
+
+on:
+  workflow_dispatch:
+    inputs:
+      skill:
+        description: "Skill a rodar (ex.: /ai-first:daily-backlog)"
+        required: true
+        default: "/ai-first:daily-backlog"
+  schedule:
+    - cron: "0 11 * * 1-5"   # ~08:00 BRT · /daily-backlog  (cria a issue do dia)
+    - cron: "0 12 * * 1-5"   # ~09:00 BRT · /daily-build     (~1h depois: implementa + verifica + promove por risco)
+    - cron: "0 17 * * 1-5"   # ~14:00 BRT · /daily-tech-scan (saúde do código + drift)
+    - cron: "0 22 * * 1-5"   # ~19:00 BRT · /daily-ops-scan  (saúde de runtime)
+    - cron: "0 13 * * 1"     # seg ~10:00 BRT · /daily-outcome (mede resultado real)
+
+# Uma rodada por vez evita o build pisar no backlog/promoção da rodada anterior.
+concurrency:
+  group: ai-first-routines
+  cancel-in-progress: false
+
+jobs:
+  routine:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write        # branch/commit/merge em develop
+      pull-requests: write   # abrir/atualizar PRs
+      issues: write          # PO/auditores criam issues no board
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Mapeia cada horário para a skill correspondente (ou usa o input do dispatch).
+      - id: pick
+        run: |
+          case "${{ github.event.schedule }}" in
+            "0 11 * * 1-5") echo "skill=/ai-first:daily-backlog"   >> "$GITHUB_OUTPUT" ;;
+            "0 12 * * 1-5") echo "skill=/ai-first:daily-build"     >> "$GITHUB_OUTPUT" ;;
+            "0 17 * * 1-5") echo "skill=/ai-first:daily-tech-scan" >> "$GITHUB_OUTPUT" ;;
+            "0 22 * * 1-5") echo "skill=/ai-first:daily-ops-scan"  >> "$GITHUB_OUTPUT" ;;
+            "0 13 * * 1")   echo "skill=/ai-first:daily-outcome"   >> "$GITHUB_OUTPUT" ;;
+            *)              echo "skill=${{ github.event.inputs.skill }}" >> "$GITHUB_OUTPUT" ;;
+          esac
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          # Instala o plugin ai-first a partir do marketplace, e então dispara a skill
+          # (namespaced como /ai-first:<skill>). O plugin traz o roster + as skills.
+          plugin_marketplaces: "celfons/ai-first"
+          plugins: "ai-first@ai-first"
+          prompt: ${{ steps.pick.outputs.skill }}
+          claude_args: "--max-turns 60"

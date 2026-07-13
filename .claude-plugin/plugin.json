@@ -1,0 +1,8 @@
+{
+  "name": "ai-first",
+  "description": "Método reutilizável de desenvolvimento conduzido por IA: SDD + governança (constituição, ADRs, context-map, ledger de rejeições) + roster de subagentes + skills, com verificação independente, decomposição segura, cenários de aceitação (BDD) e um único gate humano na promoção para produção. Instale o plugin (o cérebro) e rode /ai-first:ai-first-init para scaffoldar o projeto (o corpo).",
+  "version": "0.1.0",
+  "author": { "name": "celfons" },
+  "homepage": "https://github.com/celfons/ai-first",
+  "repository": "https://github.com/celfons/ai-first"
+}
