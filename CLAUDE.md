@@ -5,8 +5,10 @@ Contexto para sessões de IA (Claude Code) **deste repositório**. Este arquivo 
 de qualquer coisa. Para detalhes, veja `docs/sdd/` (constituição, spec, plano, ciclo SDD),
 `docs/adr/` (decisões arquiteturais — **leia o índice antes de decidir algo durável**),
 `docs/context-map.md` (**mapa de contexto**: domínio → código+docs+ADRs+testes — carregue a linha
-do domínio que vai tocar em vez de reler a base) e `docs/product/rejections.md` (**ledger de
-rejeições**: o `product-owner` lê para não repropor o que o dono já recusou).
+do domínio que vai tocar em vez de reler a base), `docs/product/rejections.md` (**ledger de
+rejeições**: o `product-owner` lê para não repropor o que o dono já recusou), `docs/knowledge.md`
+(**saber-fazer**: padrões + **anti-padrões** — carregue antes de implementar/revisar) e
+`docs/evolution.md` (**linha do tempo de aprendizados**: o que mudou e o que o uso real ensinou).
 
 > ⚠️ **Este é o `CLAUDE.md` do framework `ai-first` (esqueleto).** As seções marcadas `_(preencha)_`
 > são preenchidas **na gênese, pela skill primária [`/ai-first-init`](skills/ai-first-init/SKILL.md)**,
@@ -62,6 +64,10 @@ _(preencha)_ — Onde comportamento novo entra sem tocar no núcleo. É o que a 
 _(preencha)_ — Os idiomas do hot path do seu projeto, em uma linha cada (ex.: batch de banco,
 reserva de idempotência, laço da fila, chamada de LLM com timeout+validação+fallback).
 
+> **Versão profunda + anti-padrões:** [`docs/knowledge.md`](docs/knowledge.md). Aqui ficam só as
+> one-liners; lá moram os padrões detalhados e as **armadilhas a evitar** (o `adversarial-reviewer` as
+> usa como checklist de caça).
+
 ## Convenções
 
 - **Fluxo de git: `feature → develop → main`.** Branch `claude/<slug>` sai de `develop` e o PR é
@@ -87,11 +93,13 @@ reserva de idempotência, laço da fila, chamada de LLM com timeout+validação+
 - **Gênese (uma vez):** skill `/ai-first-init` — define contexto + knobs no genoma
   (`docs/ai-first/project.md`). Entrevista o **produto a criar + estratégia + ponto de partida** (semeia
   `docs/sdd/tasks.md` com as fatias do MVP), a **cadência** e o **desenvolvimento paralelo**, e a
-  decisão de **ter ou não gate humano** (`autonomy_level`, incl. o nível **`autônomo` = 100% AI**). Rode
-  antes de qualquer feature. No fim, **oferece o arranque imediato** (`/kickoff`) para começar na hora.
-- **Arranque imediato (não espera o cron):** skill `/kickoff [quantidade]` — liga o desenvolvimento na
-  hora: semeia o backlog inicial (PO) e desenvolve as primeiras fatias **em paralelo** (`parallelism`)
-  pelo motor do `/daily-build`. Exige o genoma armado. Ideal logo após a gênese.
+  decisão de **ter ou não gate humano** (`autonomy_level`, incl. o nível **`autônomo` = 100% AI**) e
+  **`initial_backlog`** (quantas histórias/épicos criar de imediato). Rode antes de qualquer feature. No
+  fim, **encadeia o `/kickoff` sozinha** com `initial_backlog` — fluxo contínuo até o produto começar.
+- **Arranque (encadeado pela gênese ou sob demanda):** skill `/kickoff [quantidade]` — garante o
+  scaffold, o `product-owner` **escreve o board** com as histórias/épicos e o motor do `/daily-build`
+  **puxa as tarefas e desenvolve** em paralelo (`parallelism`) até a entrega. Exige o genoma armado. A
+  gênese o **encadeia sozinha** com `initial_backlog` (fluxo contínuo: init → responder → constrói).
 - **Ideia do stakeholder → board:** skill `/feature-intake [ideia]` — formata uma ideia crua do humano
   no **mesmo padrão de issue do `product-owner`** (dedup + rejeições + gate + labels) e cria no board.
   O PO decide o quê (benchmarking); o intake só normaliza o que o humano já trouxe.

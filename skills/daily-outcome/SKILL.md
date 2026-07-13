@@ -29,6 +29,12 @@ Para achados acionáveis, o `outcome-analyst` abre issues:
 - **Lacuna de instrumentação** → issue `needs-human-triage` (sem medir, o loop fica cego ali).
 Nada é implementado aqui — a correção/iteração é uma feature nova pelo fluxo normal.
 
+## Fase 2½ · Registrar o aprendizado em `docs/evolution.md`
+Pegue as **linhas de aprendizado** que o `outcome-analyst` emitiu (item 4 dele) e **grave-as no topo**
+da linha do tempo em `docs/evolution.md` (mais recente primeiro), no formato do doc — data, feature/
+#NNN, sinal (✅/〜/❌/🔧), aprendizado e links. O subagente é só-leitura de docs; **quem escreve é a
+skill** (thread principal). Uma linha por feature avaliada; não duplique entrada já registrada.
+
 ## Fase 3 · Notificação ao dono (o que o mundo real disse)
 Sua última mensagem vira o **e-mail/push**. Linguagem de negócio, foco em resultado:
 ```

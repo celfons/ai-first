@@ -18,6 +18,12 @@ dos arquivos existentes (tabelas, `mermaid`, invariantes numeradas).
   de IA. Ao adicionar/mudar módulo ou invariante, atualize a linha correspondente.
 - `docs/context-map.md` — **mapa de contexto** (domínio → código+docs+ADRs+testes). Ao adicionar
   módulo/domínio/ADR novo, atualize a linha correspondente para o mapa não envelhecer.
+- `docs/knowledge.md` — **padrões + anti-padrões**. Ao fechar a feature: idioma novo introduzido vira
+  **padrão**; bug caçado pelo `adversarial-reviewer`/`tester` vira **anti-padrão** (com `arquivo:linha`
+  de origem) — além do teste de regressão. Não duplique invariante da constituição aqui (linke).
+- `docs/evolution.md` — **linha do tempo de aprendizados** (mais recente no topo). Ao fechar uma
+  feature durável, registre a linha (mudança + sinal + aprendizado + links ADR/issue/§8), mesmo com
+  sinal 〜/🔧 antes da métrica maturar; o `outcome-analyst` complementa depois com o resultado real.
 - Docs de arquitetura/dados/pipelines do projeto — stack, fluxo, invariantes, modelagem.
 - **SDD:** `docs/sdd/specification.md` (RF vivos), `docs/sdd/technical-plan.md` (RNF),
   `docs/sdd/constitution.md` (princípios), e a `spec.md` da feature (que deve terminar refletindo o

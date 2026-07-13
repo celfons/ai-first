@@ -167,6 +167,14 @@ migration-analyst (CARACTERIZAÇÃO) → characterization.md (RF observáveis) +
 - **Mapa de contexto** ([`docs/context-map.md`](context-map.md)) — a versão *leve e
   determinística* de um context mesh: por domínio, aponta código ⇄ docs ⇄ ADRs ⇄ features ⇄
   testes. Cada subagente carrega **aquela** fatia em vez de reler a base.
+- **Conhecimento** ([`docs/knowledge.md`](knowledge.md)) — o *saber-fazer* curado: **padrões** ("faça
+  assim") e **anti-padrões** ("cuidado"). O `backend-engineer`/`architect` seguem os padrões; o
+  `adversarial-reviewer` caça os anti-padrões; o `docs-writer` grava o idioma/bug novo ao fechar a
+  feature (todo bug vira regressão **e** anti-padrão).
+- **Evolução** ([`docs/evolution.md`](evolution.md)) — a *linha do tempo de aprendizados*: o que mudou e
+  o que o uso real ensinou, costurando ADRs + rejeições + resultado numa narrativa única. Alimentada
+  pelo `outcome-analyst` (`/daily-outcome`), pelo `docs-writer` e pelo `/reject-feature`; o
+  `product-owner` lê para dobrar no que funcionou.
 
 ## Vertical slice — na FEATURE, não no código
 

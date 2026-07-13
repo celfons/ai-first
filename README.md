@@ -267,8 +267,8 @@ convenções da sua fase, para o thread principal delegar com **escopo curto**. 
 
 | Skill | O que faz | Disparo |
 |---|---|---|
-| **`/ai-first-init`** | **A gênese** — scaffolda o corpo do método no repo + entrevista (stack/cloud/arquitetura/infra/produto/knobs, incl. cadência e **desenvolvimento paralelo**). Roda **uma vez** (revisa depois) e no fim **oferece arrancar o desenvolvimento na hora** (`/kickoff`) | Humano (setup) |
-| **`/kickoff [n]`** | **Arranque imediato** — liga o desenvolvimento **na hora** (não espera o cron): semeia o backlog inicial e desenvolve `n` fatias **em paralelo** (`parallelism`) pelo motor do `/daily-build`. Ideal logo após a gênese | Humano |
+| **`/ai-first-init`** | **A gênese** — scaffolda o corpo do método no repo + entrevista (stack/cloud/arquitetura/produto/knobs, incl. cadência, **desenvolvimento paralelo** e **`initial_backlog`** = quantas histórias/épicos criar de imediato). Roda **uma vez** e, no fim, **encadeia o `/kickoff` sozinha** com essa quantidade | Humano (setup) |
+| **`/kickoff [n]`** | **Arranque** — garante o scaffold, o `product-owner` **escreve o board** com `n` histórias/épicos e o motor do `/daily-build` **puxa as tarefas e desenvolve** em paralelo (`parallelism`) até a entrega. Encadeado pela gênese ou disparado sob demanda | Humano |
 | **`/feature-intake`** | **Porta de entrada do stakeholder** — formata uma ideia crua do humano no **padrão de issue do `product-owner`** e cria no board, pronta para o fluxo | Humano |
 | **`/backlog [n] [tema]`** | **On-demand, sem teto** — o humano pede ao `product-owner` **N histórias/épicos** de uma vez (histórias soltas ou épico decomposto em sub-issues), com o mesmo rigor do diário. Não amarrado a `features_per_day` | Humano |
 | `/feature <n>` | Leva **uma issue** ao PR pelo ciclo SDD (com gates após spec e plan) | Humano |
@@ -292,6 +292,11 @@ O que faz cada feature decidir **à luz das anteriores**, em vez de do zero:
   antes de decidir e escreve o ADR; ninguém re-litiga uma decisão viva em silêncio.
 - **Ledger de rejeições** ([`docs/product/rejections.md`](docs/product/rejections.md)) — todo "não" do
   dono vira aprendizado, para o `product-owner` não repropor a mesma coisa.
+- **Conhecimento** ([`docs/knowledge.md`](docs/knowledge.md)) — **padrões** ("faça assim") e
+  **anti-padrões** ("cuidado") curados: o saber-fazer que reduz alucinação. Todo bug caçado vira
+  regressão **e** anti-padrão; o `adversarial-reviewer` usa a lista como checklist.
+- **Evolução** ([`docs/evolution.md`](docs/evolution.md)) — a **linha do tempo de aprendizados**: o que
+  mudou e o que o uso real ensinou, costurando ADRs + rejeições + resultado numa narrativa única.
 - **Resultado real** (`outcome-analyst`) — o uso mostra o que funcionou; o PO dobra no que deu certo e
   itera/para no que não deu. É a retroalimentação mais valiosa e a mais esquecida em automação.
 
@@ -354,7 +359,9 @@ ai-first/                          · o repo É o plugin (source "./" no marketp
 │   │   ├── templates/             · spec / plan / tasks
 │   │   └── features/              · uma pasta NNN-slug por feature (com um exemplo)
 │   ├── adr/                       · README (índice) + template + ADR-0001 (método) + ADR-0002 (migração)
-│   ├── context-map.md             · o context mesh leve
+│   ├── context-map.md             · o context mesh leve (domínio → código+docs+ADRs+testes)
+│   ├── knowledge.md               · padrões + anti-padrões (saber-fazer curado)
+│   ├── evolution.md               · linha do tempo de aprendizados (o que mudou + o que ensinou)
 │   ├── roster.md                  · visão geral dos 16 subagentes (fora de agents/ p/ não virar componente)
 │   └── product/rejections.md      · ledger de rejeições
 ├── scripts/
