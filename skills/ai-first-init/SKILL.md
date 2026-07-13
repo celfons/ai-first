@@ -28,7 +28,8 @@ nunca sobrescreve o que você já tem sem confirmar).
    - `docs/sdd/` → `constitution.md` (Parte A universal + Parte B placeholder), `README.md`,
      `specification.md`, `technical-plan.md`, `tasks.md`, `templates/` (spec/plan/tasks).
    - `docs/adr/` → `README.md` (índice) + `template.md` (+ o `0001` de adoção, ajustado ao projeto).
-   - `docs/context-map.md`, `docs/product/rejections.md`.
+   - `docs/context-map.md`, `docs/product/rejections.md`, `docs/knowledge.md` (padrões + anti-padrões),
+     `docs/evolution.md` (linha do tempo de aprendizados — nasce vazia).
    - `docs/ai-first/project.md` (o **genoma** em branco — é o que você preenche na entrevista abaixo).
    - `.github/` → `pull_request_template.md`, `ISSUE_TEMPLATE.md`, `workflows/ci.yml`,
      `workflows/ai-first-cron.yml`.
@@ -107,9 +108,13 @@ contexto, mas a **semente do que construir primeiro**. Pergunte:
 - **Grava em:** `docs/sdd/constitution.md` (Parte B + tags de aplicabilidade) + `CLAUDE.md`
   (invariantes).
 
-### 7 · Pontos de extensão e qualidade
+### 7 · Pontos de extensão, qualidade e saber-fazer
 - **Pontos de extensão:** como comportamento novo entra sem tocar no núcleo (nova rota, novo
   provedor atrás de porta, novo efeito/handler, nova strategy, novo repositório).
+- **Padrões e anti-padrões iniciais (`docs/knowledge.md`):** pergunte os **idiomas** do hot path (o
+  jeito certo de fazer as coisas neste projeto) e as **armadilhas** já conhecidas (o que evitar). Semeie
+  as primeiras linhas do `knowledge.md` — o acervo cresce depois (bug caçado vira anti-padrão). Se o
+  dono não souber ainda, deixe o esqueleto; o `docs-writer` preenche ao longo das features.
 - **Comandos de qualidade REAIS:** os comandos exatos de `typecheck`, `lint`, `test` e (se houver
   IA) `eval`. Se algum não existe ainda, registre como `[A DEFINIR]` e sinalize que o gate fica
   incompleto até existir.
@@ -119,9 +124,9 @@ contexto, mas a **semente do que construir primeiro**. Pergunte:
   `tester` cobre os critérios direto — só para projetos muito pequenos). Confirme o framework de teste.
 - **Sinais de observabilidade:** como o `ops-investigator` alcança métricas/logs/DLQ em produção
   (qual API/credencial) — ou "sem acesso ainda" (aí o cron reporta sinais cegos, não finge saúde).
-- **Grava em:** `CLAUDE.md` (pontos de extensão + padrões), `.github/workflows/ci.yml` (comandos),
-  `skills/new-extension` (ajuste ao mecanismo real), `agents/ops-investigator.md`
-  (forma de acesso).
+- **Grava em:** `CLAUDE.md` (pontos de extensão + padrões one-liner), `docs/knowledge.md` (padrões +
+  anti-padrões detalhados), `.github/workflows/ci.yml` (comandos), `skills/new-extension` (ajuste ao
+  mecanismo real), `agents/ops-investigator.md` (forma de acesso).
 
 ### 8 · Fluxo de git e autonomia (como o organismo cresce e quando chama o humano)
 Estes são os **knobs ajustáveis** (P-15) — o humano pode mudá-los aqui e a qualquer momento depois.
@@ -135,6 +140,11 @@ Estes são os **knobs ajustáveis** (P-15) — o humano pode mudá-los aqui e a 
   arranque para formar a base do produto rápido. O merge em `develop` é sempre **serializado** (uma de
   cada vez), então subir o paralelismo acelera a implementação sem abrir mão dos gates. Pergunte junto
   da cadência: "quer desenvolver 1 por vez, ou várias em paralelo para o produto nascer mais rápido?"
+- **`initial_backlog` (arranque inicial):** **quantas histórias/épicos criar de imediato** para começar
+  o produto. **Pergunte aqui, na entrevista** (não depois): "Para começar, quantas histórias/épicos você
+  quer que eu crie de imediato no board?" É o número que a **Fase Final** passa ao `/kickoff` sem
+  re-perguntar. Default = `features_per_day`; pode ser bem maior nesta primeira vez (formar a base do
+  MVP de uma vez). `0` = não arrancar agora (esperar o cron). Registre no genoma.
 - **`autonomy_level` (P-10) — INCLUI a decisão de ter ou não gate humano:** é o dial que vai de
   "revisar cada uma" até "não revisar nenhuma". Quatro posições:
   - `conservador` (default) — humano aprova **tudo** (o gate único clássico);
@@ -170,28 +180,31 @@ Estes são os **knobs ajustáveis** (P-15) — o humano pode mudá-los aqui e a 
 4. **Um resumo ao humano**: o que ficou definido, o que ficou `[A DEFINIR]`, e o **passo para armar
    a autonomia** — criar `develop`, marcar `ci` como required check, e agendar os crons. Ofereça
    fazer isso agora (com confirmação) ou deixar as instruções.
-5. **A oferta de arranque imediato** (ver Fase Final abaixo): perguntar se o humano quer **começar o
-   desenvolvimento agora** (`/kickoff`) em vez de esperar o primeiro cron.
+5. **O arranque automático** (Fase Final abaixo): se `initial_backlog > 0`, a gênese **chama o
+   `/kickoff` sozinha** — sem re-perguntar — para o produto já começar a nascer.
 
-## Fase Final · ARRANQUE IMEDIATO (opcional — não espere o cron)
-Armar o organismo não é o mesmo que **ligá-lo**: por padrão, o primeiro desenvolvimento só roda quando
-o cron `/daily-backlog`+`/daily-build` dispara no horário agendado. Para o produto começar a nascer
-**na hora em que a gênese publica**, ofereça o arranque:
+## Fase Final · ARRANQUE AUTOMÁTICO (dispara o `/kickoff` com a quantidade da entrevista)
+O fluxo pretendido é **contínuo**: `/ai-first-init` → você responde a entrevista (incluindo
+`initial_backlog`, a quantidade de histórias/épicos a criar de imediato) → a gênese **encadeia o
+`/kickoff` automaticamente**, que **garante o corpo montado (scaffold)**, faz o `product-owner`
+**escrever o board** com essa quantidade e **puxa as tarefas do board** para implementar. Sem parada
+manual entre a entrevista e a construção.
 
 1. **Confirme os pré-requisitos** que a gênese acabou de armar: genoma sem `[A DEFINIR]` bloqueante,
    `develop` criada, `ci` como required check. Se algo falta, resolva antes (ou deixe claro o que
    impede o arranque).
-2. **Pergunte** (`AskUserQuestion`): "Quer que eu **comece a construir o produto agora**, ou prefere
-   esperar o primeiro cron diário?" Se sim, pergunte também **quantas** fatias iniciais arrancar (a
-   base do produto — pode ser maior que `features_per_day` nesta primeira vez) e confirme o
-   **`parallelism`** definido na dimensão 8.
-3. **Com o OK, invoque a skill `/kickoff`** (com a quantidade combinada) — ela lê as **fatias-semente do
-   MVP** que você gravou em `docs/sdd/tasks.md` (dimensão 1), o `product-owner` as vira issues e o motor
-   do `/daily-build` as desenvolve em paralelo, honrando os knobs. **Se o `autonomy_level` for
-   `autônomo`**, o arranque vai de ponta a ponta até produção **sem gate humano** — o produto nasce sem
-   ação manual. A partir daí, os crons diários assumem o ritmo sozinhos.
-4. **Se o humano preferir esperar**, não arranque — só registre no resumo que o organismo está armado e
-   que o primeiro ciclo roda no próximo cron (ou que ele pode disparar `/kickoff` quando quiser).
+2. **Se `initial_backlog > 0`** (o humano já respondeu a quantidade na dimensão 8): **invoque a skill
+   `/kickoff <initial_backlog>` diretamente** — **não re-pergunte** a quantidade. O `/kickoff`, nesta
+   ordem:
+   - **garante o corpo montado** — o scaffold (Fase 0) é idempotente; se algo faltar, materializa/avisa;
+   - **o `product-owner` escreve o board** — cria `initial_backlog` histórias/épicos a partir das
+     **fatias-semente do MVP** (`docs/sdd/tasks.md`, dimensão 1), com os labels do fluxo;
+   - **puxa as tarefas do board e implementa** — o motor do `/daily-build`, em paralelo (`parallelism`),
+     com verificação independente e promoção por tier. **Se `autonomy_level = autônomo`**, vai de ponta
+     a ponta até produção **sem gate humano**. A partir daí, os crons diários assumem o ritmo.
+3. **Se `initial_backlog = 0`** (ou pré-requisito faltando), **não arranque** — registre no resumo que o
+   organismo está armado e que o primeiro ciclo roda no próximo cron (ou que dá para disparar `/kickoff`
+   quando quiser).
 
 ## Regras
 - **Não escreva código de produto** — esta skill define o **contexto**, não implementa features. A

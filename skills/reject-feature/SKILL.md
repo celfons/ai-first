@@ -51,6 +51,12 @@ com: data, `#NNN`, o que foi entregue (1 linha), **Tipo** (`produto` = ideia nã
 **mesmo revert PR** (é uma mudança de doc). Sem motivo, volte ao passo de Entrada e pergunte — não
 registre linha vazia.
 
+### 4½ · Registre o aprendizado em `docs/evolution.md`
+No **mesmo revert PR**, adicione **uma linha no topo** da linha do tempo de
+[`docs/evolution.md`](../../docs/evolution.md): data, feature/`#NNN`, sinal **❌** (reprovada), o
+**aprendizado** (nas palavras do dono, o que evitar) e o link para a rejeição no ledger. É a mesma
+lição do ledger, mas na trajetória cronológica que o `product-owner`/`architect` leem.
+
 ### 5 · Atualize o PR de promoção develop → main
 1. Depois do revert mergeado em `develop`, **atualize** o corpo do PR `develop → main`: mova a feature
    de "mergeada" para "reprovada/revertida (issue reaberta)". O diff da promoção já não contém mais a

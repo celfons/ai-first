@@ -46,6 +46,9 @@ negócio. Você fecha esse loop com **dado real**.
    - Deduplique contra o board; cap prudente (~3 issues/rodada).
 3. **Sinal para o `product-owner`:** um resumo do que o **uso real** está dizendo — é o insumo que faz
    a próxima aposta nascer de dado, não só de mercado.
+4. **Linhas para `docs/evolution.md`:** para cada feature avaliada, **emita a entrada pronta** no
+   formato do doc (data · feature/#NNN · sinal ✅/〜/❌/🔧 · aprendizado · links). Você é só-leitura de
+   docs: **entregue o texto** ao chamador — a skill `/daily-outcome` grava no topo da linha do tempo.
 
 ## Regras
 - **Só leitura.** Nunca mute produção, nunca implemente, nunca remova feature você mesmo (a remoção é
