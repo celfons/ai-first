@@ -1,0 +1,52 @@
+name: CI
+
+# Gate de qualidade do método ai-first (P-10). É o *required check* que precisa estar VERDE para
+# o auto-merge em `develop` e para a promoção `develop → main`. Sem ele, não há autonomia segura.
+#
+# ADAPTE ao seu projeto: troque os comandos de `npm` pelos do seu ecossistema (pnpm/yarn, cargo,
+# go, mvn, poetry…). O que o framework padroniza é o CONTRATO: typecheck + lint + test (+ eval se
+# houver comportamento de IA) precisam rodar e passar em todo PR contra develop/main.
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [develop, main]
+  # Merge queue: o GitHub constrói o merge prospectivo (PR + base atual) e roda os checks NELE,
+  # pegando conflito semântico antes de entrar. Requer habilitar a merge queue + marcar `ci` como
+  # required check em branch protection para develop/main (Settings → Branches).
+  merge_group:
+  # Sem `push:` de propósito: um commit que chega a develop/main já foi validado como head do PR
+  # (e no merge prospectivo). Re-rodar no push pós-merge só re-testa a mesma árvore.
+
+# Cancela um run superado do mesmo PR/merge-group: o loop autônomo faz push rápido; um run em voo
+# para um commit antigo é desperdício assim que chega um mais novo.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm test
+
+      # Descomente se o projeto tem comportamento de IA/agente (evals determinísticos no CI):
+      # - name: Agent evals (deterministic, keyless)
+      #   run: npm run eval
