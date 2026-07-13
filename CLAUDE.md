@@ -8,10 +8,15 @@ de qualquer coisa. Para detalhes, veja `docs/sdd/` (constituição, spec, plano,
 do domínio que vai tocar em vez de reler a base) e `docs/product/rejections.md` (**ledger de
 rejeições**: o `product-owner` lê para não repropor o que o dono já recusou).
 
-> ⚠️ **Este é o `CLAUDE.md` do framework `ai-first` (esqueleto).** Ao adotar o método num projeto
-> real, **substitua as seções marcadas `_(preencha)_`** pelo mapa e pelas invariantes do seu
-> sistema. As instruções de processo (fluxo de git, ciclo SDD, subagentes, skills) já valem como
-> estão. Veja o [README](README.md) para o passo a passo de adoção.
+> ⚠️ **Este é o `CLAUDE.md` do framework `ai-first` (esqueleto).** As seções marcadas `_(preencha)_`
+> são preenchidas **na gênese, pela skill primária [`/ai-first-init`](.claude/skills/ai-first-init/SKILL.md)**,
+> que entrevista o humano sobre stack, cloud, arquitetura, infra e produto. As instruções de
+> processo (fluxo de git, ciclo SDD, subagentes, skills) já valem como estão — o método é fixo, só o
+> contexto é definido.
+>
+> 🧬 **Leia primeiro o genoma:** [`docs/ai-first/project.md`](docs/ai-first/project.md) é a fonte de
+> verdade do contexto do projeto. Se ele estiver com campos `[A DEFINIR]`, o organismo não está
+> armado — rode `/ai-first-init` antes de qualquer feature.
 
 ## O que é
 
@@ -33,8 +38,8 @@ _(preencha)_ — Uma tabela dos diretórios de topo e sua responsabilidade únic
 
 ## Invariantes (não quebrar — ver `docs/sdd/constitution.md`)
 
-As **universais do método** (P-1…P-10) já estão na constituição e valem aqui. Liste abaixo as
-**específicas do seu projeto** (Parte B da constituição), no formato "invariante + onde é testada":
+As **universais do método** (P-1…P-15) já estão na constituição e valem aqui. Liste abaixo as
+**específicas do seu projeto** (Parte B da constituição, P-16+), no formato "invariante + onde é testada":
 
 - _(ex.: **chave de escopo em toda query.** Multi-tenant é absoluto. Testado por `…`.)_
 - _(ex.: **fonte de verdade externa** — pagamento = gateway; estado local é projeção.)_
@@ -60,15 +65,23 @@ reserva de idempotência, laço da fila, chamada de LLM com timeout+validação+
 ## Convenções
 
 - **Fluxo de git: `feature → develop → main`.** Branch `claude/<slug>` sai de `develop` e o PR é
-  aberto **contra `develop`**. `main` (produção) só recebe PR de promoção `develop → main` —
-  **nunca** PR de feature direto. **A promoção `develop → main` é o único gate humano.**
-- PR com `Closes #NNN`; `typecheck` + `lint` + `test` limpos (P-10).
+  aberto **contra `develop`**. `main` (produção) só recebe promoção `develop → main` — **nunca** PR de
+  feature direto. **A promoção é por tier de risco** (P-10): no nível `conservador` o humano aprova
+  tudo; em `progressivo`/`amplo`, 🟢/🟡 podem promover sozinhas e só as arriscadas sobem.
+- PR com `Closes #NNN`; `typecheck` + `lint` + `test` limpos (P-10); **gate de segurança** e
+  **`adversarial-reviewer` não-bloqueante** obrigatórios para o auto-merge (P-11/P-13).
 - **Ciclo SDD** para toda mudança de comportamento: ver `docs/sdd/README.md`. Uma issue = uma
   feature = uma branch = um `Closes #NNN`.
 - **Subagentes de desenvolvimento** (`.claude/agents/`, ver `.claude/agents/README.md`): roster
   mapeado ao ciclo SDD. Delegue a feature nova ao `sdd-orchestrator` para manter o contexto enxuto.
+- **Gênese (uma vez):** skill `/ai-first-init` — define contexto + knobs no genoma
+  (`docs/ai-first/project.md`). Rode antes de qualquer feature.
 - **Starter a partir do board:** skill `/feature <número-da-issue>`.
-- **Rotinas diárias autônomas (crons):** `/daily-backlog` (cria a issue do dia) → ~1h → `/daily-build`
-  (implementa + auto-merge em develop + PR de promoção). Auditorias que só levantam issues:
-  `/daily-tech-scan` (código) e `/daily-ops-scan` (runtime). Espace os crons pesados.
+- **Rotinas autônomas (crons):** `/daily-backlog` (cria `features_per_day` issues) → ~1h →
+  `/daily-build` (implementa + verificação independente + auto-merge em develop + promoção por risco).
+  Auditorias que só levantam issues: `/daily-tech-scan` (código + drift), `/daily-ops-scan` (runtime).
+  Loop de resultado: `/daily-outcome` (mede se as features moveram o ponteiro). Espace os crons pesados.
+- **Cadência/autonomia/orçamento** são knobs do genoma (`features_per_day`, `autonomy_level`,
+  `daily_budget`), ajustáveis a qualquer momento (P-15).
 - **Reprovar uma feature antes de `main`:** `/reject-feature <issue#> [motivo]`.
+- **Incidente em produção:** `/rollback <n> [motivo]` (kill-switch/revert em `main`).

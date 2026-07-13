@@ -29,9 +29,13 @@ Adotamos o método `ai-first`, composto por:
 4. **Skills** que dirigem o fluxo: `/feature` (uma issue → PR) e as rotinas diárias autônomas
    (`/daily-backlog`, `/daily-build`, `/daily-tech-scan`, `/daily-ops-scan`), mais
    `/reject-feature` (porta de saída do gate humano).
-5. **Fluxo de git `feature → develop → main`** com **um único gate humano**: a automação
-   auto-mergeia em `develop` (só com CI verde), e a **promoção `develop → main` é a decisão
-   humana**.
+5. **Fluxo de git `feature → develop → main`** com **verificação independente** antes do merge
+   (`adversarial-reviewer`, P-11) e **gate humano por tier de risco** (P-10): a automação
+   auto-mergeia em `develop` (só com CI verde + veredito não-bloqueante), e a **promoção
+   `develop → main`** é liberada conforme o `autonomy_level` — no nível `conservador` (default) o
+   humano aprova tudo; nos níveis maiores, só o que sobe por risco. O nível é um dial do genoma.
+6. **Loop fechado com a realidade** (P-12): toda feature declara métrica de sucesso e é medida
+   pós-ship (`outcome-analyst`); o que não moveu o ponteiro é iterado ou removido.
 
 ## Alternativas consideradas
 
@@ -49,12 +53,14 @@ Adotamos o método `ai-first`, composto por:
   enxuto (cada subagente carrega só a fatia do seu domínio); o *porquê* das decisões vira
   acervo (ADRs) e os "nãos" do dono viram aprendizado (rejeições).
 - **Custos/limites:** exige disciplina de manter constituição/context-map/ADRs coerentes (é
-  trabalho do `docs-writer` em cada feature); o gate único concentra a responsabilidade da
-  publicação no humano que revisa o PR `develop → main`.
+  trabalho do `docs-writer` em cada feature); no nível de autonomia `conservador`, o humano é o
+  gargalo de throughput (mitigado subindo `autonomy_level`/`features_per_day` com o histórico).
 - **Restrições futuras:** toda feature respeita o ciclo SDD e a constituição; nenhuma mudança de
-  comportamento entra sem spec; `main` **nunca** recebe merge sem revisão humana.
+  comportamento entra sem spec nem sem verificação independente; o que chega a `main` sempre passou
+  pelo tier de risco (🔴 **nunca** auto-promove — sempre revisão humana).
 
 ## Relacionados
 
-Constituição (P-1 spec-first, P-2 soberania, P-10 gate único), [`docs/sdd/README.md`](../sdd/README.md),
-[`docs/context-map.md`](../context-map.md), [`.claude/agents/README.md`](../../.claude/agents/README.md).
+Constituição (P-1 spec-first, P-2 soberania, P-10 autonomia progressiva, P-11 verificação independente,
+P-12 loop de resultado), [`docs/sdd/README.md`](../sdd/README.md), [`docs/context-map.md`](../context-map.md),
+[`.claude/agents/README.md`](../../.claude/agents/README.md).

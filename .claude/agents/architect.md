@@ -27,8 +27,9 @@ as invariantes, e decompõe em tasks pequenas. Escreva no idioma dos docs existe
   ADRs+testes de referência) em vez de reler a base.
 
 ## Invariantes que seu plano NÃO pode quebrar
-Estas são as **universais do método** (P-1…P-10 da constituição). Some a elas as invariantes
-**específicas do seu projeto** (Parte B da constituição + `CLAUDE.md`):
+Estas são as **universais do método** (P-1…P-15 da constituição — inclui verificação independente
+P-11, loop de resultado P-12, separação de papéis P-13). Some a elas as invariantes **específicas do
+seu projeto** (Parte B, P-16+ + `CLAUDE.md`):
 - **P-3 idempotência** antes de todo efeito colateral (reserva + rollback na falha).
 - **P-4 IA nunca confiada:** timeout/abort, saída validada, fallback determinístico no erro.
 - **P-5 fronteiras de camada:** acesso a dados atrás de porta; nada importa "para cima".

@@ -30,6 +30,14 @@ bugs críticos e débito técnico — você **não corrige** nada; quem corrige 
 3. **Débito técnico de alto custo** — lógica duplicada divergente, efeito de alto valor **sem teste**,
    `TODO/FIXME` perigoso, abstração furada que já causou/vai causar bug. **Ignore** ruído cosmético
    (estilo, nomes, micro-otimização sem impacto) — isso não vira issue.
+4. **Drift arquitetural (anti-decadência, P-14)** — ao longo de muitas features, o código diverge da
+   constituição/ADRs. Cace: módulo que virou "deus", fronteira de camada corroída (import que
+   contradiz P-5), decisão que contradiz um ADR `Accepted` sem supersedê-lo, um ponto de extensão
+   contornado por um caminho paralelo, invariante da Parte B enfraquecida em silêncio. Reporte como
+   débito com o ADR/`P-#` que está sendo violado.
+5. **Supply-chain (P-13)** — dependência nova sem necessidade clara, dependência abandonada/vulnerável,
+   pin de versão ausente, `postinstall` suspeito. (SAST/secret-scan são gate de CI; aqui você pega o
+   que passou.)
 
 ## Como investigar (grounded, não achismo)
 - Leia o código real (Read/Grep/Glob). Ancore cada achado a `arquivo:linha`.

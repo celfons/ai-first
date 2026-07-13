@@ -30,9 +30,15 @@ em testes que falham quando o comportamento regride — e deixar o gate verde.
    escrita crítica) merece teste contra o runtime/dependência real quando possível — mock unitário
    deixa passar bug de schema/estado. A única borda a falsificar é o mundo externo (HTTP), com um
    mock que **lança** em requisição não prevista.
-5. **Evals para comportamento de IA** (skill `.claude/skills/evals` se o projeto tiver): mínimo
-   determinístico no CI; avaliação viva (LLM-as-judge / tarefa multi-turno) quando a qualidade da
-   resposta importa. Não quebre os contratos do harness.
+5. **Evals para comportamento de IA** (se o projeto tiver): mínimo determinístico no CI; avaliação
+   viva (LLM-as-judge / tarefa multi-turno) quando a qualidade da resposta importa.
+6. **Corpus de regressão que só cresce (P-11):** **todo bug encontrado vira um teste eterno** — o
+   caso mínimo que reproduz, para nunca regredir. Use **teste de propriedade** onde o espaço de
+   entrada é grande (invariante vale para *qualquer* input, não só os exemplos).
+
+> Você escreve os testes; o **`adversarial-reviewer`** (fase 5½, independente) tenta furá-los depois.
+> Se ele achar um caso que seu teste não pega, esse caso vira regressão sua — não trate como derrota,
+> é o sistema funcionando.
 
 ## Fluxo
 1. Rode `typecheck` e `lint` primeiro — conserte o trivial ou reporte ao `backend-engineer` se

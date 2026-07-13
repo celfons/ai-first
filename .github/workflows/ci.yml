@@ -50,3 +50,36 @@ jobs:
       # Descomente se o projeto tem comportamento de IA/agente (evals determinísticos no CI):
       # - name: Agent evals (deterministic, keyless)
       #   run: npm run eval
+
+  # Gate de segurança (P-13 — separação de papéis e cadeia de suprimentos fechada).
+  # Um agente que escreve E mergeia código precisa de trava de segurança independente do "está verde".
+  # Marque estes checks como REQUIRED em branch protection para develop/main (adapte as ferramentas
+  # ao seu ecossistema — os exemplos abaixo são pontos de partida agnósticos).
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # 1) Secret scanning — nenhum segredo entra em claro (P-6/P-13). Ex.: gitleaks.
+      - name: Secret scan
+        uses: gitleaks/gitleaks-action@v2
+        # env: { GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }} }  # se aplicável
+
+      # 2) SAST — análise estática de segurança do código. Ex.: CodeQL, semgrep.
+      #    Descomente e configure o `language:` do seu projeto.
+      # - name: SAST (CodeQL)
+      #   uses: github/codeql-action/init@v3
+      #   with: { languages: 'javascript' }   # troque pela sua linguagem
+      # - uses: github/codeql-action/analyze@v3
+
+  # Dependency review — bloqueia PR que introduz dependência vulnerável/licença proibida (P-13).
+  # Roda só em pull_request (a action exige o contexto do PR).
+  dependency-review:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Dependency review
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high

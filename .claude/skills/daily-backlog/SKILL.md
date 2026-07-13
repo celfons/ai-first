@@ -1,36 +1,41 @@
 ---
 name: daily-backlog
-description: Rotina diária — PARTE 1 de 2 (criação da issue do dia). Skill standalone, feita para rodar como trigger agendado. Aciona o subagente `product-owner` para propor e CRIAR 1 issue NOVA de evolução de negócio/produto no board do GitHub, sem duplicar — a que será implementada no mesmo dia. NÃO implementa nada — só cria a issue. O cron de desenvolvimento (`/daily-build`) roda ~1h depois, dando tempo da issue estar pronta no board.
+description: Rotina diária — PARTE 1 de 2 (criação das issues do dia). Skill standalone, feita para rodar como trigger agendado. Aciona o subagente `product-owner` para propor e CRIAR `features_per_day` issues NOVAS de evolução de negócio/produto no board do GitHub (a quantidade é o knob do genoma, default 1), sem duplicar — as que serão implementadas no mesmo dia. NÃO implementa nada — só cria as issues. O cron de desenvolvimento (`/daily-build`) roda ~1h depois.
 ---
 
-# /daily-backlog — cria a issue do dia (Parte 1/2)
+# /daily-backlog — cria as issues do dia (Parte 1/2)
 
 Skill **autônoma e standalone** (roda numa sessão fresca, sem contexto prévio). Sua única
-responsabilidade: **criar a 1 issue do dia** — a que será implementada logo depois. Quem implementa é
-o `/daily-build`, que roda ~1h depois — a separação existe para a issue estar 100% gravada e visível
-no board antes do desenvolvimento começar.
+responsabilidade: **criar as issues do dia** — as que serão implementadas logo depois. Quem implementa
+é o `/daily-build`, que roda ~1h depois — a separação existe para as issues estarem 100% gravadas e
+visíveis no board antes do desenvolvimento começar.
+
+## Parâmetro (do genoma — `docs/ai-first/project.md §8`)
+- **`features_per_day`** — quantas issues criar nesta rodada (default **1**). É a **cadência variável**
+  (P-15), definida na gênese e ajustável depois. Crie **exatamente** essa quantidade (ou menos, se não
+  houver apostas novas boas sem duplicar — nunca force issue fraca só para bater o número).
 
 ## O que fazer
-1. Invoque o subagente **`product-owner`** pedindo **exatamente 1** issue nova de **evolução de
+1. Invoque o subagente **`product-owner`** pedindo **`features_per_day`** issues novas de **evolução de
    negócio/produto** (nunca trabalho técnico interno), sem duplicar o board (ele já checa
-   `search_issues` + `docs/sdd/tasks.md`). A escolha **não é aleatória**: ele faz um **benchmarking de
-   mercado** (`WebSearch`) para este tipo de solução e mira a **lacuna competitiva de maior valor**,
-   registrando o racional de mercado no corpo da issue.
-2. Como essa issue será implementada no mesmo dia, ela deve ser **implementável**: prefira
-   `size:trivial` ou `size:media`. Só proponha `size:grande` se for genuinamente a coisa certa — e aí
-   ela recebe `needs-human-triage` (o build pula, e o dia fica sem entrega).
-3. Garanta os labels que o `/daily-build` usa para achá-la: `po-suggested` (sempre) + exatamente uma
-   `size:*` + label de área opcional.
-4. **NÃO implemente, não crie branch, não abra PR.** Esta parte só cria a issue.
+   `search_issues` + `docs/sdd/tasks.md`). A escolha **não é aleatória**: ele faz **benchmarking de
+   mercado** (`WebSearch`) **e** considera o **sinal de resultado real** do `/daily-outcome` (o que o
+   uso mostrou que funciona/não funciona), mirando a **lacuna competitiva de maior valor** e
+   registrando o racional no corpo de cada issue.
+2. Como serão implementadas no mesmo dia, devem ser **implementáveis**: prefira `size:trivial` ou
+   `size:media`. `size:grande` só se genuinamente certo — e aí recebe `needs-human-triage`.
+3. Garanta os labels que o `/daily-build` usa: `po-suggested` (sempre) + exatamente uma `size:*` +
+   label de área opcional.
+4. **NÃO implemente, não crie branch, não abra PR.** Esta parte só cria as issues.
 
 ## Regras
-- **1 issue/dia** — alinhada à entrega de 1 feature/dia (sem inchar o backlog). Se não houver boa
-  aposta nova sem duplicar, registre o motivo e não force uma issue fraca.
+- **`features_per_day` issues/dia** — alinhado à cadência de entrega (sem inchar o backlog). Se não
+  houver apostas novas suficientes sem duplicar, crie menos e registre o motivo.
 - Board é a fonte do backlog; você só abastece — priorização/aprovação é do humano.
 - Idempotência: não recrie o que já existe aberto; o `product-owner` deduplica.
 
 ## Relatório final (vira push/e-mail)
-- **Sucesso:** uma linha curta — número e título da issue criada (e se ficou `needs-human-triage`).
+- **Sucesso:** uma linha por issue criada — número e título (e se ficou `needs-human-triage`).
 - **Falha:** ver Resiliência abaixo.
 
 ## Resiliência — falha vira ALERTA de retry (push + e-mail)

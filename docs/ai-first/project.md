@@ -1,0 +1,88 @@
+# 🧬 Perfil do projeto (o genoma)
+
+> **Fonte de verdade do CONTEXTO** deste projeto — stack, cloud, arquitetura, infra e produto.
+> É o **primeiro arquivo** que qualquer sessão/subagente lê para saber "onde estou". Preenchido
+> **uma vez** pela skill primária [`/ai-first-init`](../../.claude/skills/ai-first-init/SKILL.md) e
+> revisado por ela quando algo estrutural muda.
+>
+> Enquanto os campos estiverem `[A DEFINIR]`, o organismo **não está armado**: rode `/ai-first-init`.
+> O framework nasce agnóstico — este arquivo é o que o acopla ao seu mundo, sem tocar no método.
+
+---
+
+## 1 · Produto e personas
+- **O que é:** `[A DEFINIR]`
+- **Valor central:** `[A DEFINIR]`
+- **Personas:** `[A DEFINIR]` (usuário final · dono/stakeholder · operador · …)
+- **Sucesso do negócio:** `[A DEFINIR]` (métrica/evento observável)
+
+## 2 · Stack e linguagem
+- **Linguagem/runtime:** `[A DEFINIR]`
+- **Framework(s):** `[A DEFINIR]`
+- **Gerenciador de pacotes:** `[A DEFINIR]`
+
+## 3 · Cloud e hospedagem
+- **Onde roda:** `[A DEFINIR]` (cloud/on-prem/serverless/container/edge)
+- **Como faz deploy:** `[A DEFINIR]`
+
+## 4 · Arquitetura e camadas
+- **Estilo:** `[A DEFINIR]` (camadas / hexagonal / microserviços / monólito modular / …)
+- **Direção das dependências:** `[A DEFINIR]`
+- **Portas (dados / provedores externos):** `[A DEFINIR]`
+- **Fluxo principal:** `[A DEFINIR]` (ex.: `requisição → validação → caso de uso → efeito → resposta`)
+
+## 5 · Infraestrutura e dados
+- **Banco(s):** `[A DEFINIR]`
+- **Fila / cache / storage / busca:** `[A DEFINIR]`
+- **Chave de escopo dos dados:** `[A DEFINIR]` (ex.: `tenant_id` · `org_id` · nenhuma)
+- **Migrations/esquema:** `[A DEFINIR]` (como são aplicados)
+
+## 6 · Invariantes e princípios condicionais
+- **Invariantes do projeto (Parte B da constituição):** `[A DEFINIR]`
+- **Aplicabilidade dos princípios condicionais** (marque):
+  - P-3 idempotência (tem efeito colateral externo?) — `[sim/não]`
+  - P-4 IA nunca confiada (usa LLM em runtime?) — `[sim/não]`
+  - P-7 PII (lida com dado pessoal?) — `[sim/não]`
+  - P-9 config explícita (mecanismo de flags) — `[qual]`
+
+## 7 · Pontos de extensão, qualidade e observabilidade
+- **Pontos de extensão:** `[A DEFINIR]` (nova rota · provedor atrás de porta · efeito/handler ·
+  strategy · repositório)
+- **Comandos de qualidade (reais):**
+  - `typecheck`: `[A DEFINIR]`
+  - `lint`: `[A DEFINIR]`
+  - `test`: `[A DEFINIR]`
+  - `eval` (se houver IA): `[A DEFINIR]`
+- **Acesso a sinais de produção** (para o `ops-investigator`): `[A DEFINIR]` (API/credencial —
+  **nome da env var**, nunca o valor — ou "sem acesso ainda")
+
+## 8 · Git e autonomia (os knobs ajustáveis — P-15)
+- **Branches:** trabalho `claude/<slug>` · integração `develop` · produção `main`
+- **`ci` + gate de segurança + `adversarial-reviewer` como required checks:** `[sim/não]`
+- **`features_per_day`** (quantas o PO cria e o build implementa por rodada): `[A DEFINIR]` (default 1)
+- **`autonomy_level`** (P-10): `[conservador | progressivo | amplo]` (default **conservador** =
+  humano aprova tudo; suba conforme o histórico)
+- **`daily_budget`** (teto de gasto/esforço do loop, P-14): `[A DEFINIR]`
+- **Modelo fixado** (P-14 — upgrade é decisão explícita com re-baseline de evals): `[A DEFINIR]`
+- **Crons (cadência + fuso, espaçados):**
+  - `/daily-backlog`: `[A DEFINIR]`
+  - `/daily-build`: `[A DEFINIR]` (~1h após o backlog)
+  - `/daily-tech-scan`: `[A DEFINIR]` (opcional, espaçado)
+  - `/daily-ops-scan`: `[A DEFINIR]` (opcional, espaçado)
+  - `/daily-outcome`: `[A DEFINIR]` (algumas vezes/semana — métrica leva dias para maturar)
+- **Dono/stakeholder que aprova:** `[A DEFINIR]`
+- **Canal do resumo diário e da aprovação:** `[A DEFINIR]` (push / e-mail / chat)
+
+> **Ajuste depois:** para mudar qualquer knob acima (ex.: subir `features_per_day` de 1 → 5, ou o
+> `autonomy_level` de conservador → progressivo), edite este arquivo ou rode `/ai-first-init` em modo
+> revisão. O organismo lê estes valores a cada rodada — a mudança vale já no próximo ciclo.
+
+---
+
+## Estado da gênese
+- [ ] Todas as 8 dimensões preenchidas (sem `[A DEFINIR]` bloqueante)
+- [ ] Constituição Parte B e aplicabilidade dos condicionais gravadas
+- [ ] `CLAUDE.md`, `context-map.md`, `technical-plan.md`, `specification.md` alinhados a este perfil
+- [ ] `ci.yml` com os comandos reais; `ci` marcado como required check
+- [ ] `develop` criada; crons agendados; canal do dono configurado
+- [ ] **Organismo armado** ✅

@@ -26,6 +26,11 @@ apostas, não decisões irreversíveis.
 - **`docs/product/rejections.md` — ledger de rejeições. LEIA antes de propor** (retroalimentação):
   o dono já disse "não" a algo? **Rejeição `produto`** → não reproponha; use o *takeaway* para
   mirar diferente. **Rejeição `execução`** → a ideia continua válida (o problema foi o *como*).
+- **Sinal de RESULTADO REAL** (do `outcome-analyst`/`/daily-outcome`): o que o **uso real** mostrou —
+  quais features moveram o ponteiro e quais não. É a retroalimentação mais valiosa: priorize **dobrar
+  no que funcionou** e **iterar/parar no que não funcionou**, não só o que o mercado sugere.
+- **Genoma** (`docs/ai-first/project.md`) — o contexto do produto, a métrica de sucesso do negócio, a
+  persona. Toda aposta serve a isso.
 - `CLAUDE.md` (mapa/invariantes) + o que o custo/limites do projeto geram de trabalho.
 - **Board atual:** `search_issues`/`list_issues` (state=open) para **não duplicar**; cheque também
   as tasks `[x]`/`[~]`. Se algo parecido já existe, refine em vez de repetir.
@@ -103,6 +108,8 @@ O que NÃO entra nesta fatia.
 - Não feche, edite alheias, nem mova cards que não são desta rodada.
 
 ## Entrega
+A **quantidade** de issues é a meta que o chamador passa (`features_per_day` do genoma, P-15) — crie
+até esse número, priorizando as de maior valor; **nunca** force uma issue fraca só para bater a meta.
 Crie as issues via `issue_write` e devolva ao chamador um resumo estruturado: para cada issue —
 **número, título, tamanho, labels e RF/P tocados** — mais 1 linha do porquê ela vale. Se não
 conseguiu atingir a meta sem duplicar, diga quantas criou e por quê.

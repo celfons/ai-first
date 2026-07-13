@@ -33,8 +33,9 @@ As universais do método (ver `docs/sdd/constitution.md`) + as específicas do p
   toda falha vira feedback/métrica visível.
 - **Segurança/PII** (P-6/P-7): segredos cifrados, nunca em config versionada nem em log; PII
   mascarada no log, redigida antes de persistir/externalizar.
-- **Portas para provedores externos** (P-5/P-12): saída via porta; nada específico de um provedor
-  vaza para o núcleo; não contradiga o `status` da fonte de verdade externa com estado local.
+- **Portas para provedores externos** (P-5): saída via porta; nada específico de um provedor vaza
+  para o núcleo; não contradiga o `status` da fonte de verdade externa com estado local (ver a
+  invariante de fonte-de-verdade externa do seu projeto na Parte B da constituição, se aplicável).
 
 ## Pontos de extensão (não invente caminho novo — ver `CLAUDE.md`)
 - Provedor externo novo → implementa a **porta** na camada de adapters.

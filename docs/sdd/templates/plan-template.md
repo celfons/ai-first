@@ -38,12 +38,17 @@ Action/handler, nova porta de provedor, novo repositório).
 
 ## 5 · Config e rollout
 
-- Flags/envs novos (default seguro; documentar no README §Configuração).
+- Flags/envs novos (default seguro; feature custosa/arriscada nasce **opt-in**, P-9).
+- **Kill-switch:** todo efeito arriscado atrás de flag desligável, para o `/rollback` estancar sem
+  tocar no código.
 - Ordem de deploy (migration → código → flag), plano de reversão.
 
-## 6 · Observabilidade
+## 6 · Observabilidade e medição de resultado
 
 - Métricas/logs novos (com correlação), o que alertar (P-8).
+- **Instrumente a métrica de sucesso da spec (§8)** (P-12): sem o evento/número instrumentado, o
+  `outcome-analyst` fica cego e não há como saber se a feature moveu o ponteiro. Diga qual evento/
+  consulta expõe o resultado.
 
 ## 7 · Testes
 

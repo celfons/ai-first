@@ -31,7 +31,9 @@ arquitetural). O driver (skill) aplica esse esforço ao invocar cada um.
 | `backend-engineer` | 4 · IMPLEMENT | código na branch de feature |
 | `frontend-engineer` | 4 · IMPLEMENT (UI) | implementa a UI — o brief do `ux-designer` ou tweaks diretos |
 | `tester` | 5 · VERIFY | testes + evals; gate verde |
+| `adversarial-reviewer` | 5½ · VERIFY (independente) | tenta QUEBRAR a mudança; dirige o runtime; veredito pode BLOQUEAR o merge |
 | `docs-writer` | 6 · DOCS | `docs/*`, `CLAUDE.md`, spec final coerente |
+| `outcome-analyst` | (resultado) | mede se a feature entregou a métrica de sucesso (§8) com uso real |
 
 ## Diagrama de fluxo e interação
 
@@ -41,7 +43,7 @@ flowchart TD
   CRONB["⏰ Cron 2 (+1h)<br/>skill /daily-build"]
   HUMAN["👤 Humano (stakeholder)<br/>skill /feature #NNN"]
 
-  CRONA --> PO["🧭 product-owner<br/>1 feature/dia · benchmarking de mercado"]
+  CRONA --> PO["🧭 product-owner<br/>features_per_day · mercado + resultado"]
   PO -->|cria a issue do dia| BOARD[("📋 Board GitHub<br/>backlog priorizado")]
   CRONB -->|pega a issue do dia| BOARD
   BOARD --> ORCH
@@ -56,14 +58,21 @@ flowchart TD
   BE["⚙️ backend/frontend-engineer<br/>código (invariantes)"] --> TEST
   TEST["🧪 tester<br/>testes + evals"]
   TEST -->|bug de produção| BE
-  TEST -->|verde| DOCS["📚 docs-writer<br/>docs + spec coerentes"]
+  TEST -->|verde| ADV["🛡 adversarial-reviewer<br/>tenta quebrar · dirige runtime"]
+  ADV -->|BLOQUEIA| BE
+  ADV -->|aprova| DOCS["📚 docs-writer<br/>docs + spec coerentes"]
   DOCS --> PRDEV["🔀 PR → develop · Closes #NNN"]
 
-  PRDEV -->|CI verde| MERGEDEV(["✅ merge em develop"])
-  MERGEDEV --> PROM["🚀 PR develop → main<br/>(abre/atualiza, não mergeia)"]
-  PROM --> REVIEW{{"👤 Revisão do stakeholder<br/>ÚNICO gate humano"}}
-  REVIEW -->|aprova + merge| PROD(["🏁 main / produção"])
+  PRDEV -->|CI verde + veredito ok| MERGEDEV(["✅ merge em develop"])
+  MERGEDEV --> TIER{{"tier de risco<br/>+ autonomy_level"}}
+  TIER -->|🟢 (nível permite)| PROD(["🏁 main / produção<br/>auto-promovida"])
+  TIER -->|🟡/🔴| PROM["🚀 PR develop → main<br/>(abre/atualiza, não mergeia)"]
+  PROM --> REVIEW{{"👤 Revisão do stakeholder<br/>gate por risco"}}
+  REVIEW -->|aprova + merge| PROD
   REVIEW -->|reprova feature| REJECT["↩️ skill /reject-feature<br/>revert em develop · reabre issue"]
+  PROD -.->|mede resultado| OUT["📈 outcome-analyst<br/>/daily-outcome"]
+  OUT -.->|dado real| PO
+  PROD -.->|incidente| ROLL["🚑 /rollback"]
 
   REJECT -.->|retrabalho| BOARD
   TRIAGE -.->|humano especifica depois| BOARD
@@ -77,8 +86,9 @@ flowchart TD
 ```
 
 **gate\*** — no `/feature` **manual**, o fluxo PARA para aprovação humana após a `spec.md` e
-após o `plan.md`. Na rotina `/daily-build` **autônoma**, esses gates são pulados (o único gate
-humano é a revisão do PR `develop → main`). Um subagente **não** invoca outro: quem encadeia é o
+após o `plan.md`. Na rotina `/daily-build` **autônoma**, esses gates são pulados; o gate humano é a
+promoção `develop → main`, **por tier de risco** (P-10: no nível `conservador` o humano aprova tudo;
+nos maiores, só 🟡/🔴 sobem — 🟢 auto-promove). Um subagente **não** invoca outro: quem encadeia é o
 thread principal (a skill); o `sdd-orchestrator` **devolve o plano**.
 
 ## Fluxo típico (feature média)
@@ -89,8 +99,13 @@ sdd-orchestrator  → devolve o plano de delegação
      └─ architect      (PLAN)      → plan.md + tasks.md (+ ADR se durável)
         └─ backend-engineer (IMPLEMENT) → código
            └─ tester    (VERIFY)   → testes + evals verdes
-              └─ docs-writer (DOCS) → docs coerentes
+              └─ adversarial-reviewer (VERIFY independente) → tenta quebrar; BLOQUEIA ou aprova
+                 └─ docs-writer (DOCS) → docs coerentes
 ```
+
+> **Separação de papéis (P-13):** quem escreve (`backend-engineer`) **não** é quem aprova o risco. O
+> `adversarial-reviewer` — que não escreveu o código — pode **bloquear o auto-merge**; e a promoção a
+> produção é **por tier de risco** (P-10), não feature a feature.
 
 - **Trivial** (1 arquivo, sem novo efeito/dado/proatividade): pule o SDD →
   `backend-engineer` → `tester`.
@@ -121,24 +136,26 @@ branch, um `Closes #NNN`. Não reorganize o código por feature.
 
 ```
 Cron 1 · /daily-backlog
-  └─ product-owner → BENCHMARKING de mercado (WebSearch) → cria 1 issue de negócio
+  └─ product-owner → BENCHMARKING de mercado + RESULTADO real → cria `features_per_day` issues
                      (a lacuna competitiva de maior valor; dedup + roadmap;
                      FALHA = alerta de retry push/e-mail)
 
-        … ~1h de intervalo (a issue assenta no board) …
+        … ~1h de intervalo (as issues assentam no board) …
 
 Cron 2 · /daily-build   ← start por CRON, não pelo stakeholder
-  ├─ pega a issue do dia (po-suggested, trivial/média, sem needs-human-triage)
-  ├─ implementa: /feature autônomo → PR contra develop   (1 feature/dia)
-  ├─ avalia IMPACTO + RISCO sobre o diff (/code-review): 🟢/🟡/🔴
-  ├─ auto-merge da feature em develop  (SÓ com CI verde)
-  ├─ abre/atualiza o PR develop → main com impacto/risco  (NÃO mergeia)
-  └─ e-mail/push ao dono: novidade + impacto + risco em linguagem simples → aprovar / reprovar
+  ├─ pega até `features_per_day` (po-suggested, trivial/média, sem needs-human-triage)
+  ├─ implementa cada: /feature autônomo → PR contra develop
+  ├─ VERIFICAÇÃO INDEPENDENTE: adversarial-reviewer tenta quebrar (pode BLOQUEAR)
+  ├─ avalia IMPACTO + RISCO sobre o diff (/code-review): 🟢/🟡/🔴 → define o tier
+  ├─ auto-merge em develop  (SÓ com CI verde + segurança + veredito não-bloqueante)
+  ├─ promove develop → main POR TIER × autonomy_level (🟢 pode sozinha; 🟡/🔴 sobem)
+  └─ resumo ao dono: o que foi ao ar, o que espera OK, perguntas em aberto
 ```
 
-Sem gate humano por feature: features caem em `develop` sozinhas; a **revisão do stakeholder é
-no PR `develop → main`**. Mudança `grande`/arquitetural nunca é auto-implementada — a rotina para
-e marca `needs-human-triage`.
+O gate humano é **por tier de risco** (não por feature): no nível `conservador` o humano aprova
+tudo; nos maiores, 🟢 (e 🟡) auto-promovem e só o arriscado sobe. Mudança `grande`/arquitetural nunca
+é auto-implementada — a rotina para e marca `needs-human-triage`. `[NEEDS CLARIFICATION]` bloqueante
+vira pergunta assíncrona ao dono (`awaiting-human`), nunca chute.
 
 ### Cron 3 · /daily-tech-scan — saúde do código (só levanta, não corrige)
 
@@ -152,6 +169,13 @@ issues — **sem implementar**. As issues levam `needs-human-triage` e **não** 
 Irmã do cron 3, mas olha o **runtime em produção** (métricas, logs, DLQ). O `ops-investigator`
 cria issues com **evidência + sugestão de correção** — sem implementar, só leitura em produção.
 Mesmo rótulo `needs-human-triage`, fora do fluxo autônomo.
+
+### Cron 5 · /daily-outcome — fecha o loop com a realidade (mede, não corrige)
+
+O `outcome-analyst` mede se as features **já promovidas** entregaram a **métrica de sucesso da spec
+(§8)** com telemetria real (✅ moveu · 〜 cedo · ❌ não moveu). O que não moveu vira candidato a
+iterar/remover e **alimenta o `product-owner`** com dado real — a retroalimentação mais valiosa.
+Cadência menor (algumas vezes/semana — resultado leva dias para maturar).
 
 ### Espaçamento dos crons
 
