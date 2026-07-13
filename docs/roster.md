@@ -131,14 +131,14 @@ sdd-orchestrator  → devolve o plano de delegação (roteia modelo+esforço)
 
 ## Retroalimentação — o que faz cada feature decidir à luz das anteriores
 
-- **ADRs** ([`docs/adr/`](../docs/adr/)) — cada decisão arquitetural durável (contexto →
+- **ADRs** ([`docs/adr/`](adr/)) — cada decisão arquitetural durável (contexto →
   decisão → alternativas → consequências → status). O `architect` **lê o índice antes de
   decidir** e **escreve o ADR**; o `product-owner` consulta para não contradizer decisões
   vivas; o `docs-writer` mantém índice e status. O *porquê* das escolhas vira acervo cumulativo.
-- **Ledger de rejeições** ([`docs/product/rejections.md`](../docs/product/rejections.md)) — o
+- **Ledger de rejeições** ([`docs/product/rejections.md`](product/rejections.md)) — o
   par negativo dos ADRs: toda feature reprovada pelo dono deixa o **motivo** e o **takeaway** (via
   `/reject-feature`). O `product-owner` **lê antes de propor**, então não repropõe um "não".
-- **Mapa de contexto** ([`docs/context-map.md`](../docs/context-map.md)) — a versão *leve e
+- **Mapa de contexto** ([`docs/context-map.md`](context-map.md)) — a versão *leve e
   determinística* de um context mesh: por domínio, aponta código ⇄ docs ⇄ ADRs ⇄ features ⇄
   testes. Cada subagente carrega **aquela** fatia em vez de reler a base.
 

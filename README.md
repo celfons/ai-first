@@ -182,7 +182,7 @@ atravessando os módulos necessários — sem reorganizar o código por feature.
 
 Papéis especializados em `agents/` — cada um carrega, pré-compilado, o subconjunto de
 convenções da sua fase, para o thread principal delegar com **escopo curto**. Detalhes em
-[`agents/README.md`](agents/README.md).
+[`docs/roster.md`](docs/roster.md).
 
 | Subagente | Papel |
 |---|---|
@@ -290,14 +290,24 @@ ai-first/                          · o repo É o plugin (source "./" no marketp
 │   │   └── features/              · uma pasta NNN-slug por feature (com um exemplo)
 │   ├── adr/                       · README (índice) + template + ADR-0001 (adoção do método)
 │   ├── context-map.md             · o context mesh leve
+│   ├── roster.md                  · visão geral dos 15 subagentes (fora de agents/ p/ não virar componente)
 │   └── product/rejections.md      · ledger de rejeições
+├── scripts/
+│   └── validate-plugin.mjs        · TESTE do manifesto + inventário do plugin (zero-dep)
 ├── .github/
 │   ├── pull_request_template.md   · checklist + gate constitucional
 │   ├── ISSUE_TEMPLATE.md          · com as labels que o fluxo autônomo usa
 │   └── workflows/
 │       ├── ci.yml                 · required checks (qualidade + segurança)
+│       ├── plugin-validate.yml    · roda o teste do plugin no CI (gate)
 │       └── ai-first-cron.yml      · rotinas autônomas via claude-code-action (schedule)
 ```
+
+> **Validação do plugin como teste:** `node scripts/validate-plugin.mjs` checa o manifesto
+> (`plugin.json`/`marketplace.json`), garante que **todo `.md` em `agents/` é um subagente válido**
+> (pega "componente-fantasma" — um doc sem frontmatter virando agente) e, se o CLI `claude` estiver
+> presente, carrega o plugin de fato (`claude --plugin-dir . plugin details ai-first`). Roda no CI via
+> `plugin-validate.yml`.
 
 ## 📦 Reúso: plugin, não copy-paste
 
