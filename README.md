@@ -88,16 +88,16 @@ nível sobe **com o histórico** (baixa taxa de rejeição/rollback), nunca por 
 ```mermaid
 flowchart LR
   BOARD[("📋 Board")] -->|"features_per_day"| SDD["🔁 Ciclo SDD"]
-  SDD --> ADV["🛡 verificação<br/>independente"]
-  ADV -->|BLOQUEIA| SDD
-  ADV -->|aprova · PR + Closes #NNN| DEV[["develop"]]
+  SDD --> ADV["🛡 verificação independente"]
+  ADV -->|"bloqueia"| SDD
+  ADV -->|"aprova · vira PR"| DEV[["develop"]]
   DEV -->|"auto-merge: CI verde + veredito ok"| DEV
-  DEV --> TIER{{"tier de risco<br/>× autonomy_level"}}
-  TIER -->|🟢 (se o nível permite)| MAIN[["main / produção"]]
-  TIER -->|🟡/🔴| GATE{{"👤 gate humano"}}
-  GATE -->|aprova| MAIN
-  GATE -->|reprova| REJ["/reject-feature"]
-  MAIN -.->|mede| OUT["📈 outcome-analyst"]
+  DEV --> TIER{{"tier de risco × autonomy_level"}}
+  TIER -->|"🟢 se o nível permite"| MAIN[["main · produção"]]
+  TIER -->|"🟡 / 🔴"| GATE{{"👤 gate humano"}}
+  GATE -->|"aprova"| MAIN
+  GATE -->|"reprova"| REJ["/reject-feature"]
+  MAIN -.->|"mede"| OUT["📈 outcome-analyst"]
   OUT -.-> BOARD
   REJ -.-> BOARD
 ```
@@ -124,35 +124,35 @@ flowchart LR
 
 ```mermaid
 flowchart TD
-  CRONA["⏰ /daily-backlog"] --> PO["🧭 product-owner<br/>mercado + resultado real → N issues"]
+  CRONA["⏰ /daily-backlog"] --> PO["🧭 product-owner<br/>mercado + resultado → N issues"]
   PO --> BOARD[("📋 Board")]
-  CRONB["⏰ /daily-build (+1h)"] --> PICK["pega até features_per_day"]
-  HUMAN["👤 /feature #NNN (manual)"] --> PICK
+  CRONB["⏰ /daily-build · +1h"] --> PICK["pega até features_per_day"]
+  HUMAN["👤 /feature manual"] --> PICK
   BOARD --> PICK
   PICK --> ORCH["🗂 sdd-orchestrator"]
-  ORCH -->|grande/arquitetural| TRIAGE{{"🚧 needs-human-triage"}}
-  ORCH -->|trivial/média| CHAIN
+  ORCH -->|"grande / arquitetural"| TRIAGE{{"🚧 needs-human-triage"}}
+  ORCH -->|"trivial / média"| SPEC
 
   subgraph CHAIN["Ciclo SDD"]
-    SPEC["📐 feature-spec"] --> ARCH["🏗 architect (+ADR)"] --> IMPL["⚙️ backend/frontend-engineer"] --> TEST["🧪 tester"] --> ADV["🛡 adversarial-reviewer"] --> DOCS["📚 docs-writer"]
+    SPEC["📐 feature-spec"] --> ARCH["🏗 architect · ADR"] --> IMPL["⚙️ backend / frontend"] --> TEST["🧪 tester"] --> ADV["🛡 adversarial-reviewer"] --> DOCS["📚 docs-writer"]
   end
 
-  ADV -->|BLOQUEIA| IMPL
-  DOCS --> PR["🔀 PR → develop (Closes #NNN)"]
-  PR -->|CI verde + segurança + veredito ok| MERGE(["✅ auto-merge em develop"])
+  ADV -->|"bloqueia"| IMPL
+  DOCS --> PR["🔀 PR contra develop"]
+  PR -->|"CI + segurança + veredito ok"| MERGE(["✅ auto-merge em develop"])
   MERGE --> TIER{{"tier × autonomy_level"}}
-  TIER -->|🟢 (nível permite)| PROD(["🏁 main"])
-  TIER -->|🟡/🔴| PROMO["🚀 PR develop → main"]
+  TIER -->|"🟢 se o nível permite"| PROD(["🏁 main"])
+  TIER -->|"🟡 / 🔴"| PROMO["🚀 PR develop → main"]
   PROMO --> REVIEW{{"👤 revisão do dono"}}
-  REVIEW -->|aprova| PROD
-  REVIEW -->|reprova| REJECT["↩️ /reject-feature"]
+  REVIEW -->|"aprova"| PROD
+  REVIEW -->|"reprova"| REJECT["↩️ /reject-feature"]
   REJECT -.-> BOARD
 
-  PROD -.->|incidente| ROLL["🚑 /rollback"]
-  CRONE["⏰ /daily-outcome"] --> OA["📈 outcome-analyst<br/>mede vs. métrica de sucesso"]
+  PROD -.->|"incidente"| ROLL["🚑 /rollback"]
+  CRONE["⏰ /daily-outcome"] --> OA["📈 outcome-analyst<br/>mede vs. métrica"]
   OA -.-> BOARD
-  CRONC["⏰ /daily-tech-scan"] --> TA["🔎 tech-auditor (bugs + drift)"]
-  CROND["⏰ /daily-ops-scan"] --> OI["🩺 ops-investigator (runtime)"]
+  CRONC["⏰ /daily-tech-scan"] --> TA["🔎 tech-auditor · bugs + drift"]
+  CROND["⏰ /daily-ops-scan"] --> OI["🩺 ops-investigator · runtime"]
   TA --> BOARD
   OI --> BOARD
 ```
