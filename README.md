@@ -6,6 +6,8 @@
 
 *SDD + context mesh + ADRs + roster de subagentes + skills que dirigem o fluxo do backlog à produção. Mais liberal que "vibe coding", mais seguro que soltar a IA no repositório: você define o contexto **uma vez** (a gênese) e depois o organismo cresce sozinho — o humano só decide, no fim do dia, **o que nasce em produção**.*
 
+**É um plugin do Claude Code.** Instale, rode a gênese, ligue a autonomia. ↓
+
 </div>
 
 ---
@@ -13,6 +15,7 @@
 ## 📚 Sumário
 
 - [O que é (e o que não é)](#-o-que-é-e-o-que-não-é)
+- [Instalação e uso (comece aqui)](#-instalação-e-uso-comece-aqui)
 - [A vida em duas fases: gênese → organismo](#-a-vida-em-duas-fases-gênese--organismo)
 - [A ideia central: autonomia progressiva por risco](#-a-ideia-central-autonomia-progressiva-por-risco)
 - [Os sete pilares](#-os-sete-pilares)
@@ -24,18 +27,17 @@
 - [Os knobs ajustáveis (cadência, autonomia, orçamento)](#-os-knobs-ajustáveis-cadência-autonomia-orçamento)
 - [As rotinas autônomas](#-as-rotinas-autônomas)
 - [Estrutura do repositório](#-estrutura-do-repositório)
-- [Reúso: plugin, não copy-paste](#-reúso-plugin-não-copy-paste)
-- [Como adotar em um projeto](#-como-adotar-em-um-projeto)
 - [FAQ](#-faq)
 
 ---
 
 ## 🎯 O que é (e o que não é)
 
-`ai-first` é um **kit de método** — arquivos de processo, não uma biblioteca. Você o copia para um
-projeto e ganha um jeito **disciplinado e majoritariamente autônomo** de a IA evoluir o produto: do
-levantamento de backlog ao código em produção, com rastreabilidade, invariantes garantidas,
-verificação independente e gates automáticos.
+`ai-first` é um **método empacotado como plugin do Claude Code** — arquivos de processo (subagentes +
+skills + governança), não uma biblioteca de código. Você **instala** o plugin (não copia) e ganha um
+jeito **disciplinado e majoritariamente autônomo** de a IA evoluir o produto: do levantamento de
+backlog ao código em produção, com rastreabilidade, invariantes garantidas, verificação independente e
+gates automáticos.
 
 |  | Vibe coding | **`ai-first`** | SDD manual |
 |---|---|---|---|
@@ -52,6 +54,48 @@ subagentes e skills não sabem nada do seu mundo até a **gênese** — a skill 
 entrevista o humano e grava o contexto no **genoma** (`docs/ai-first/project.md`) e nos arquivos
 canônicos. A partir daí, o roster passa a falar a língua do seu domínio sem que você edite um agente
 sequer.
+
+## 🚀 Instalação e uso (comece aqui)
+
+O `ai-first` é um **plugin do Claude Code publicado num marketplace** — o jeito nativo de reusar
+subagentes e skills **sem copiar arquivo** e com **atualização versionada** (`git pull`). O próprio
+repositório é o plugin (`source: "./"` no `marketplace.json`).
+
+### 1 · Instale o plugin
+No repositório onde você quer usar o método, dentro do Claude Code:
+```text
+/plugin marketplace add celfons/ai-first
+/plugin install ai-first@ai-first
+```
+As skills passam a existir com **namespace**: `/ai-first:ai-first-init`, `/ai-first:feature`,
+`/ai-first:daily-build`, … e o roster de subagentes fica disponível para o fluxo.
+
+### 2 · Rode a gênese (uma vez)
+```text
+/ai-first:ai-first-init
+```
+Ela faz **duas coisas**: **scaffolda** no seu repositório os arquivos de projeto (constituição, genoma,
+templates SDD, `.github/`, `CLAUDE.md`) a partir do plugin, e **entrevista você** sobre stack, cloud,
+arquitetura, infra, produto, invariantes, qualidade e os **knobs** (cadência, autonomia, orçamento,
+`bdd_style`). É a **única fase densa com o humano** — depois dela o organismo roda sozinho.
+
+### 3 · Arme o gate e a autonomia
+- Crie a branch `develop`; marque `ci`, o gate de segurança e o `adversarial-reviewer` como
+  **required checks** em `develop`/`main` (branch protection).
+- Configure `.github/workflows/ai-first-cron.yml` (schedule + secret `ANTHROPIC_API_KEY`) — é o que
+  faz as rotinas girarem sozinhas via `anthropics/claude-code-action`.
+- **Comece conservador:** `features_per_day: 1`, `autonomy_level: conservador`. Suba os dois **com o
+  histórico** — quanto menor a taxa de rejeição/rollback, mais autonomia o organismo merece.
+
+### Duas camadas, dois papéis
+- **Plugin = o cérebro** — subagentes (`agents/`) + skills (`skills/`). Instalado e atualizável, **nunca
+  copiado**.
+- **Gênese = o corpo** — `/ai-first:ai-first-init` materializa o esqueleto do método **no seu repo** e o
+  preenche na entrevista. O plugin traz a inteligência; a gênese acopla ao seu projeto.
+
+> **Prefere não usar plugin?** Dá para adotar por **cópia** (os `agents/`+`skills/` vão para o
+> `.claude/` do seu repo; `docs/`+`.github/`+`CLAUDE.md` para a raiz) ou por **template repo**. Você
+> ganha o método, mas **perde a atualização versionada** — por isso o plugin é o recomendado.
 
 ## 🧬 A vida em duas fases: gênese → organismo
 
@@ -212,9 +256,11 @@ convenções da sua fase, para o thread principal delegar com **escopo curto**. 
 
 ## 🛠 As skills (o que dispara o quê)
 
+> Instaladas pelo plugin, ficam com namespace `/ai-first:<skill>` (abaixo, sem o prefixo por brevidade).
+
 | Skill | O que faz | Disparo |
 |---|---|---|
-| **`/ai-first-init`** | **A gênese** — entrevista o humano e define stack/cloud/arquitetura/infra/produto + os knobs. Roda **uma vez** (revisa depois) | Humano (setup) |
+| **`/ai-first-init`** | **A gênese** — scaffolda o corpo do método no repo + entrevista (stack/cloud/arquitetura/infra/produto/knobs). Roda **uma vez** (revisa depois) | Humano (setup) |
 | **`/feature-intake`** | **Porta de entrada do stakeholder** — formata uma ideia crua do humano no **padrão de issue do `product-owner`** e cria no board, pronta para o fluxo | Humano |
 | `/feature <n>` | Leva **uma issue** ao PR pelo ciclo SDD (com gates após spec e plan) | Humano |
 | `/reject-feature <n>` | Reverte de `develop` uma feature reprovada, reabre a issue, registra o motivo | Humano |
@@ -249,6 +295,7 @@ Definidos na gênese, gravados no genoma (`docs/ai-first/project.md §8`), **mud
 - **`autonomy_level`** — `conservador` | `progressivo` | `amplo` (quem promove sozinho, por tier de risco).
 - **`daily_budget`** — teto de gasto/esforço do loop por período (P-14).
 - **Modelo fixado** — upgrade é decisão explícita, com re-baseline de evals (P-14).
+- **`bdd_style`** — `native` | `gherkin` | `off` (formato dos cenários de aceitação).
 
 Para mudar: edite o genoma ou rode `/ai-first-init` em modo revisão. Vale já no próximo ciclo.
 
@@ -263,6 +310,8 @@ Para mudar: edite o genoma ou rode `/ai-first-init` em modo revisão. Vale já n
 /daily-outcome   → outcome-analyst: as features moveram o ponteiro? (alimenta o PO)
 ```
 
+Rodam via `.github/workflows/ai-first-cron.yml` (`anthropics/claude-code-action` em `schedule:`).
+
 - **Espace os crons pesados** por várias horas para não competirem por orçamento na mesma janela.
 - **Toda rotina avisa em falha** (push + e-mail): nunca termina em silêncio; sempre com a frase de retry.
 - **`/daily-build` é checagem cruzada** do `/daily-backlog`: backlog vazio → alerta.
@@ -274,8 +323,8 @@ ai-first/                          · o repo É o plugin (source "./" no marketp
 ├── .claude-plugin/
 │   ├── plugin.json                · manifesto do plugin (name, version, …)
 │   └── marketplace.json           · marketplace de plugin único (source "./")
-├── agents/                        · o roster (15 subagentes + README) — descoberto pelo plugin
-├── skills/                        · ai-first-init, feature, reject-feature, rollback, daily-*, new-extension
+├── agents/                        · o roster (15 subagentes) — descoberto pelo plugin
+├── skills/                        · ai-first-init, feature-intake, feature, reject-feature, rollback, daily-*, new-extension
 ├── README.md                      · este arquivo
 ├── CLAUDE.md                      · índice-mãe (mapa de módulos + invariantes) — preenchido na gênese
 ├── docs/
@@ -294,13 +343,13 @@ ai-first/                          · o repo É o plugin (source "./" no marketp
 │   └── product/rejections.md      · ledger de rejeições
 ├── scripts/
 │   └── validate-plugin.mjs        · TESTE do manifesto + inventário do plugin (zero-dep)
-├── .github/
-│   ├── pull_request_template.md   · checklist + gate constitucional
-│   ├── ISSUE_TEMPLATE.md          · com as labels que o fluxo autônomo usa
-│   └── workflows/
-│       ├── ci.yml                 · required checks (qualidade + segurança)
-│       ├── plugin-validate.yml    · roda o teste do plugin no CI (gate)
-│       └── ai-first-cron.yml      · rotinas autônomas via claude-code-action (schedule)
+└── .github/
+    ├── pull_request_template.md   · checklist + gate constitucional
+    ├── ISSUE_TEMPLATE.md          · com as labels que o fluxo autônomo usa
+    └── workflows/
+        ├── ci.yml                 · required checks (qualidade + segurança)
+        ├── plugin-validate.yml    · roda o teste do plugin no CI (gate)
+        └── ai-first-cron.yml      · rotinas autônomas via claude-code-action (schedule)
 ```
 
 > **Validação do plugin como teste:** `node scripts/validate-plugin.mjs` checa o manifesto
@@ -309,44 +358,13 @@ ai-first/                          · o repo É o plugin (source "./" no marketp
 > presente, carrega o plugin de fato (`claude --plugin-dir . plugin details ai-first`). Roda no CI via
 > `plugin-validate.yml`.
 
-## 📦 Reúso: plugin, não copy-paste
-
-O `ai-first` é um **plugin do Claude Code publicado num marketplace** — o jeito nativo de reusar
-subagentes e skills **sem copiar arquivo** e mantendo **atualização versionada** (`git pull`). O
-próprio repo é o plugin (`source: "./"` no `marketplace.json`).
-
-```bash
-# no repositório onde você quer usar o método:
-/plugin marketplace add celfons/ai-first
-/plugin install ai-first@ai-first
-# as skills ficam com namespace: /ai-first:feature, /ai-first:daily-build, …
-```
-
-**Duas camadas, dois papéis:**
-- **Plugin = o cérebro** — subagentes (`agents/`) + skills (`skills/`). Instalado e atualizável, nunca copiado.
-- **Gênese = o corpo** — `/ai-first:ai-first-init` **scaffolda** no seu repo os arquivos de projeto
-  (constituição, genoma, templates SDD, `.github/`, `CLAUDE.md`) a partir do plugin, e então entrevista
-  você para preenchê-los. É a única fase densa com o humano.
-
-> **Sem plugin?** Dá para adotar por **cópia** (pegue `agents/`, `skills/`, `docs/`, `.github/`,
-> `CLAUDE.md` — os `agents/`/`skills/` vão para o `.claude/` do seu repo) ou por **template repo**. Você
-> ganha o método, mas perde a atualização versionada — por isso o plugin é o recomendado.
-
-## 🚀 Como adotar em um projeto
-
-1. **Instale o plugin** (acima) — ou copie os arquivos, se preferir.
-2. **Rode a gênese: `/ai-first:ai-first-init`.** Ela **scaffolda** o corpo (docs/governança/CI/`CLAUDE.md`)
-   e entrevista você sobre stack, cloud, arquitetura, infra, produto, invariantes, qualidade e os
-   **knobs** (cadência, autonomia, orçamento, `bdd_style`), preenchendo o genoma + constituição Parte B.
-3. **Adapte o gate:** confirme que `ci.yml` usa os comandos do seu ecossistema; marque `ci`, o gate de
-   segurança e o `adversarial-reviewer` como **required checks** em `develop`/`main`. Crie a branch `develop`.
-4. **Ajuste o mecanismo de extensão:** reescreva `skills/new-extension` com os contratos reais do projeto.
-5. **Ligue os crons:** ajuste `.github/workflows/ai-first-cron.yml` (schedule + `ANTHROPIC_API_KEY`) — é
-   o que faz o organismo girar sozinho via `claude-code-action`.
-6. **Comece conservador:** `features_per_day: 1`, `autonomy_level: conservador`. Suba os dois **com o
-   histórico** — quanto menor a taxa de rejeição/rollback, mais autonomia o organismo merece.
-
 ## ❓ FAQ
+
+**Como uso isto no meu projeto?** Instale o plugin (`/plugin marketplace add celfons/ai-first` →
+`/plugin install ai-first@ai-first`) e rode `/ai-first:ai-first-init`. Ver [Instalação e uso](#-instalação-e-uso-comece-aqui).
+
+**Preciso copiar os arquivos?** Não — o jeito recomendado é **instalar como plugin** (atualização
+versionada). Copiar/template repo funciona como fallback, mas você perde as atualizações.
 
 **Isto substitui o programador?** Não. Substitui o *trabalho mecânico* de conduzir o ciclo. O humano
 define o contexto, decide o que vai para produção e resolve o que a automação marca como
