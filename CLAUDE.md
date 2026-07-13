@@ -78,7 +78,7 @@ reserva de idempotência, laço da fila, chamada de LLM com timeout+validação+
 - **Aceitação em BDD:** o `bdd-author` converte os critérios de aceite da spec (Dado/Quando/Então) em
   **cenários executáveis** (o oráculo) — formato pelo knob `bdd_style` do genoma (`native`/`gherkin`/
   `off`). O `tester` os liga ao runner; o `adversarial-reviewer` os usa e caça o que faltou.
-- **Subagentes de desenvolvimento** (`agents/`, ver `agents/README.md`): roster
+- **Subagentes de desenvolvimento** (`agents/`, ver `docs/roster.md`): roster
   mapeado ao ciclo SDD. Delegue a feature nova ao `sdd-orchestrator` para manter o contexto enxuto.
 - **Modelo + esforço são roteados por etapa** (custo-benefício) pelo `sdd-orchestrator`
   (`haiku`/`sonnet`/`opus`/`fable` × `baixo`/`médio`/`alto`/`extra`); ele aplica a tag `model:*`/
