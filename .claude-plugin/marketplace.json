@@ -1,0 +1,12 @@
+{
+  "name": "ai-first",
+  "owner": { "name": "celfons" },
+  "description": "Marketplace do método ai-first — um plugin único que traz o roster de subagentes e as skills do fluxo de desenvolvimento conduzido por IA. O próprio repo é o plugin (source ./).",
+  "plugins": [
+    {
+      "name": "ai-first",
+      "source": "./",
+      "description": "SDD + subagentes + skills + governança; verificação independente, decomposição segura, aceitação em BDD e gate humano único na promoção para produção. Após instalar, rode /ai-first:ai-first-init para scaffoldar o projeto."
+    }
+  ]
+}

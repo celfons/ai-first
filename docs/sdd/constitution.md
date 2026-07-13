@@ -12,7 +12,7 @@ Esta constituição tem **duas partes**:
   a *verificação* e a *autonomia*, agnósticos a stack/produto); outros são **condicionais** (P-3,
   P-4, P-7, P-9, P-12, P-14 — valem *se* o projeto tem efeito colateral externo / IA em runtime /
   dado pessoal / telemetria de resultado). A skill primária
-  [`/ai-first-init`](../../.claude/skills/ai-first-init/SKILL.md) confirma com o humano **quais
+  [`/ai-first-init`](../../skills/ai-first-init/SKILL.md) confirma com o humano **quais
   condicionais estão ativos** e registra no genoma ([`docs/ai-first/project.md`](../ai-first/project.md)).
 - **Parte B — Princípios do seu projeto** (P-16+): as invariantes do seu domínio/stack.
   **Preenchidas por `/ai-first-init`** na gênese. Os itens marcados `exemplo` abaixo são só

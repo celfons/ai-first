@@ -15,6 +15,33 @@ para aprovar/reprovar o PR `develop → main`.
 > use-a em modo **revisão** (mostre o perfil atual e edite só o que o humano quiser mudar) — nunca
 > zere o que já foi definido sem confirmação.
 
+## Fase 0 · SCAFFOLD (materializa o "corpo" no repositório)
+O plugin `ai-first` traz o **cérebro** (subagentes + skills), mas **não** despeja arquivos no seu
+repositório. Esta fase escreve o **corpo** — a estrutura de docs/governança/CI que o método precisa —
+no working tree do projeto que está adotando o framework, **só onde ainda não existir** (idempotente,
+nunca sobrescreve o que você já tem sem confirmar).
+
+1. **Descubra a fonte dos modelos.** Os arquivos-esqueleto vêm do próprio plugin. Se estiver instalado
+   como plugin, use `${CLAUDE_PLUGIN_ROOT}` (a raiz do ai-first instalado); se você clonou/copiou o
+   repo, use a cópia local. Leia de lá os **esqueletos** (não os exemplos).
+2. **Copie para o repo-alvo (se ausente):**
+   - `docs/sdd/` → `constitution.md` (Parte A universal + Parte B placeholder), `README.md`,
+     `specification.md`, `technical-plan.md`, `tasks.md`, `templates/` (spec/plan/tasks).
+   - `docs/adr/` → `README.md` (índice) + `template.md` (+ o `0001` de adoção, ajustado ao projeto).
+   - `docs/context-map.md`, `docs/product/rejections.md`.
+   - `docs/ai-first/project.md` (o **genoma** em branco — é o que você preenche na entrevista abaixo).
+   - `.github/` → `pull_request_template.md`, `ISSUE_TEMPLATE.md`, `workflows/ci.yml`,
+     `workflows/ai-first-cron.yml`.
+   - `CLAUDE.md` (índice-mãe esqueleto) — **na raiz do repo-alvo**.
+   - **NÃO** copie `docs/sdd/features/001-exemplo-*` (é demonstração), nem `agents/`, `skills/`,
+     `.claude-plugin/` (esses vivem no plugin, não no repo-alvo).
+3. **Se um arquivo já existe** (ex.: o projeto já tem `CLAUDE.md`), **não sobrescreva** — mostre o
+   diff/decisão ao humano e mescle sob confirmação.
+4. Confirme ao humano a lista do que foi criado antes de seguir para a entrevista.
+
+> Se o framework foi adotado por **cópia** (sem plugin), esta fase é dispensável — os arquivos já
+> estão no repo; vá direto à entrevista para preenchê-los.
+
 ## Princípios da entrevista
 - **Uma pergunta de cada vez, com opções concretas.** Use a ferramenta de perguntas estruturadas
   (`AskUserQuestion`) sempre que houver escolhas discretas; deixe campo livre para o resto. Não
@@ -80,7 +107,7 @@ canônicos indicados.
 - **Sinais de observabilidade:** como o `ops-investigator` alcança métricas/logs/DLQ em produção
   (qual API/credencial) — ou "sem acesso ainda" (aí o cron reporta sinais cegos, não finge saúde).
 - **Grava em:** `CLAUDE.md` (pontos de extensão + padrões), `.github/workflows/ci.yml` (comandos),
-  `.claude/skills/new-extension` (ajuste ao mecanismo real), `.claude/agents/ops-investigator.md`
+  `skills/new-extension` (ajuste ao mecanismo real), `agents/ops-investigator.md`
   (forma de acesso).
 
 ### 8 · Fluxo de git e autonomia (como o organismo cresce e quando chama o humano)

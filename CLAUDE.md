@@ -9,7 +9,7 @@ do domínio que vai tocar em vez de reler a base) e `docs/product/rejections.md`
 rejeições**: o `product-owner` lê para não repropor o que o dono já recusou).
 
 > ⚠️ **Este é o `CLAUDE.md` do framework `ai-first` (esqueleto).** As seções marcadas `_(preencha)_`
-> são preenchidas **na gênese, pela skill primária [`/ai-first-init`](.claude/skills/ai-first-init/SKILL.md)**,
+> são preenchidas **na gênese, pela skill primária [`/ai-first-init`](skills/ai-first-init/SKILL.md)**,
 > que entrevista o humano sobre stack, cloud, arquitetura, infra e produto. As instruções de
 > processo (fluxo de git, ciclo SDD, subagentes, skills) já valem como estão — o método é fixo, só o
 > contexto é definido.
@@ -50,7 +50,7 @@ As **universais do método** (P-1…P-15) já estão na constituição e valem a
 ## Pontos de extensão (encaixe a mudança neles — não invente caminho novo)
 
 _(preencha)_ — Onde comportamento novo entra sem tocar no núcleo. É o que a skill
-`.claude/skills/new-extension` e o `architect` consultam.
+`skills/new-extension` e o `architect` consultam.
 
 - Provedor externo novo → implementa a **porta** em `…/`.
 - Efeito novo → **handler/Action** + regra declarativa em `…/`.
@@ -78,7 +78,7 @@ reserva de idempotência, laço da fila, chamada de LLM com timeout+validação+
 - **Aceitação em BDD:** o `bdd-author` converte os critérios de aceite da spec (Dado/Quando/Então) em
   **cenários executáveis** (o oráculo) — formato pelo knob `bdd_style` do genoma (`native`/`gherkin`/
   `off`). O `tester` os liga ao runner; o `adversarial-reviewer` os usa e caça o que faltou.
-- **Subagentes de desenvolvimento** (`.claude/agents/`, ver `.claude/agents/README.md`): roster
+- **Subagentes de desenvolvimento** (`agents/`, ver `agents/README.md`): roster
   mapeado ao ciclo SDD. Delegue a feature nova ao `sdd-orchestrator` para manter o contexto enxuto.
 - **Modelo + esforço são roteados por etapa** (custo-benefício) pelo `sdd-orchestrator`
   (`haiku`/`sonnet`/`opus`/`fable` × `baixo`/`médio`/`alto`/`extra`); ele aplica a tag `model:*`/
