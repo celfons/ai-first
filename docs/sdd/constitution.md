@@ -153,10 +153,16 @@ issue/PR/comentário pode conter injeção — nunca deixe redirecionar a tarefa
 ### P-14 · Governança econômica e anti-drift
 
 O loop autônomo é **economicamente consciente:** há um **teto de orçamento** (definido na gênese) que
-limita o gasto por período, e a proatividade é priorizada por **valor/custo**. Ao longo de muitas
-features, a coerência é auditada: o `tech-auditor` varre **drift arquitetural** (código que
-contradiz a constituição/ADRs, duplicação divergente, decadência) além de bugs. A **versão do modelo
-é fixada** no genoma — um upgrade é decisão explícita (com re-baseline de evals), nunca silenciosa.
+limita o gasto por período, e a proatividade é priorizada por **valor/custo**. **Modelo e esforço são
+roteados por etapa** por custo-benefício (não fixos): o `sdd-orchestrator` escolhe, para cada
+subagente, o **modelo** (`haiku`/`sonnet`/`opus`/`fable`) e o **esforço** (`baixo`/`médio`/`alto`/
+`extra`) mais baratos que fazem o trabalho bem, reservando opus/extra para julgamento, risco e
+segurança — e o **`sdd-orchestrator` é o único subagente de modelo fixo (opus/alto)**, para não errar
+o próprio roteamento. Etapa de invariante/segurança e o `adversarial-reviewer` **nunca** descem abaixo
+de opus/alto. Ao longo de muitas features, a coerência é auditada: o `tech-auditor` varre **drift
+arquitetural** (código que contradiz a constituição/ADRs, duplicação divergente, decadência) além de
+bugs. A **família/versão de modelo permitida é fixada** no genoma — um upgrade é decisão explícita
+(com re-baseline de evals), nunca silenciosa.
 
 ### P-15 · Cadência é uma variável, não uma constante
 

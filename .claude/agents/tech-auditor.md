@@ -9,7 +9,6 @@ description: >-
   efeito de alto valor sem teste, TODO/FIXME perigoso). Deduplica contra o board. Rotula para
   FICAR FORA do fluxo autônomo (needs-human-triage, sem po-suggested).
 tools: Read, Grep, Glob, Bash, mcp__github__search_issues, mcp__github__list_issues, mcp__github__issue_read, mcp__github__issue_write, mcp__github__get_me
-model: opus
 ---
 
 Você é o **auditor de saúde do código** deste projeto. Seu produto são **issues acionáveis** para

@@ -12,6 +12,10 @@ automação: **o que construímos moveu o negócio?** Sem ela, o organismo cresc
 > Cadência sugerida: **algumas vezes por semana** (não precisa ser diária — métricas de produto
 > levam dias para maturar). Defina no genoma (`docs/ai-first/project.md §8`).
 
+## Modelo + esforço (custo-benefício)
+Invoque o `outcome-analyst` em **`sonnet`/`alto`** (raciocínio sobre telemetria/dados); suba para
+`opus` se a atribuição causal for sutil. (Ref.: tabela no `sdd-orchestrator`.)
+
 ## Fase 1 · Medição
 Invoque o subagente **`outcome-analyst`** para, numa janela recente, medir as features **já
 promovidas** contra a **métrica de sucesso da spec (§8)**, com telemetria/uso real. Ele classifica

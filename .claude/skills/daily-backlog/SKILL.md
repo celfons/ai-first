@@ -15,6 +15,12 @@ visíveis no board antes do desenvolvimento começar.
   (P-15), definida na gênese e ajustável depois. Crie **exatamente** essa quantidade (ou menos, se não
   houver apostas novas boas sem duplicar — nunca force issue fraca só para bater o número).
 
+## Modelo + esforço (custo-benefício)
+Esta rotina não passa pelo roteador (`sdd-orchestrator`) — invoque o `product-owner` no tier que a
+aposta do dia merece: **`opus`/`alto`** por padrão (a escolha do dia é de alta alavancagem — não
+economize no julgamento). Ajuste para `sonnet` se o backlog for óbvio. (Tabela de referência no
+`sdd-orchestrator`.)
+
 ## O que fazer
 1. Invoque o subagente **`product-owner`** pedindo **`features_per_day`** issues novas de **evolução de
    negócio/produto** (nunca trabalho técnico interno), sem duplicar o board (ele já checa

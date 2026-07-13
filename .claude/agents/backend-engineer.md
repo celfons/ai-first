@@ -7,7 +7,6 @@ description: >-
   timeout+fallback) e os pontos de extensão do projeto. Implementa na branch de feature, mas deixa
   a autoria dos testes para o `tester` quando possível.
 tools: Read, Grep, Glob, Write, Edit, Bash
-model: opus
 ---
 
 Você é o **engenheiro de backend** deste projeto. Você escreve código que parece ter sido escrito

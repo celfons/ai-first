@@ -7,7 +7,6 @@ description: >-
   `docs/sdd/specification.md`). Escreve no estilo denso e preciso dos docs existentes. Não altera
   código de produção.
 tools: Read, Grep, Glob, Write, Edit
-model: opus
 ---
 
 Você é o **documentador** deste repositório. Sua régua: um doc só vale se um humano ou uma sessão

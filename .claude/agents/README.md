@@ -14,17 +14,22 @@ em vez de reexplicar as invariantes a cada turno. Isso mantém o contexto princi
 
 ## Roster mapeado ao ciclo SDD
 
-Todos rodam no melhor modelo disponível. O que varia é o **esforço de raciocínio**, que o
-`sdd-orchestrator` recomenda por etapa a partir da complexidade: **baixo** para features pouco
-complexas (mais rápido, menos token) e **alto** para as mais complexas (grande/risco
-arquitetural). O driver (skill) aplica esse esforço ao invocar cada um.
+**Modelo e esforço são roteados por etapa, não fixos.** O `sdd-orchestrator` avalia, por
+custo-benefício, **qual modelo** (`haiku` · `sonnet` · `opus` · `fable`) e **qual esforço** (`baixo`
+=low · `médio`=medium · `alto`=high · `extra`=xhigh) cada subagente deve usar em cada etapa — o mais
+barato que faz o trabalho bem, reservando opus/extra para julgamento, risco e segurança. Ele **aplica
+a tag** (`model:*`/`effort:*`) na issue e o driver (skill) invoca cada subagente com o modelo+esforço
+indicados. **O `sdd-orchestrator` é o ÚNICO subagente com modelo fixo (opus, esforço alto)** — ele
+decide o barato/caro dos outros, então precisa ser o mais forte para não errar o roteamento. A
+verificação independente (`adversarial-reviewer`) e etapas que tocam invariante/segurança **nunca**
+descem abaixo de opus/alto, por mais que o custo-benefício empurre para baixo.
 
 | Subagente | Fase SDD | Entrega |
 |---|---|---|
 | `product-owner` | (backlog) | propõe features de negócio e **cria issues** no board |
 | `tech-auditor` | (saúde do código) | varre bugs críticos + débito técnico e **cria issues** (não corrige) |
 | `ops-investigator` | (saúde de runtime) | investiga métricas/logs/DLQ e **cria issues** c/ sugestão (não corrige) |
-| `sdd-orchestrator` | (entrada) | plano de delegação + esforço por etapa; classifica tamanho e gates |
+| `sdd-orchestrator` | (entrada · **roteador**) | classifica tamanho; roteia **modelo+esforço** por etapa (custo-benefício); tag na issue. **Único de modelo fixo (opus/alto)** |
 | `feature-spec` | 1 · SPECIFY | `docs/sdd/features/NNN-slug/spec.md` |
 | `architect` | 2 · PLAN | `plan.md` + `tasks.md` (+ ADR se durável) |
 | `ux-designer` | 3½ · DESIGN (UI) | brief de UI/UX — só em UI significativa |

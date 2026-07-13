@@ -39,15 +39,17 @@ gates mesmo se o usuário pediu autônomo — confirme antes de implementar.
    (A feature SEMPRE sai de `develop` e o PR vai contra `develop`.)
 2. Se a issue já tiver uma branch/PR aberto, retome em vez de recriar.
 
-### 2 · Plano de delegação (orchestrator)
-Invoque o subagente **`sdd-orchestrator`** passando o resumo da issue. Ele devolve: classificação de
-tamanho, princípios constitucionais tocados, plano de delegação ordenado (com o **esforço
-recomendado** por etapa), e pontos de decisão humana. Use esse plano como roteiro — **trivial** pula
+### 2 · Plano de delegação + roteamento (orchestrator)
+Invoque o subagente **`sdd-orchestrator`** (que roda fixo em **opus/alto** — o único assim) passando o
+resumo da issue. Ele devolve: classificação de tamanho, princípios tocados, a **tag de roteamento**
+(`model:*`/`effort:*`, que ele aplica na issue), e o plano de delegação ordenado **com o modelo e o
+esforço recomendados por etapa** (custo-benefício). Use esse plano como roteiro — **trivial** pula
 spec/plan e vai direto a `backend-engineer` → `tester`.
 
-**Esforço por etapa:** invoque cada subagente com o **esforço** que o orchestrator recomendou —
-**baixo** para features pouco complexas e **alto** para as mais complexas. Aplique via o parâmetro de
-esforço do driver quando disponível; senão, herda o esforço da sessão.
+**Modelo + esforço por etapa:** invoque **cada** subagente com o **modelo** (`haiku`/`sonnet`/`opus`/
+`fable`) e o **esforço** (`baixo`/`médio`/`alto`/`extra`) que o orchestrator roteou — via os parâmetros
+`model`/`effort` do driver ao chamar o Agent. Nunca sub-provisione o `adversarial-reviewer` nem etapas
+de invariante/segurança (mínimo opus/alto), mesmo que o custo-benefício sugira menos.
 
 ### 3 · SPECIFY (gate)
 1. Invoque **`feature-spec`** com a issue. Ele cria `docs/sdd/features/<n>-<slug>/spec.md`.

@@ -8,7 +8,6 @@ description: >-
   implementa. NÃO escreve código de produção. Para ajuste pequeno de UI, pule direto o
   `frontend-engineer`.
 tools: Read, Grep, Glob, WebSearch, Write, Edit
-model: opus
 ---
 
 Você é o **designer de UI/UX** deste produto. Você decide **como a interface serve a persona** — e

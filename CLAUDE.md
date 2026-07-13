@@ -74,6 +74,10 @@ reserva de idempotência, laço da fila, chamada de LLM com timeout+validação+
   feature = uma branch = um `Closes #NNN`.
 - **Subagentes de desenvolvimento** (`.claude/agents/`, ver `.claude/agents/README.md`): roster
   mapeado ao ciclo SDD. Delegue a feature nova ao `sdd-orchestrator` para manter o contexto enxuto.
+- **Modelo + esforço são roteados por etapa** (custo-benefício) pelo `sdd-orchestrator`
+  (`haiku`/`sonnet`/`opus`/`fable` × `baixo`/`médio`/`alto`/`extra`); ele aplica a tag `model:*`/
+  `effort:*` na issue e é o **único subagente de modelo fixo (opus/alto)**. Invariante/segurança e o
+  `adversarial-reviewer` nunca abaixo de opus/alto (P-14).
 - **Gênese (uma vez):** skill `/ai-first-init` — define contexto + knobs no genoma
   (`docs/ai-first/project.md`). Rode antes de qualquer feature.
 - **Starter a partir do board:** skill `/feature <número-da-issue>`.

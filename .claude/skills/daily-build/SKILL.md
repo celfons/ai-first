@@ -31,8 +31,10 @@ sinal de que o `/daily-backlog` pode ter falhado ou o board está seco. **Avise*
 ## Fase 2 · Implementar cada issue (fluxo /feature autônomo)
 Para **cada** issue selecionada, rode o **fluxo `/feature`** em **modo autônomo** (branch
 `claude/<slug>` a partir de `develop`; uma issue = uma branch = um `Closes #NNN`):
-`sdd-orchestrator` → `feature-spec` → `architect` → `backend-engineer` → `tester` → `docs-writer`
-(**esforço baixo** para pouco complexas, **alto** para as mais complexas). Sem parar nos gates de
+`sdd-orchestrator` (fixo opus/alto — roteia o resto) → `feature-spec` → `architect` →
+`backend-engineer` → `tester` → `adversarial-reviewer` → `docs-writer`. **Invoque cada subagente com o
+modelo (`haiku`/`sonnet`/`opus`/`fable`) e o esforço (`baixo`/`médio`/`alto`/`extra`) que o
+orchestrator roteou** (ele também aplica a tag `model:*`/`effort:*` na issue). Sem parar nos gates de
 spec/plan, MAS:
 - **Grande/risco arquitetural** apesar do size → **PARE essa issue**: comente o porquê, aplique
   `needs-human-triage`, não implemente. Siga para a próxima.

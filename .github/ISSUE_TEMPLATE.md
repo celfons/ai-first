@@ -9,6 +9,8 @@
      (+ `needs-human-triage` junto de `size:grande`).
    - Achado técnico/ops (FORA do fluxo autônomo): `bug`/`tech-debt`/`ops` + SEMPRE `needs-human-triage`,
      NUNCA `po-suggested`/`size:*`.
+   - Roteamento (aplicado pelo `sdd-orchestrator`): `model:<haiku|sonnet|opus|fable>` +
+     `effort:<baixo|medio|alto|extra>` — o tier de custo-benefício que a feature merece.
 -->
 
 ## 📌 Contexto

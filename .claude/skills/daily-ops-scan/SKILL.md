@@ -9,6 +9,10 @@ Skill **autônoma e standalone** (sessão fresca). Diferente do `/daily-tech-sca
 **código**), esta olha o **runtime em produção**: métricas, logs e a **DLQ** das filas. Ela **só
 levanta problemas** e registra como issue com uma **sugestão de correção**; **nada é corrigido**.
 
+## Modelo + esforço (custo-benefício)
+Invoque o `ops-investigator` em **`sonnet`/`alto`** (consulta + reconhecimento de padrão em métricas);
+suba para `opus` se a anomalia for ambígua e exigir hipótese profunda. (Ref.: `sdd-orchestrator`.)
+
 ## Fase 1 · Investigação
 Invoque o subagente **`ops-investigator`** para varrer os sinais de produção das últimas 24h (DLQ,
 erro/timeout/fallback de IA, latência p95, quota, estados presos), seguindo o doc de observabilidade

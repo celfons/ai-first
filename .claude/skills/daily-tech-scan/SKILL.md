@@ -10,6 +10,10 @@ entrega features de negócio), esta **só levanta problemas** — bugs críticos
 registra como issues. **Nada é corrigido automaticamente**; o humano decide o que virar trabalho e
 **dispara `/feature <n>` manualmente**.
 
+## Modelo + esforço (custo-benefício)
+Invoque o `tech-auditor` em **`opus`/`alto`**: caçar bug sutil de correção/invariante e drift
+arquitetural é exatamente onde modelo barato deixa passar. (Ref.: tabela no `sdd-orchestrator`.)
+
 ## Fase 1 · Varredura
 Invoque o subagente **`tech-auditor`** para varrer o repositório e criar issues dos achados
 **confirmados** (bugs críticos primeiro, depois débito de alto custo), deduplicando contra o board.

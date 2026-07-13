@@ -187,7 +187,7 @@ convenções da sua fase, para o thread principal delegar com **escopo curto**. 
 | `product-owner` | Propõe features (mercado + resultado real) e cria issues |
 | `tech-auditor` | Varre bugs, débito **e drift arquitetural** → issues (não corrige) |
 | `ops-investigator` | Varre métricas/logs/DLQ → issues com sugestão (não corrige) |
-| `sdd-orchestrator` | Classifica o tamanho e devolve o plano de delegação (+ esforço) |
+| `sdd-orchestrator` | Classifica o tamanho e **roteia modelo+esforço por etapa** (custo-benefício); tag na issue. **Único de modelo fixo (opus/alto)** |
 | `feature-spec` | Escreve a spec (o quê/porquê + métrica de sucesso) |
 | `architect` | Desenha o plano técnico + tasks + ADR |
 | `ux-designer` | Brief de UI/UX (só em UI significativa) |
@@ -200,6 +200,11 @@ convenções da sua fase, para o thread principal delegar com **escopo curto**. 
 
 > Um subagente **não** invoca outro — quem encadeia é o thread principal (a skill). **Separação de
 > papéis (P-13):** quem escreve não é quem verifica nem quem aprova o risco.
+>
+> **Modelo e esforço são roteados, não fixos:** o `sdd-orchestrator` decide por custo-benefício qual
+> modelo (`haiku`/`sonnet`/`opus`/`fable`) e esforço (`baixo`/`médio`/`alto`/`extra`) cada etapa usa,
+> aplica a tag na issue, e é o **único** subagente pinado (opus/alto) — para não errar o roteamento.
+> Segurança e invariantes nunca abaixo de opus/alto.
 
 ## 🛠 As skills (o que dispara o quê)
 
