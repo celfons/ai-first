@@ -85,7 +85,11 @@ reserva de idempotência, laço da fila, chamada de LLM com timeout+validação+
   `effort:*` na issue e é o **único subagente de modelo fixo (opus/alto)**. Invariante/segurança e o
   `adversarial-reviewer` nunca abaixo de opus/alto (P-14).
 - **Gênese (uma vez):** skill `/ai-first-init` — define contexto + knobs no genoma
-  (`docs/ai-first/project.md`). Rode antes de qualquer feature.
+  (`docs/ai-first/project.md`, incl. cadência e **desenvolvimento paralelo**). Rode antes de qualquer
+  feature. No fim, **oferece o arranque imediato** (`/kickoff`) para começar a construir na hora.
+- **Arranque imediato (não espera o cron):** skill `/kickoff [quantidade]` — liga o desenvolvimento na
+  hora: semeia o backlog inicial (PO) e desenvolve as primeiras fatias **em paralelo** (`parallelism`)
+  pelo motor do `/daily-build`. Exige o genoma armado. Ideal logo após a gênese.
 - **Ideia do stakeholder → board:** skill `/feature-intake [ideia]` — formata uma ideia crua do humano
   no **mesmo padrão de issue do `product-owner`** (dedup + rejeições + gate + labels) e cria no board.
   O PO decide o quê (benchmarking); o intake só normaliza o que o humano já trouxe.
@@ -102,7 +106,7 @@ reserva de idempotência, laço da fila, chamada de LLM com timeout+validação+
   `/daily-build` (implementa + verificação independente + auto-merge em develop + promoção por risco).
   Auditorias que só levantam issues: `/daily-tech-scan` (código + drift), `/daily-ops-scan` (runtime).
   Loop de resultado: `/daily-outcome` (mede se as features moveram o ponteiro). Espace os crons pesados.
-- **Cadência/autonomia/orçamento** são knobs do genoma (`features_per_day`, `autonomy_level`,
-  `daily_budget`), ajustáveis a qualquer momento (P-15).
+- **Cadência/paralelismo/autonomia/orçamento** são knobs do genoma (`features_per_day`, `parallelism`,
+  `autonomy_level`, `daily_budget`), ajustáveis a qualquer momento (P-15).
 - **Reprovar uma feature antes de `main`:** `/reject-feature <issue#> [motivo]`.
 - **Incidente em produção:** `/rollback <n> [motivo]` (kill-switch/revert em `main`).

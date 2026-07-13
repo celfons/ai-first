@@ -261,7 +261,8 @@ convenções da sua fase, para o thread principal delegar com **escopo curto**. 
 
 | Skill | O que faz | Disparo |
 |---|---|---|
-| **`/ai-first-init`** | **A gênese** — scaffolda o corpo do método no repo + entrevista (stack/cloud/arquitetura/infra/produto/knobs). Roda **uma vez** (revisa depois) | Humano (setup) |
+| **`/ai-first-init`** | **A gênese** — scaffolda o corpo do método no repo + entrevista (stack/cloud/arquitetura/infra/produto/knobs, incl. cadência e **desenvolvimento paralelo**). Roda **uma vez** (revisa depois) e no fim **oferece arrancar o desenvolvimento na hora** (`/kickoff`) | Humano (setup) |
+| **`/kickoff [n]`** | **Arranque imediato** — liga o desenvolvimento **na hora** (não espera o cron): semeia o backlog inicial e desenvolve `n` fatias **em paralelo** (`parallelism`) pelo motor do `/daily-build`. Ideal logo após a gênese | Humano |
 | **`/feature-intake`** | **Porta de entrada do stakeholder** — formata uma ideia crua do humano no **padrão de issue do `product-owner`** e cria no board, pronta para o fluxo | Humano |
 | **`/backlog [n] [tema]`** | **On-demand, sem teto** — o humano pede ao `product-owner` **N histórias/épicos** de uma vez (histórias soltas ou épico decomposto em sub-issues), com o mesmo rigor do diário. Não amarrado a `features_per_day` | Humano |
 | `/feature <n>` | Leva **uma issue** ao PR pelo ciclo SDD (com gates após spec e plan) | Humano |
@@ -295,6 +296,9 @@ Definidos na gênese, gravados no genoma (`docs/ai-first/project.md §8`), **mud
 
 - **`features_per_day`** — quantas features o PO cria e o build implementa por rodada (comece em 1, suba
   com confiança). **É a variável que escala o organismo.**
+- **`parallelism`** — quantas features o build desenvolve **em paralelo** por rodada (default 1 =
+  sequencial; merge em `develop` sempre serial). O dial de **velocidade** — usado pelo `/daily-build` e
+  pelo arranque `/kickoff`.
 - **`autonomy_level`** — `conservador` | `progressivo` | `amplo` (quem promove sozinho, por tier de risco).
 - **`daily_budget`** — teto de gasto/esforço do loop por período (P-14).
 - **Modelo fixado** — upgrade é decisão explícita, com re-baseline de evals (P-14).
@@ -327,7 +331,7 @@ ai-first/                          · o repo É o plugin (source "./" no marketp
 │   ├── plugin.json                · manifesto do plugin (name, version, …)
 │   └── marketplace.json           · marketplace de plugin único (source "./")
 ├── agents/                        · o roster (16 subagentes) — descoberto pelo plugin
-├── skills/                        · ai-first-init, feature-intake, backlog, feature, migrate, reject-feature, rollback, daily-*, new-extension
+├── skills/                        · ai-first-init, kickoff, feature-intake, backlog, feature, migrate, reject-feature, rollback, daily-*, new-extension
 ├── README.md                      · este arquivo
 ├── CLAUDE.md                      · índice-mãe (mapa de módulos + invariantes) — preenchido na gênese
 ├── docs/

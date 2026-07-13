@@ -63,6 +63,9 @@
 - **Branches:** trabalho `claude/<slug>` · integração `develop` · produção `main`
 - **`ci` + gate de segurança + `adversarial-reviewer` como required checks:** `[sim/não]`
 - **`features_per_day`** (quantas o PO cria e o build implementa por rodada): `[A DEFINIR]` (default 1)
+- **`parallelism`** (quantas features o build desenvolve **em paralelo** por rodada — contextos/worktrees
+  isolados; o merge em `develop` é serializado): `[A DEFINIR]` (default **1** = sequencial). Vale para o
+  `/daily-build` e para o arranque imediato `/kickoff`.
 - **`autonomy_level`** (P-10): `[conservador | progressivo | amplo]` (default **conservador** =
   humano aprova tudo; suba conforme o histórico)
 - **`daily_budget`** (teto de gasto/esforço do loop, P-14): `[A DEFINIR]`
@@ -89,3 +92,5 @@
 - [ ] `ci.yml` com os comandos reais; `ci` marcado como required check
 - [ ] `develop` criada; crons agendados; canal do dono configurado
 - [ ] **Organismo armado** ✅
+- [ ] (opcional) **Arranque imediato** disparado (`/kickoff`) — primeiras fatias do produto já em
+      desenvolvimento, sem esperar o primeiro cron
