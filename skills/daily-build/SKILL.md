@@ -16,7 +16,8 @@ Leia antes de começar:
   sequencial). Contextos/worktrees isolados na implementação; **o merge em `develop` é serializado**
   (ver Fase 2). O mesmo dial usado pelo arranque `/kickoff`.
 - **`autonomy_level`** — `conservador` (humano aprova tudo) · `progressivo` (🟢 promove sozinha) ·
-  `amplo` (🟢🟡 promovem sozinhas). Default **conservador**.
+  `amplo` (🟢🟡 promovem sozinhas) · **`autônomo` (100% AI — sem gate humano: todos os tiers, inclusive
+  🔴, auto-promovem)**. Default **conservador**.
 - **`daily_budget`** — teto de gasto/esforço do loop (P-14). Pare de pegar novas features ao atingir.
 
 > Gates: CI verde **e** veredito não-bloqueante do `adversarial-reviewer` são obrigatórios para o
@@ -85,11 +86,11 @@ O `Closes #NNN` fecha a issue.
 ## Fase 6 · Promoção develop → main POR TIER DE RISCO (autonomia progressiva)
 Decida por feature, conforme o `autonomy_level` e o **tier** (Fase 4):
 
-| Tier ↓ / Nível → | `conservador` | `progressivo` | `amplo` |
-|---|---|---|---|
-| 🟢 baixo | humano | **auto-promove** | **auto-promove** |
-| 🟡 médio | humano | humano | **auto-promove** (amostra p/ auditoria) |
-| 🔴 alto | humano | humano | **humano (sempre)** |
+| Tier ↓ / Nível → | `conservador` | `progressivo` | `amplo` | `autônomo` |
+|---|---|---|---|---|
+| 🟢 baixo | humano | **auto-promove** | **auto-promove** | **auto-promove** |
+| 🟡 médio | humano | humano | **auto-promove** (amostra p/ auditoria) | **auto-promove** |
+| 🔴 alto | humano | humano | **humano (sempre)** | **auto-promove** (amostra p/ auditoria) |
 
 - **Auto-promove:** com CI verde em `develop`, mergeie `develop → main` (a feature vai a produção
   sozinha). Registre no resumo do dia como "publicada automaticamente (baixo risco)".
@@ -104,15 +105,19 @@ Decida por feature, conforme o `autonomy_level` e o **tier** (Fase 4):
   Inclua o que ficou `needs-human-triage`/`awaiting-human` e a instrução: "Para remover uma feature
   reprovada, rode `/reject-feature <issue#> [motivo]`."
 
-> **Nível `conservador` = o gate único diário clássico** (nada auto-promove). Suba o nível só quando o
-> histórico (baixa taxa de rejeição/rollback) justificar — a decisão é humana, ajustável no genoma.
+> **Nível `conservador` = o gate único diário clássico** (nada auto-promove); **nível `autônomo` =
+> 100% AI, sem gate humano** (tudo auto-promove, inclusive 🔴 — o dono só audita e mantém o
+> kill-switch). Suba o nível só quando o histórico (baixa taxa de rejeição/rollback) justificar — a
+> decisão é humana, ajustável no genoma. Em `autônomo`, os gates automáticos (CI + `adversarial-reviewer`
+> + segurança + orçamento) continuam obrigatórios: é a única barreira antes de `main`.
 
 ## Fase 7 · Resumo ao dono (linguagem simples)
 Sua última mensagem vira o **e-mail/push**. Linguagem de negócio, **sem jargão** (proibido "PR",
 "merge", "branch", "develop/main", "commit", "CI", "deploy", "revert", "issue", "SDD"). Cubra:
-- **O que foi publicado automaticamente** (as 🟢, se o nível permitiu) — o dono é informado, não
-  precisa agir.
-- **O que espera o OK dele** (as que subiram por tier), com Impacto e Risco traduzidos.
+- **O que foi publicado automaticamente** (as 🟢, se o nível permitiu; **no nível `autônomo`, tudo** —
+  incluindo 🟡/🔴, com o risco traduzido para o dono auditar) — o dono é informado, não precisa agir.
+- **O que espera o OK dele** (as que subiram por tier; **vazio no nível `autônomo`**), com Impacto e
+  Risco traduzidos.
 - **Perguntas em aberto** (`awaiting-human`) — precisa da decisão dele para destravar.
 - **O que ficou de fora** e por quê.
 Modelo:
@@ -143,7 +148,10 @@ Para tentar de novo: responda "<instrução curta>".
 
 ## Invariantes da rotina
 - Start por **cron**. Auto-merge em `develop` **só** com CI verde **+** veredito não-bloqueante.
-- Promoção a `main` **por tier**, conforme o `autonomy_level` — 🔴 **nunca** auto-promove.
+- Promoção a `main` **por tier**, conforme o `autonomy_level` — 🔴 **nunca** auto-promove, **exceto no
+  nível `autônomo`** (100% AI, sem gate humano), onde todos os tiers auto-promovem e o dono só audita.
+  Os gates automáticos (CI + veredito não-bloqueante + segurança + orçamento) valem em **todos** os
+  níveis, inclusive `autônomo`.
 - Respeita `features_per_day`, `parallelism` e `daily_budget` (P-14/P-15). Paralelo na implementação,
   **serial no merge** em `develop`. `grande`/arquitetural → `needs-human-triage`.
 - `[NEEDS CLARIFICATION]` → pergunta ao humano (`awaiting-human`), **nunca** chute nem pule em silêncio.

@@ -85,8 +85,10 @@ reserva de idempotência, laço da fila, chamada de LLM com timeout+validação+
   `effort:*` na issue e é o **único subagente de modelo fixo (opus/alto)**. Invariante/segurança e o
   `adversarial-reviewer` nunca abaixo de opus/alto (P-14).
 - **Gênese (uma vez):** skill `/ai-first-init` — define contexto + knobs no genoma
-  (`docs/ai-first/project.md`, incl. cadência e **desenvolvimento paralelo**). Rode antes de qualquer
-  feature. No fim, **oferece o arranque imediato** (`/kickoff`) para começar a construir na hora.
+  (`docs/ai-first/project.md`). Entrevista o **produto a criar + estratégia + ponto de partida** (semeia
+  `docs/sdd/tasks.md` com as fatias do MVP), a **cadência** e o **desenvolvimento paralelo**, e a
+  decisão de **ter ou não gate humano** (`autonomy_level`, incl. o nível **`autônomo` = 100% AI**). Rode
+  antes de qualquer feature. No fim, **oferece o arranque imediato** (`/kickoff`) para começar na hora.
 - **Arranque imediato (não espera o cron):** skill `/kickoff [quantidade]` — liga o desenvolvimento na
   hora: semeia o backlog inicial (PO) e desenvolve as primeiras fatias **em paralelo** (`parallelism`)
   pelo motor do `/daily-build`. Exige o genoma armado. Ideal logo após a gênese.
@@ -107,6 +109,8 @@ reserva de idempotência, laço da fila, chamada de LLM com timeout+validação+
   Auditorias que só levantam issues: `/daily-tech-scan` (código + drift), `/daily-ops-scan` (runtime).
   Loop de resultado: `/daily-outcome` (mede se as features moveram o ponteiro). Espace os crons pesados.
 - **Cadência/paralelismo/autonomia/orçamento** são knobs do genoma (`features_per_day`, `parallelism`,
-  `autonomy_level`, `daily_budget`), ajustáveis a qualquer momento (P-15).
+  `autonomy_level` — incl. `autônomo` (sem gate humano), `daily_budget`), ajustáveis a qualquer momento
+  (P-15). Mesmo em `autônomo`, os gates automáticos (CI + `adversarial-reviewer` + segurança) e o
+  `/rollback` permanecem.
 - **Reprovar uma feature antes de `main`:** `/reject-feature <issue#> [motivo]`.
 - **Incidente em produção:** `/rollback <n> [motivo]` (kill-switch/revert em `main`).
