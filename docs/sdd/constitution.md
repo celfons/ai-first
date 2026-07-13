@@ -21,8 +21,9 @@ Esta constituição tem **duas partes**:
 > **Hierarquia de autoridade em caso de conflito:**
 > **constituição > especificação > plano > docs descritivos > código**.
 >
-> **Agnosticismo:** o *processo* (SDD, roster, gate único) é fixo; o *contexto* (stack, cloud,
-> arquitetura, infra, produto) é 100% definido na gênese e mora no genoma — nenhum é assumido aqui.
+> **Agnosticismo:** o *processo* (SDD, roster, gates automáticos + verificação independente) é fixo; o
+> *contexto* (stack, cloud, arquitetura, infra, produto) e os *knobs* (cadência, autonomia — incl. o
+> gate humano, do único ao 100% IA) são definidos na gênese e moram no genoma — nada é assumido aqui.
 
 Vários princípios pedem **enforcement automatizado** — um teste que falha quando alguém
 viola. A coluna *Enforcement* aponta onde (ou "revisão" quando ainda é só de olho).

@@ -22,6 +22,7 @@
 - [O fluxo ponta a ponta](#-o-fluxo-ponta-a-ponta)
 - [O ciclo SDD (por feature)](#-o-ciclo-sdd-por-feature)
 - [O roster de subagentes](#-o-roster-de-subagentes)
+- [Qual jornada usar? (mapa de uma olhada)](#-qual-jornada-usar-mapa-de-uma-olhada)
 - [As skills (o que dispara o quê)](#-as-skills-o-que-dispara-o-quê)
 - [Governança e retroalimentação](#-governança-e-retroalimentação)
 - [Os knobs ajustáveis (cadência, autonomia, orçamento)](#-os-knobs-ajustáveis-cadência-autonomia-orçamento)
@@ -260,6 +261,28 @@ convenções da sua fase, para o thread principal delegar com **escopo curto**. 
 > modelo (`haiku`/`sonnet`/`opus`/`fable`) e esforço (`baixo`/`médio`/`alto`/`extra`) cada etapa usa,
 > aplica a tag na issue, e é o **único** subagente pinado (opus/alto) — para não errar o roteamento.
 > Segurança e invariantes nunca abaixo de opus/alto.
+
+## 🧭 Qual jornada usar? (mapa de uma olhada)
+
+Existem várias portas — esta tabela diz **qual usar para o quê**, para não confundir. Ache a linha do
+seu objetivo; a coluna do meio é o comando.
+
+| Você quer… | Use | Em uma frase |
+|---|---|---|
+| **Começar um produto do zero** | `/ai-first-init` | A entrevista única; no fim já emenda a construção (`/kickoff`). |
+| **Começar a construir agora** (sem esperar o robô diário) | `/kickoff [n]` | Monta a lista inicial e desenvolve `n` tarefas até a entrega. |
+| **Trazer uma ideia sua** para a lista | `/feature-intake [ideia]` | A IA formata sua ideia no padrão da casa. |
+| **Pedir um lote** de histórias/épicos | `/backlog [n] [tema]` | A IA (dona de produto) escreve `n` de uma vez, sem teto. |
+| **Tocar UMA tarefa** você mesmo, com paradas para aprovar | `/feature <n>` | Leva um item da lista até ficar pronto para publicar. |
+| **Trazer algo que já existe** em outro projeto | `/migrate <origem>` | Copia o comportamento, pedaço a pedaço, sem perder nada. |
+| **Reprovar** algo que a IA fez | `/reject-feature <n>` | Remove e transforma o motivo em lição. |
+| **Emergência** no que está no ar | `/rollback <n>` | Freio de emergência: desliga/reverte em produção. |
+| **Deixar rodando sozinho** todo dia | *(nada — os robôs diários)* | Propõe → constrói → confere → publica (ou pede seu OK). |
+
+> **Regra prática:** para *criar tarefas*, pense em **quem teve a ideia** — a IA por conta própria
+> (robô diário), você com **uma** ideia (`/feature-intake`), ou você pedindo **N de uma vez**
+> (`/backlog`). Para *construir*, pense em **quando** — agora (`/kickoff`), no ritmo diário (robôs), ou
+> **um item por vez, à mão** (`/feature`).
 
 ## 🛠 As skills (o que dispara o quê)
 
