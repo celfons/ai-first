@@ -75,6 +75,9 @@ reserva de idempotência, laço da fila, chamada de LLM com timeout+validação+
 - **Feature grande é decomposta** (`task-decomposer`) em **micro-slices** implementadas em contexto
   isolado (menos alucinação, janela menor), com a **árvore verde a cada slice** e uma **slice de
   integração** que agrega o valor da feature de ponta a ponta. Feature pequena não é decomposta.
+- **Aceitação em BDD:** o `bdd-author` converte os critérios de aceite da spec (Dado/Quando/Então) em
+  **cenários executáveis** (o oráculo) — formato pelo knob `bdd_style` do genoma (`native`/`gherkin`/
+  `off`). O `tester` os liga ao runner; o `adversarial-reviewer` os usa e caça o que faltou.
 - **Subagentes de desenvolvimento** (`.claude/agents/`, ver `.claude/agents/README.md`): roster
   mapeado ao ciclo SDD. Delegue a feature nova ao `sdd-orchestrator` para manter o contexto enxuto.
 - **Modelo + esforço são roteados por etapa** (custo-benefício) pelo `sdd-orchestrator`

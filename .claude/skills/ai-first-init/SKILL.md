@@ -73,6 +73,10 @@ canônicos indicados.
 - **Comandos de qualidade REAIS:** os comandos exatos de `typecheck`, `lint`, `test` e (se houver
   IA) `eval`. Se algum não existe ainda, registre como `[A DEFINIR]` e sinalize que o gate fica
   incompleto até existir.
+- **Estilo BDD (`bdd_style`):** como o `bdd-author` grava os cenários de aceitação — `native`
+  (default; cenários espelhando Dado/Quando/Então no framework de teste do projeto), `gherkin`
+  (`.feature` + runner Cucumber-style, quando o time quer living-docs) ou `off` (sem camada BDD; o
+  `tester` cobre os critérios direto — só para projetos muito pequenos). Confirme o framework de teste.
 - **Sinais de observabilidade:** como o `ops-investigator` alcança métricas/logs/DLQ em produção
   (qual API/credencial) — ou "sem acesso ainda" (aí o cron reporta sinais cegos, não finge saúde).
 - **Grava em:** `CLAUDE.md` (pontos de extensão + padrões), `.github/workflows/ci.yml` (comandos),

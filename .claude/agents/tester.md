@@ -20,6 +20,10 @@ em testes que falham quando o comportamento regride — e deixar o gate verde.
 ## Regras
 1. **Teste comportamento observável**, não estrutura interna: resposta enviada, registro
    persistido, evento/métrica emitida, reserva de idempotência criada.
+0. **Os cenários de aceitação (BDD) são o oráculo.** Se o `bdd-author` gerou
+   `acceptance.feature`/`acceptance.md` (`bdd_style ≠ off`), **ligue-os ao runner** (step definitions
+   ou cenários nativos) e faça-os passar de verdade — eles são o contrato. Cobrir os cenários vem
+   ANTES de testes que você inventa; depois some unidade/integração/invariante/runtime/regressão.
 2. **Cubra a invariante quando a mudança a toca:** P-3 (redelivery do efeito é no-op? a reserva
    sofre rollback na falha?), P-5 (a fronteira de dados foi respeitada?), P-6/P-7 (segredo/PII não
    vazam?).

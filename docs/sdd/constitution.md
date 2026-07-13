@@ -38,7 +38,14 @@ Toda mudança de **comportamento observável** começa por uma especificação v
 entregue. O código é a implementação da spec, não o contrário. Bugfix trivial e refactor sem
 mudança de comportamento dispensam spec (o `plan.md` da feature ou o próprio PR bastam).
 
-- *Enforcement:* revisão no gate do PR; a spec da feature deve existir e bater com o diff.
+Corolário — **critério de aceite vira cenário executável (BDD).** Os critérios da spec (§4,
+já em Dado/Quando/Então) são convertidos pelo `bdd-author` em **cenários de aceitação executáveis**
+(o *oráculo* da feature): é o que o `tester` liga ao runner e o `adversarial-reviewer` usa para
+julgar e para caçar o cenário que faltou. O formato é o knob `bdd_style` do genoma (`native` default ·
+`gherkin` · `off`). Assim o "o quê" da spec e o "prova" do teste falam a mesma língua e não divergem.
+
+- *Enforcement:* revisão no gate do PR; a spec deve existir e bater com o diff; os cenários de
+  aceitação passam no CI (parte do `test`).
 
 ### P-2 · A constituição é soberana
 
