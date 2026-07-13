@@ -165,10 +165,10 @@ atravessando os módulos necessários — sem reorganizar o código por feature.
 | Fase | Artefato | Quem |
 |---|---|---|
 | 1 · **SPECIFY** | `spec.md` (o quê/porquê, RFs, aceite, **métrica de sucesso §8**, gate constitucional) | `feature-spec` |
-| 2 · **PLAN** | `plan.md` (design, dados, idempotência, riscos) + ADR se durável | `architect` |
-| 3 · **TASKS** | `tasks.md` (decomposição verificável, rastreada a RF/RNF) | `architect` |
-| 4 · **IMPLEMENT** | código na branch `claude/<slug>` | `backend`/`frontend-engineer` |
-| 5 · **VERIFY** | testes + evals; `typecheck`+`lint`+`test` verdes | `tester` |
+| 2 · **PLAN** | `plan.md` (design, dados, idempotência, riscos) + `tasks.md` + ADR se durável | `architect` |
+| 2½ · **DECOMPOSE** *(só se grande)* | quebra em **micro-slices** isoladas (contexto estreito, árvore verde) + slice de integração | `task-decomposer` |
+| 4 · **IMPLEMENT** | código na branch `claude/<slug>` — **slice a slice, cada uma em contexto isolado** | `backend`/`frontend-engineer` |
+| 5 · **VERIFY** | testes por slice + ponta-a-ponta da integração; `typecheck`+`lint`+`test` verdes | `tester` |
 | 5½ · **VERIFY (independente)** | tenta quebrar + dirige runtime; **pode bloquear o merge** | `adversarial-reviewer` |
 | 6 · **DOCS** | spec e docs refletem o **entregue** | `docs-writer` |
 | ↻ · **OUTCOME** | mede pós-ship se a métrica de sucesso foi atingida | `outcome-analyst` |
@@ -190,6 +190,7 @@ convenções da sua fase, para o thread principal delegar com **escopo curto**. 
 | `sdd-orchestrator` | Classifica o tamanho e **roteia modelo+esforço por etapa** (custo-benefício); tag na issue. **Único de modelo fixo (opus/alto)** |
 | `feature-spec` | Escreve a spec (o quê/porquê + métrica de sucesso) |
 | `architect` | Desenha o plano técnico + tasks + ADR |
+| **`task-decomposer`** | Quebra feature grande em **micro-slices** isoladas + integração (contexto estreito, árvore verde) |
 | `ux-designer` | Brief de UI/UX (só em UI significativa) |
 | `backend-engineer` | Implementa o código de produção |
 | `frontend-engineer` | Implementa a interface |
@@ -269,7 +270,7 @@ ai-first/
 ├── README.md                      · este arquivo
 ├── CLAUDE.md                      · índice-mãe (mapa de módulos + invariantes) — preenchido na gênese
 ├── .claude/
-│   ├── agents/                    · o roster (13 subagentes + README)
+│   ├── agents/                    · o roster (14 subagentes + README)
 │   └── skills/                    · ai-first-init, feature, reject-feature, rollback, daily-*, new-extension
 ├── docs/
 │   ├── ai-first/project.md        · 🧬 o GENOMA — contexto + knobs do projeto (preenchido na gênese)
@@ -314,6 +315,11 @@ define o contexto, decide o que vai para produção e resolve o que a automaçã
 
 **Como isso escala?** Pelo `features_per_day` (mais features/rodada) e pelo `autonomy_level` (menos
 coisas passando pela sua mão). Ambos são dials que você sobe conforme a confiança — não um salto.
+
+**E feature grande, que faz o modelo se perder?** O `task-decomposer` a quebra em **micro-slices**;
+cada uma é implementada numa **sessão de contexto limpa** (só a fatia que toca) — janela menor, menos
+alucinação, entrega mais rápida — e a **árvore fica verde a cada passo**. A **slice de integração**
+final agrega tudo e prova a feature inteira de ponta a ponta. Feature pequena não é decomposta.
 
 **E se a IA fizer besteira?** Cinco redes: **CI verde** obrigatória; **gate de segurança**
 (secret-scan/dep-review/SAST); **verificação independente** (`adversarial-reviewer` que tenta quebrar

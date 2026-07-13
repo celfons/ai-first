@@ -62,15 +62,29 @@ de invariante/segurança (mínimo opus/alto), mesmo que o custo-benefício sugir
    decisão que precisa de aprovação (novo módulo/porta/invariante), destaque e PEÇA aprovação antes
    de codar.
 
-### 5 · IMPLEMENT
-Invoque **`backend-engineer`** (e/ou **`ux-designer`** → **`frontend-engineer`** se houver UI
-significativa) seguindo `tasks.md`, task a task. Respeitando as invariantes, reporta arquivos/flags
-tocados.
+### 4½ · DECOMPOSE (só se o orchestrator pediu)
+Se o plano de delegação incluir **`task-decomposer`** (feature grande/complexa, muitos módulos),
+invoque-o com a `spec.md`+`plan.md`. Ele reescreve `tasks.md` como um **grafo de micro-slices**
+isoladas + a **slice de integração** (ver `tasks-template.md` Forma B). Se a feature for pequena, o
+orchestrator pula esta etapa e o `tasks.md` do `architect` já serve.
 
-### 6 · VERIFY
-Invoque **`tester`**. Ele escreve os testes + evals conforme a task, e deixa `typecheck` + `lint` +
-`test` (e `eval` se tocou IA) verdes. Se aparecer bug de produção, volte ao `backend-engineer` para
-corrigir antes de seguir.
+### 5 · IMPLEMENT (slice a slice, em contexto ISOLADO)
+Percorra o `tasks.md` **na ordem do DAG**. Para **cada slice**, faça uma **invocação nova e separada**
+do **`backend-engineer`** (ou `ux-designer`→`frontend-engineer` se for UI), passando **só** o escopo
+daquela slice: os arquivos/contexto que ela lista + a linha do `context-map`. **Uma slice = uma sessão
+de contexto limpa** — é isso que reduz a janela e evita alucinação.
+- Ao fim de **cada** slice: `typecheck`+`lint` verdes e a **árvore não pode ficar quebrada** (parcial
+  fica atrás de flag/stub). Só então siga para a próxima.
+- Slices **independentes** (sem arquivos em comum) podem ser feitas em invocações **paralelas**; as do
+  caminho crítico vão em sequência.
+- A **slice de integração** (última) liga tudo, remove os andaimes e é implementada por último.
+
+### 6 · VERIFY (por slice + no agregado)
+1. Invoque **`tester`** para cobrir cada slice (idealmente logo após implementá-la, no mesmo contexto
+   estreito) e, no fim, o **teste de ponta a ponta da integração** que prova a feature inteira. Deixe
+   `typecheck`+`lint`+`test` (+`eval`) verdes. Bug de produção volta ao `backend-engineer`.
+2. Invoque **`adversarial-reviewer`** sobre o **agregado** (a feature montada): ele tenta quebrá-la e
+   dirige o runtime. Veredito **BLOQUEIA** → corrija antes de seguir (o bug vira regressão).
 
 ### 7 · DOCS
 Invoque **`docs-writer`** para refletir o comportamento final na `spec.md` e nos docs normativos

@@ -32,6 +32,7 @@ Só leia o que o pedido exige; não abra a base inteira.
 |---|---|---|
 | `feature-spec` | SPECIFY | `spec.md` (o quê/porquê, RF, aceite, gate constitucional) |
 | `architect` | PLAN | `plan.md` + `tasks.md` (+ ADR se durável) |
+| `task-decomposer` | DECOMPOSE (execução) | quebra em micro-slices isoladas + slice de integração — **só se grande/complexa** |
 | `ux-designer` | DESIGN (UI) | brief de UI/UX — **só** em UI significativa |
 | `backend-engineer` | IMPLEMENT | código na branch |
 | `frontend-engineer` | IMPLEMENT (UI) | implementa a interface |
@@ -45,6 +46,13 @@ Só leia o que o pedido exige; não abra a base inteira.
 - **Média** (novo handler/rota/campo/regra; toca invariantes conhecidas): cadeia completa.
 - **Grande / risco arquitetural** (novo módulo, nova porta, mudança de invariante, nova proatividade):
   cadeia completa com **gate humano** após `feature-spec` e após `architect`.
+
+**Precisa DECOMPOR? (decisão explícita)** Inclua a etapa `task-decomposer` (após `architect`, antes do
+implement) quando a feature **toca muitos módulos**, tem **muitas tasks**, mistura migration+lógica+
+efeito+UI, ou qualquer parte que **não caiba com folga num contexto focado** — para cada micro-slice
+rodar numa **sessão de implementação isolada** (janela menor → menos alucinação, mais velocidade) e a
+integração agregar o valor de forma testável. **Pule** o decomposer em feature trivial/pequena (o
+`tasks.md` do `architect` já basta) — decompor demais é desperdício.
 
 ## 2) Roteie MODELO + ESFORÇO por etapa (custo-benefício)
 Para **cada** subagente do plano, escolha o **modelo mais barato que faz o trabalho bem** e o esforço
@@ -65,6 +73,8 @@ Heurística de custo-benefício:
 Guia por papel (ponto de partida — ajuste ao caso):
 - `feature-spec`: **sonnet/médio** (ambígua → **opus/alto**).
 - `architect`: **opus/alto** (feature simples e conhecida → **sonnet/médio**; novo módulo/porta → **extra**).
+- `task-decomposer`: **opus/alto** (fatiar bem é julgamento de alto valor — evita re-trabalho e slice
+  quebrada; decomposição óbvia → **sonnet/médio**).
 - `ux-designer`: **fable/médio-alto** (criativo).
 - `backend-engineer`/`frontend-engineer`: **sonnet/médio** (toca pagamento/PII/idempotência/invariante/
   segurança → **opus/alto**).

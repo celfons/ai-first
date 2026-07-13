@@ -43,10 +43,14 @@ flowchart LR
 3. **Plan** — derive `plan.md`: módulos tocados, dados/migrations, portas/adapters,
    idempotência/falha, config/rollout, observabilidade, testes, riscos. Decisão **durável** vira
    [ADR](../adr/).
-4. **Tasks** — decomponha em tarefas pequenas e verificáveis (`tasks.md`), cada uma
-   rastreável a um RF/RNF, na ordem das dependências.
-5. **Implement & verify** — branch de feature, PR com `Closes #NNN`; `typecheck` + `lint` +
-   `test` limpos; critérios de aceite viram testes; comportamento de IA vira **eval**.
+4. **Tasks / Decompose** — decomponha em tarefas pequenas e verificáveis (`tasks.md`), cada uma
+   rastreável a um RF/RNF, na ordem das dependências. **Feature grande/complexa** vai além: o
+   `task-decomposer` a fatia num **grafo de micro-slices** implementáveis em **contexto isolado**
+   (janela menor, menos alucinação), com a **árvore verde a cada slice** e uma **slice de integração**
+   que agrega o valor da feature inteira (`tasks-template.md` Forma B).
+5. **Implement & verify** — branch de feature, PR com `Closes #NNN`; **slice a slice em contexto
+   isolado** quando decomposta; `typecheck` + `lint` + `test` limpos **a cada slice**; critérios de
+   aceite viram testes; comportamento de IA vira **eval**; verificação independente no agregado.
 6. **Docs** — a `spec.md` termina refletindo o **comportamento implementado**, e os docs
    normativos afetados são atualizados.
 

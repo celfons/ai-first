@@ -32,10 +32,15 @@ sinal de que o `/daily-backlog` pode ter falhado ou o board está seco. **Avise*
 Para **cada** issue selecionada, rode o **fluxo `/feature`** em **modo autônomo** (branch
 `claude/<slug>` a partir de `develop`; uma issue = uma branch = um `Closes #NNN`):
 `sdd-orchestrator` (fixo opus/alto — roteia o resto) → `feature-spec` → `architect` →
-`backend-engineer` → `tester` → `adversarial-reviewer` → `docs-writer`. **Invoque cada subagente com o
-modelo (`haiku`/`sonnet`/`opus`/`fable`) e o esforço (`baixo`/`médio`/`alto`/`extra`) que o
-orchestrator roteou** (ele também aplica a tag `model:*`/`effort:*` na issue). Sem parar nos gates de
-spec/plan, MAS:
+**`task-decomposer` (se grande/complexa)** → `backend-engineer` → `tester` → `adversarial-reviewer` →
+`docs-writer`. **Invoque cada subagente com o modelo (`haiku`/`sonnet`/`opus`/`fable`) e o esforço
+(`baixo`/`médio`/`alto`/`extra`) que o orchestrator roteou** (ele também aplica a tag `model:*`/
+`effort:*` na issue).
+- **Se a feature foi decomposta:** implemente **slice a slice, cada uma numa invocação isolada** do
+  `backend-engineer` (só o contexto da slice → janela menor, menos alucinação), **árvore verde ao fim
+  de cada slice** (parcial atrás de flag), e a **slice de integração** por último. Verifique cada slice
+  e faça o `adversarial-reviewer` sobre o **agregado**.
+Sem parar nos gates de spec/plan, MAS:
 - **Grande/risco arquitetural** apesar do size → **PARE essa issue**: comente o porquê, aplique
   `needs-human-triage`, não implemente. Siga para a próxima.
 - **`[NEEDS CLARIFICATION]` bloqueante → NÃO chute e NÃO pule em silêncio.** Aplique o label

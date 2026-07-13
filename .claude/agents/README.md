@@ -32,6 +32,7 @@ descem abaixo de opus/alto, por mais que o custo-benefício empurre para baixo.
 | `sdd-orchestrator` | (entrada · **roteador**) | classifica tamanho; roteia **modelo+esforço** por etapa (custo-benefício); tag na issue. **Único de modelo fixo (opus/alto)** |
 | `feature-spec` | 1 · SPECIFY | `docs/sdd/features/NNN-slug/spec.md` |
 | `architect` | 2 · PLAN | `plan.md` + `tasks.md` (+ ADR se durável) |
+| `task-decomposer` | 2½ · DECOMPOSE | quebra em micro-slices isoladas + slice de integração — **só se grande/complexa** |
 | `ux-designer` | 3½ · DESIGN (UI) | brief de UI/UX — só em UI significativa |
 | `backend-engineer` | 4 · IMPLEMENT | código na branch de feature |
 | `frontend-engineer` | 4 · IMPLEMENT (UI) | implementa a UI — o brief do `ux-designer` ou tweaks diretos |
@@ -59,8 +60,10 @@ flowchart TD
   ORCH -->|trivial / média| SPEC
 
   SPEC["📐 feature-spec<br/>spec.md + gate constitucional"] -->|gate*| ARCH
-  ARCH["🏗 architect<br/>plan.md + tasks.md + ADR"] -->|gate*| BE
-  BE["⚙️ backend/frontend-engineer<br/>código (invariantes)"] --> TEST
+  ARCH["🏗 architect<br/>plan.md + tasks.md + ADR"] -->|gate*| DEC
+  DEC{{"🧩 task-decomposer<br/>micro-slices (só se grande)"}} -->|slice a slice · contexto isolado| BE
+  BE["⚙️ backend/frontend-engineer<br/>cada slice · árvore verde"] -->|próxima slice| BE
+  BE --> TEST
   TEST["🧪 tester<br/>testes + evals"]
   TEST -->|bug de produção| BE
   TEST -->|verde| ADV["🛡 adversarial-reviewer<br/>tenta quebrar · dirige runtime"]
@@ -99,14 +102,20 @@ thread principal (a skill); o `sdd-orchestrator` **devolve o plano**.
 ## Fluxo típico (feature média)
 
 ```
-sdd-orchestrator  → devolve o plano de delegação
+sdd-orchestrator  → devolve o plano de delegação (roteia modelo+esforço)
   └─ feature-spec      (SPECIFY)   → spec.md
      └─ architect      (PLAN)      → plan.md + tasks.md (+ ADR se durável)
-        └─ backend-engineer (IMPLEMENT) → código
-           └─ tester    (VERIFY)   → testes + evals verdes
-              └─ adversarial-reviewer (VERIFY independente) → tenta quebrar; BLOQUEIA ou aprova
-                 └─ docs-writer (DOCS) → docs coerentes
+        └─ task-decomposer (DECOMPOSE, só se grande) → micro-slices + slice de integração
+           └─ backend-engineer (IMPLEMENT) → slice a slice, cada uma em contexto ISOLADO
+              └─ tester    (VERIFY)   → testes por slice + ponta-a-ponta da integração
+                 └─ adversarial-reviewer (VERIFY independente) → tenta quebrar o agregado
+                    └─ docs-writer (DOCS) → docs coerentes
 ```
+
+> **Decompor para não alucinar:** feature grande é fatiada em **micro-slices** pelo `task-decomposer`;
+> cada slice é implementada numa **sessão de contexto limpa** (janela menor, menos alucinação, mais
+> rápida), a **árvore fica verde a cada passo**, e a **slice de integração** agrega o valor da feature
+> inteira, provável de ponta a ponta. Feature pequena não é decomposta (o `tasks.md` do `architect` basta).
 
 > **Separação de papéis (P-13):** quem escreve (`backend-engineer`) **não** é quem aprova o risco. O
 > `adversarial-reviewer` — que não escreveu o código — pode **bloquear o auto-merge**; e a promoção a

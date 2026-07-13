@@ -72,6 +72,9 @@ reserva de idempotência, laço da fila, chamada de LLM com timeout+validação+
   **`adversarial-reviewer` não-bloqueante** obrigatórios para o auto-merge (P-11/P-13).
 - **Ciclo SDD** para toda mudança de comportamento: ver `docs/sdd/README.md`. Uma issue = uma
   feature = uma branch = um `Closes #NNN`.
+- **Feature grande é decomposta** (`task-decomposer`) em **micro-slices** implementadas em contexto
+  isolado (menos alucinação, janela menor), com a **árvore verde a cada slice** e uma **slice de
+  integração** que agrega o valor da feature de ponta a ponta. Feature pequena não é decomposta.
 - **Subagentes de desenvolvimento** (`.claude/agents/`, ver `.claude/agents/README.md`): roster
   mapeado ao ciclo SDD. Delegue a feature nova ao `sdd-orchestrator` para manter o contexto enxuto.
 - **Modelo + esforço são roteados por etapa** (custo-benefício) pelo `sdd-orchestrator`
