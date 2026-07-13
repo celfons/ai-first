@@ -215,6 +215,7 @@ convenções da sua fase, para o thread principal delegar com **escopo curto**. 
 | Skill | O que faz | Disparo |
 |---|---|---|
 | **`/ai-first-init`** | **A gênese** — entrevista o humano e define stack/cloud/arquitetura/infra/produto + os knobs. Roda **uma vez** (revisa depois) | Humano (setup) |
+| **`/feature-intake`** | **Porta de entrada do stakeholder** — formata uma ideia crua do humano no **padrão de issue do `product-owner`** e cria no board, pronta para o fluxo | Humano |
 | `/feature <n>` | Leva **uma issue** ao PR pelo ciclo SDD (com gates após spec e plan) | Humano |
 | `/reject-feature <n>` | Reverte de `develop` uma feature reprovada, reabre a issue, registra o motivo | Humano |
 | `/rollback <n>` | **Incidente em produção** — kill-switch/revert em `main` com segurança | Humano/alerta |

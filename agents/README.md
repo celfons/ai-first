@@ -210,6 +210,10 @@ silêncio** — encerra com um **alerta push/e-mail** dizendo o que falhou e a f
 
 ## Como invocar
 
+**Ideia do stakeholder → board:** `/feature-intake [ideia]` (skill `skills/feature-intake`) —
+formata uma ideia crua do humano no **mesmo padrão de issue do `product-owner`** e a cria no board,
+pronta para o fluxo. É a porta de entrada humana que espelha o que o PO produz por benchmarking.
+
 **Starter recomendado — a partir de uma issue do board:** `/feature <número-da-issue>` (skill
 `skills/feature`). Roda no thread principal, lê a issue como requisito, cria a branch a
 partir de `develop` e dirige a cadeia inteira até o PR contra `develop` (`Closes #NNN`), parando

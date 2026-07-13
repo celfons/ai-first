@@ -86,6 +86,9 @@ reserva de idempotência, laço da fila, chamada de LLM com timeout+validação+
   `adversarial-reviewer` nunca abaixo de opus/alto (P-14).
 - **Gênese (uma vez):** skill `/ai-first-init` — define contexto + knobs no genoma
   (`docs/ai-first/project.md`). Rode antes de qualquer feature.
+- **Ideia do stakeholder → board:** skill `/feature-intake [ideia]` — formata uma ideia crua do humano
+  no **mesmo padrão de issue do `product-owner`** (dedup + rejeições + gate + labels) e cria no board.
+  O PO decide o quê (benchmarking); o intake só normaliza o que o humano já trouxe.
 - **Starter a partir do board:** skill `/feature <número-da-issue>`.
 - **Rotinas autônomas (crons):** `/daily-backlog` (cria `features_per_day` issues) → ~1h →
   `/daily-build` (implementa + verificação independente + auto-merge em develop + promoção por risco).
