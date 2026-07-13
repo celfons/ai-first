@@ -53,6 +53,9 @@
   - `lint`: `[A DEFINIR]`
   - `test`: `[A DEFINIR]`
   - `eval` (se houver IA): `[A DEFINIR]`
+- **`bdd_style`** (formato dos cenários de aceitação do `bdd-author`): `[gherkin | native | off]`
+  (default **`native`** — cenários espelhando Dado/Quando/Então no framework de teste; `gherkin` =
+  `.feature` + runner Cucumber-style; `off` = sem camada BDD, o `tester` cobre os critérios direto)
 - **Acesso a sinais de produção** (para o `ops-investigator`): `[A DEFINIR]` (API/credencial —
   **nome da env var**, nunca o valor — ou "sem acesso ainda")
 

@@ -36,7 +36,8 @@ descem abaixo de opus/alto, por mais que o custo-benefício empurre para baixo.
 | `ux-designer` | 3½ · DESIGN (UI) | brief de UI/UX — só em UI significativa |
 | `backend-engineer` | 4 · IMPLEMENT | código na branch de feature |
 | `frontend-engineer` | 4 · IMPLEMENT (UI) | implementa a UI — o brief do `ux-designer` ou tweaks diretos |
-| `tester` | 5 · VERIFY | testes + evals; gate verde |
+| `bdd-author` | 4¾ · ACCEPTANCE | critérios de aceite → cenários BDD executáveis (oráculo) — **se `bdd_style ≠ off`** |
+| `tester` | 5 · VERIFY | liga os cenários ao runner + testes + evals; gate verde |
 | `adversarial-reviewer` | 5½ · VERIFY (independente) | tenta QUEBRAR a mudança; dirige o runtime; veredito pode BLOQUEAR o merge |
 | `docs-writer` | 6 · DOCS | `docs/*`, `CLAUDE.md`, spec final coerente |
 | `outcome-analyst` | (resultado) | mede se a feature entregou a métrica de sucesso (§8) com uso real |
@@ -63,8 +64,9 @@ flowchart TD
   ARCH["🏗 architect<br/>plan.md + tasks.md + ADR"] -->|"gate humano"| DEC
   DEC{{"🧩 task-decomposer<br/>micro-slices se grande"}} -->|"slice a slice · contexto isolado"| BE
   BE["⚙️ backend/frontend-engineer<br/>cada slice · árvore verde"] -->|"próxima slice"| BE
-  BE --> TEST
-  TEST["🧪 tester<br/>testes + evals"]
+  BE --> BDD
+  BDD{{"🥒 bdd-author<br/>cenários de aceitação · oráculo"}} --> TEST
+  TEST["🧪 tester<br/>liga os cenários + testes + evals"]
   TEST -->|"bug de produção"| BE
   TEST -->|"verde"| ADV["🛡 adversarial-reviewer<br/>tenta quebrar · dirige runtime"]
   ADV -->|"bloqueia"| BE
@@ -107,9 +109,10 @@ sdd-orchestrator  → devolve o plano de delegação (roteia modelo+esforço)
      └─ architect      (PLAN)      → plan.md + tasks.md (+ ADR se durável)
         └─ task-decomposer (DECOMPOSE, só se grande) → micro-slices + slice de integração
            └─ backend-engineer (IMPLEMENT) → slice a slice, cada uma em contexto ISOLADO
-              └─ tester    (VERIFY)   → testes por slice + ponta-a-ponta da integração
-                 └─ adversarial-reviewer (VERIFY independente) → tenta quebrar o agregado
-                    └─ docs-writer (DOCS) → docs coerentes
+              └─ bdd-author  (ACCEPTANCE) → cenários executáveis dos critérios de aceite (oráculo)
+                 └─ tester    (VERIFY)   → liga os cenários ao runner + testes por slice + integração
+                    └─ adversarial-reviewer (VERIFY independente) → tenta quebrar o agregado
+                       └─ docs-writer (DOCS) → docs coerentes
 ```
 
 > **Decompor para não alucinar:** feature grande é fatiada em **micro-slices** pelo `task-decomposer`;
