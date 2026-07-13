@@ -1,0 +1,40 @@
+name: Plugin validate
+
+# Valida o manifesto do plugin + o inventário de componentes COMO TESTE — gate no CI.
+# Pega manifesto malformado e "componente-fantasma" (ex.: um doc sem frontmatter dentro de
+# agents/ carregado como subagente). Marque `validate` como required check em develop/main.
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [develop, main]
+    paths:
+      - ".claude-plugin/**"
+      - "agents/**"
+      - "skills/**"
+      - "scripts/validate-plugin.mjs"
+      - ".github/workflows/plugin-validate.yml"
+  merge_group:
+
+concurrency:
+  group: plugin-validate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      # Arm autoritativo (best-effort): o CLI carrega o plugin de fato.
+      # Se a instalação falhar, o script cai na validação estrutural (que é o gate real).
+      - name: Instalar Claude Code CLI (autoritativo, best-effort)
+        run: npm i -g @anthropic-ai/claude-code
+        continue-on-error: true
+
+      # Gate: estrutural sempre + autoritativo se o CLI estiver presente.
+      - name: Validar plugin (manifesto + componentes)
+        run: node scripts/validate-plugin.mjs
