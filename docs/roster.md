@@ -246,6 +246,12 @@ teto `features_per_day` do diário. Histórias soltas (fatias verticais) ou **é
 histórias-filhas** vinculadas por sub-issue do GitHub (a issue-mãe leva `epic` + `needs-human-triage`;
 quem implementa são as filhas). Mesmo rigor de benchmarking, dedup, ledger e labels do `/daily-backlog`.
 
+**Arranque imediato (logo após a gênese):** `/kickoff [quantidade]` (skill `skills/kickoff`) — liga o
+desenvolvimento **na hora**, sem esperar o cron: semeia o backlog inicial pelo `product-owner` e
+desenvolve até `parallelism` fatias **em paralelo** (contextos/worktrees isolados) pelo motor do
+`/daily-build`, com **merge serializado** em `develop`. Exige o genoma armado. A própria gênese o
+oferece no fim.
+
 **Starter recomendado — a partir de uma issue do board:** `/feature <número-da-issue>` (skill
 `skills/feature`). Roda no thread principal, lê a issue como requisito, cria a branch a
 partir de `develop` e dirige a cadeia inteira até o PR contra `develop` (`Closes #NNN`), parando
