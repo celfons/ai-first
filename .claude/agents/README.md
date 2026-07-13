@@ -46,51 +46,51 @@ descem abaixo de opus/alto, por mais que o custo-benefício empurre para baixo.
 ```mermaid
 flowchart TD
   CRONA["⏰ Cron 1<br/>skill /daily-backlog"]
-  CRONB["⏰ Cron 2 (+1h)<br/>skill /daily-build"]
-  HUMAN["👤 Humano (stakeholder)<br/>skill /feature #NNN"]
+  CRONB["⏰ Cron 2 · +1h<br/>skill /daily-build"]
+  HUMAN["👤 Humano stakeholder<br/>skill /feature NNN"]
 
   CRONA --> PO["🧭 product-owner<br/>features_per_day · mercado + resultado"]
-  PO -->|cria a issue do dia| BOARD[("📋 Board GitHub<br/>backlog priorizado")]
-  CRONB -->|pega a issue do dia| BOARD
+  PO -->|"cria a issue do dia"| BOARD[("📋 Board GitHub<br/>backlog priorizado")]
+  CRONB -->|"pega a issue do dia"| BOARD
   BOARD --> ORCH
-  HUMAN -->|escolhe um card| ORCH
+  HUMAN -->|"escolhe um card"| ORCH
 
   ORCH["🗂 sdd-orchestrator<br/>classifica tamanho + plano de delegação"]
-  ORCH -->|grande / risco arquitetural| TRIAGE{{"🚧 needs-human-triage<br/>(não auto-implementa)"}}
-  ORCH -->|trivial / média| SPEC
+  ORCH -->|"grande / risco arquitetural"| TRIAGE{{"🚧 needs-human-triage"}}
+  ORCH -->|"trivial / média"| SPEC
 
-  SPEC["📐 feature-spec<br/>spec.md + gate constitucional"] -->|gate*| ARCH
-  ARCH["🏗 architect<br/>plan.md + tasks.md + ADR"] -->|gate*| DEC
-  DEC{{"🧩 task-decomposer<br/>micro-slices (só se grande)"}} -->|slice a slice · contexto isolado| BE
-  BE["⚙️ backend/frontend-engineer<br/>cada slice · árvore verde"] -->|próxima slice| BE
+  SPEC["📐 feature-spec<br/>spec.md + gate constitucional"] -->|"gate humano"| ARCH
+  ARCH["🏗 architect<br/>plan.md + tasks.md + ADR"] -->|"gate humano"| DEC
+  DEC{{"🧩 task-decomposer<br/>micro-slices se grande"}} -->|"slice a slice · contexto isolado"| BE
+  BE["⚙️ backend/frontend-engineer<br/>cada slice · árvore verde"] -->|"próxima slice"| BE
   BE --> TEST
   TEST["🧪 tester<br/>testes + evals"]
-  TEST -->|bug de produção| BE
-  TEST -->|verde| ADV["🛡 adversarial-reviewer<br/>tenta quebrar · dirige runtime"]
-  ADV -->|BLOQUEIA| BE
-  ADV -->|aprova| DOCS["📚 docs-writer<br/>docs + spec coerentes"]
-  DOCS --> PRDEV["🔀 PR → develop · Closes #NNN"]
+  TEST -->|"bug de produção"| BE
+  TEST -->|"verde"| ADV["🛡 adversarial-reviewer<br/>tenta quebrar · dirige runtime"]
+  ADV -->|"bloqueia"| BE
+  ADV -->|"aprova"| DOCS["📚 docs-writer<br/>docs + spec coerentes"]
+  DOCS --> PRDEV["🔀 PR contra develop · Closes NNN"]
 
-  PRDEV -->|CI verde + veredito ok| MERGEDEV(["✅ merge em develop"])
+  PRDEV -->|"CI verde + veredito ok"| MERGEDEV(["✅ merge em develop"])
   MERGEDEV --> TIER{{"tier de risco<br/>+ autonomy_level"}}
-  TIER -->|🟢 (nível permite)| PROD(["🏁 main / produção<br/>auto-promovida"])
-  TIER -->|🟡/🔴| PROM["🚀 PR develop → main<br/>(abre/atualiza, não mergeia)"]
+  TIER -->|"🟢 nível permite"| PROD(["🏁 main · produção<br/>auto-promovida"])
+  TIER -->|"🟡 / 🔴"| PROM["🚀 PR develop → main<br/>abre, não mergeia"]
   PROM --> REVIEW{{"👤 Revisão do stakeholder<br/>gate por risco"}}
-  REVIEW -->|aprova + merge| PROD
-  REVIEW -->|reprova feature| REJECT["↩️ skill /reject-feature<br/>revert em develop · reabre issue"]
-  PROD -.->|mede resultado| OUT["📈 outcome-analyst<br/>/daily-outcome"]
-  OUT -.->|dado real| PO
-  PROD -.->|incidente| ROLL["🚑 /rollback"]
+  REVIEW -->|"aprova + merge"| PROD
+  REVIEW -->|"reprova feature"| REJECT["↩️ skill /reject-feature<br/>revert em develop · reabre issue"]
+  PROD -.->|"mede resultado"| OUT["📈 outcome-analyst<br/>/daily-outcome"]
+  OUT -.->|"dado real"| PO
+  PROD -.->|"incidente"| ROLL["🚑 /rollback"]
 
-  REJECT -.->|retrabalho| BOARD
-  TRIAGE -.->|humano especifica depois| BOARD
+  REJECT -.->|"retrabalho"| BOARD
+  TRIAGE -.->|"humano especifica depois"| BOARD
 
   CRONC["⏰ Cron 3<br/>/daily-tech-scan"]
   CRONC --> TA["🔎 tech-auditor"]
-  TA -->|issues needs-human-triage<br/>SEM po-suggested = fora do build| BOARD
+  TA -->|"needs-human-triage · fora do build"| BOARD
   CROND["⏰ Cron 4<br/>/daily-ops-scan"]
   CROND --> OI["🩺 ops-investigator"]
-  OI -->|issues needs-human-triage| BOARD
+  OI -->|"needs-human-triage"| BOARD
 ```
 
 **gate\*** — no `/feature` **manual**, o fluxo PARA para aprovação humana após a `spec.md` e
