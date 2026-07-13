@@ -39,5 +39,10 @@ Estas não são de um domínio — são o pano de fundo de todos. Antes de qualq
 Aprendizado de produto (o que o dono recusou): [`docs/product/rejections.md`](product/rejections.md)
 — o `product-owner` lê para não repropor rejeições do tipo `produto`.
 
+**Saber-fazer transversal:** [`docs/knowledge.md`](knowledge.md) — padrões ("faça assim") e
+**anti-padrões** ("cuidado") do projeto; carregue os relevantes ao domínio antes de implementar/revisar.
+**Trajetória:** [`docs/evolution.md`](evolution.md) — linha do tempo de mudanças + aprendizados (o que
+o uso real ensinou); leia antes de grandes apostas para não reabrir o que já se aprendeu.
+
 > **Ligação de volta (ADR → código):** cada ADR referencia os módulos/`P-#` que restringe; este
 > mapa é o caminho inverso (domínio → ADRs). Juntos formam o grafo navegável leve.

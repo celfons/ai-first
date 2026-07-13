@@ -292,6 +292,11 @@ O que faz cada feature decidir **à luz das anteriores**, em vez de do zero:
   antes de decidir e escreve o ADR; ninguém re-litiga uma decisão viva em silêncio.
 - **Ledger de rejeições** ([`docs/product/rejections.md`](docs/product/rejections.md)) — todo "não" do
   dono vira aprendizado, para o `product-owner` não repropor a mesma coisa.
+- **Conhecimento** ([`docs/knowledge.md`](docs/knowledge.md)) — **padrões** ("faça assim") e
+  **anti-padrões** ("cuidado") curados: o saber-fazer que reduz alucinação. Todo bug caçado vira
+  regressão **e** anti-padrão; o `adversarial-reviewer` usa a lista como checklist.
+- **Evolução** ([`docs/evolution.md`](docs/evolution.md)) — a **linha do tempo de aprendizados**: o que
+  mudou e o que o uso real ensinou, costurando ADRs + rejeições + resultado numa narrativa única.
 - **Resultado real** (`outcome-analyst`) — o uso mostra o que funcionou; o PO dobra no que deu certo e
   itera/para no que não deu. É a retroalimentação mais valiosa e a mais esquecida em automação.
 
@@ -354,7 +359,9 @@ ai-first/                          · o repo É o plugin (source "./" no marketp
 │   │   ├── templates/             · spec / plan / tasks
 │   │   └── features/              · uma pasta NNN-slug por feature (com um exemplo)
 │   ├── adr/                       · README (índice) + template + ADR-0001 (método) + ADR-0002 (migração)
-│   ├── context-map.md             · o context mesh leve
+│   ├── context-map.md             · o context mesh leve (domínio → código+docs+ADRs+testes)
+│   ├── knowledge.md               · padrões + anti-padrões (saber-fazer curado)
+│   ├── evolution.md               · linha do tempo de aprendizados (o que mudou + o que ensinou)
 │   ├── roster.md                  · visão geral dos 16 subagentes (fora de agents/ p/ não virar componente)
 │   └── product/rejections.md      · ledger de rejeições
 ├── scripts/

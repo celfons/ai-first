@@ -28,7 +28,8 @@ nunca sobrescreve o que você já tem sem confirmar).
    - `docs/sdd/` → `constitution.md` (Parte A universal + Parte B placeholder), `README.md`,
      `specification.md`, `technical-plan.md`, `tasks.md`, `templates/` (spec/plan/tasks).
    - `docs/adr/` → `README.md` (índice) + `template.md` (+ o `0001` de adoção, ajustado ao projeto).
-   - `docs/context-map.md`, `docs/product/rejections.md`.
+   - `docs/context-map.md`, `docs/product/rejections.md`, `docs/knowledge.md` (padrões + anti-padrões),
+     `docs/evolution.md` (linha do tempo de aprendizados — nasce vazia).
    - `docs/ai-first/project.md` (o **genoma** em branco — é o que você preenche na entrevista abaixo).
    - `.github/` → `pull_request_template.md`, `ISSUE_TEMPLATE.md`, `workflows/ci.yml`,
      `workflows/ai-first-cron.yml`.
@@ -107,9 +108,13 @@ contexto, mas a **semente do que construir primeiro**. Pergunte:
 - **Grava em:** `docs/sdd/constitution.md` (Parte B + tags de aplicabilidade) + `CLAUDE.md`
   (invariantes).
 
-### 7 · Pontos de extensão e qualidade
+### 7 · Pontos de extensão, qualidade e saber-fazer
 - **Pontos de extensão:** como comportamento novo entra sem tocar no núcleo (nova rota, novo
   provedor atrás de porta, novo efeito/handler, nova strategy, novo repositório).
+- **Padrões e anti-padrões iniciais (`docs/knowledge.md`):** pergunte os **idiomas** do hot path (o
+  jeito certo de fazer as coisas neste projeto) e as **armadilhas** já conhecidas (o que evitar). Semeie
+  as primeiras linhas do `knowledge.md` — o acervo cresce depois (bug caçado vira anti-padrão). Se o
+  dono não souber ainda, deixe o esqueleto; o `docs-writer` preenche ao longo das features.
 - **Comandos de qualidade REAIS:** os comandos exatos de `typecheck`, `lint`, `test` e (se houver
   IA) `eval`. Se algum não existe ainda, registre como `[A DEFINIR]` e sinalize que o gate fica
   incompleto até existir.
@@ -119,9 +124,9 @@ contexto, mas a **semente do que construir primeiro**. Pergunte:
   `tester` cobre os critérios direto — só para projetos muito pequenos). Confirme o framework de teste.
 - **Sinais de observabilidade:** como o `ops-investigator` alcança métricas/logs/DLQ em produção
   (qual API/credencial) — ou "sem acesso ainda" (aí o cron reporta sinais cegos, não finge saúde).
-- **Grava em:** `CLAUDE.md` (pontos de extensão + padrões), `.github/workflows/ci.yml` (comandos),
-  `skills/new-extension` (ajuste ao mecanismo real), `agents/ops-investigator.md`
-  (forma de acesso).
+- **Grava em:** `CLAUDE.md` (pontos de extensão + padrões one-liner), `docs/knowledge.md` (padrões +
+  anti-padrões detalhados), `.github/workflows/ci.yml` (comandos), `skills/new-extension` (ajuste ao
+  mecanismo real), `agents/ops-investigator.md` (forma de acesso).
 
 ### 8 · Fluxo de git e autonomia (como o organismo cresce e quando chama o humano)
 Estes são os **knobs ajustáveis** (P-15) — o humano pode mudá-los aqui e a qualquer momento depois.

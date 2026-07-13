@@ -5,8 +5,10 @@ Contexto para sessões de IA (Claude Code) **deste repositório**. Este arquivo 
 de qualquer coisa. Para detalhes, veja `docs/sdd/` (constituição, spec, plano, ciclo SDD),
 `docs/adr/` (decisões arquiteturais — **leia o índice antes de decidir algo durável**),
 `docs/context-map.md` (**mapa de contexto**: domínio → código+docs+ADRs+testes — carregue a linha
-do domínio que vai tocar em vez de reler a base) e `docs/product/rejections.md` (**ledger de
-rejeições**: o `product-owner` lê para não repropor o que o dono já recusou).
+do domínio que vai tocar em vez de reler a base), `docs/product/rejections.md` (**ledger de
+rejeições**: o `product-owner` lê para não repropor o que o dono já recusou), `docs/knowledge.md`
+(**saber-fazer**: padrões + **anti-padrões** — carregue antes de implementar/revisar) e
+`docs/evolution.md` (**linha do tempo de aprendizados**: o que mudou e o que o uso real ensinou).
 
 > ⚠️ **Este é o `CLAUDE.md` do framework `ai-first` (esqueleto).** As seções marcadas `_(preencha)_`
 > são preenchidas **na gênese, pela skill primária [`/ai-first-init`](skills/ai-first-init/SKILL.md)**,
@@ -61,6 +63,10 @@ _(preencha)_ — Onde comportamento novo entra sem tocar no núcleo. É o que a 
 
 _(preencha)_ — Os idiomas do hot path do seu projeto, em uma linha cada (ex.: batch de banco,
 reserva de idempotência, laço da fila, chamada de LLM com timeout+validação+fallback).
+
+> **Versão profunda + anti-padrões:** [`docs/knowledge.md`](docs/knowledge.md). Aqui ficam só as
+> one-liners; lá moram os padrões detalhados e as **armadilhas a evitar** (o `adversarial-reviewer` as
+> usa como checklist de caça).
 
 ## Convenções
 
