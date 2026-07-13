@@ -41,7 +41,7 @@ As universais do método (ver `docs/sdd/constitution.md`) + as específicas do p
 - Efeito novo → **handler/Action** + regra declarativa que o dispara.
 - Dado novo → método na **porta de dados** (repositório).
 - Extensão de comportamento/plugin/strategy → o mecanismo do projeto (skill
-  `.claude/skills/new-extension` se houver).
+  `skills/new-extension` se houver).
 - Migration/esquema → arquivo versionado; sempre com a chave de escopo; índice casando o `WHERE`.
 
 ## Fluxo de trabalho

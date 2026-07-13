@@ -2,7 +2,7 @@
 
 > **Fonte de verdade do CONTEXTO** deste projeto — stack, cloud, arquitetura, infra e produto.
 > É o **primeiro arquivo** que qualquer sessão/subagente lê para saber "onde estou". Preenchido
-> **uma vez** pela skill primária [`/ai-first-init`](../../.claude/skills/ai-first-init/SKILL.md) e
+> **uma vez** pela skill primária [`/ai-first-init`](../../skills/ai-first-init/SKILL.md) e
 > revisado por ela quando algo estrutural muda.
 >
 > Enquanto os campos estiverem `[A DEFINIR]`, o organismo **não está armado**: rode `/ai-first-init`.

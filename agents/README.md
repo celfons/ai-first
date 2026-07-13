@@ -1,6 +1,6 @@
 # 🤖 Subagentes (Claude Code) — o roster do método `ai-first`
 
-Estes são **subagentes do Claude Code** (`.claude/agents/*.md`): ferramentas de
+Estes são **subagentes do Claude Code** (`agents/*.md`): ferramentas de
 **desenvolvimento** que executam o ciclo SDD. Cada subagente carrega, pré-compilado, o
 subconjunto de convenções da sua fase — assim o thread principal delega com um **escopo curto**
 em vez de reexplicar as invariantes a cada turno. Isso mantém o contexto principal enxuto
@@ -131,14 +131,14 @@ sdd-orchestrator  → devolve o plano de delegação (roteia modelo+esforço)
 
 ## Retroalimentação — o que faz cada feature decidir à luz das anteriores
 
-- **ADRs** ([`docs/adr/`](../../docs/adr/)) — cada decisão arquitetural durável (contexto →
+- **ADRs** ([`docs/adr/`](../docs/adr/)) — cada decisão arquitetural durável (contexto →
   decisão → alternativas → consequências → status). O `architect` **lê o índice antes de
   decidir** e **escreve o ADR**; o `product-owner` consulta para não contradizer decisões
   vivas; o `docs-writer` mantém índice e status. O *porquê* das escolhas vira acervo cumulativo.
-- **Ledger de rejeições** ([`docs/product/rejections.md`](../../docs/product/rejections.md)) — o
+- **Ledger de rejeições** ([`docs/product/rejections.md`](../docs/product/rejections.md)) — o
   par negativo dos ADRs: toda feature reprovada pelo dono deixa o **motivo** e o **takeaway** (via
   `/reject-feature`). O `product-owner` **lê antes de propor**, então não repropõe um "não".
-- **Mapa de contexto** ([`docs/context-map.md`](../../docs/context-map.md)) — a versão *leve e
+- **Mapa de contexto** ([`docs/context-map.md`](../docs/context-map.md)) — a versão *leve e
   determinística* de um context mesh: por domínio, aponta código ⇄ docs ⇄ ADRs ⇄ features ⇄
   testes. Cada subagente carrega **aquela** fatia em vez de reler a base.
 
@@ -210,8 +210,12 @@ silêncio** — encerra com um **alerta push/e-mail** dizendo o que falhou e a f
 
 ## Como invocar
 
+**Ideia do stakeholder → board:** `/feature-intake [ideia]` (skill `skills/feature-intake`) —
+formata uma ideia crua do humano no **mesmo padrão de issue do `product-owner`** e a cria no board,
+pronta para o fluxo. É a porta de entrada humana que espelha o que o PO produz por benchmarking.
+
 **Starter recomendado — a partir de uma issue do board:** `/feature <número-da-issue>` (skill
-`.claude/skills/feature`). Roda no thread principal, lê a issue como requisito, cria a branch a
+`skills/feature`). Roda no thread principal, lê a issue como requisito, cria a branch a
 partir de `develop` e dirige a cadeia inteira até o PR contra `develop` (`Closes #NNN`), parando
 nos gates após a spec e após o plan.
 
