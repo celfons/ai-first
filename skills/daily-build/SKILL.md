@@ -41,6 +41,14 @@ Para **cada** issue selecionada, rode o **fluxo `/feature`** em **modo autônomo
 como oráculo) → `docs-writer`. **Invoque cada subagente com o modelo (`haiku`/`sonnet`/`opus`/`fable`) e o esforço
 (`baixo`/`médio`/`alto`/`extra`) que o orchestrator roteou** (ele também aplica a tag `model:*`/
 `effort:*` na issue).
+
+> **Eficiência de token (obrigatória — `docs/token-efficiency.md`).** Em cada fatia: (1) monte o
+> **BLOCO DE CONTEXTO FIXO** uma vez (CLAUDE.md + constitution + linhas do `context-map` que o
+> orchestrator citou) e passe-o **idêntico e primeiro** a cada subagente → cache de prompt; (2) passe
+> `model`/`effort` do plano em **cada** `Agent()` — nunca o default (piso opus/alto para
+> `adversarial-reviewer` e invariante/segurança); (3) exija **retorno enxuto** (status · tocou · p/ o
+> próximo · bloqueios), detalhe só quando o `adversarial-reviewer` bloqueia. Com opt-in do humano por
+> `Workflow`, paralelize as etapas `paralelo:sim` e imponha `budget.total` = `daily_budget`.
 - **Se a feature foi decomposta:** implemente **slice a slice, cada uma numa invocação isolada** do
   `backend-engineer` (só o contexto da slice → janela menor, menos alucinação), **árvore verde ao fim
   de cada slice** (parcial atrás de flag), e a **slice de integração** por último. Verifique cada slice

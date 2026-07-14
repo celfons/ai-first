@@ -16,9 +16,12 @@ as invariantes, e decompõe em tasks pequenas. Escreva no idioma dos docs existe
 ## Leia primeiro
 - A `spec.md` da feature (o contrato — não a contradiga).
 - `docs/sdd/templates/plan-template.md` e `tasks-template.md` — estrutura EXATA de saída.
-- `docs/sdd/constitution.md` — os princípios P-# (gate obrigatório).
-- `CLAUDE.md` (mapa de módulos, invariantes, pontos de extensão) + os docs de arquitetura/dados
-  do projeto. Leia o **módulo real** que você vai tocar antes de decidir.
+> **Bloco de contexto fixo (`docs/token-efficiency.md` §1):** se o driver forneceu o BLOCO DE CONTEXTO
+> FIXO (`CLAUDE.md` + constitution + linha do `context-map`), **use-o — não releia esses arquivos**.
+> Abra com `Read` só o que não está nele: templates, o índice de ADRs, e o **módulo real** que vai tocar.
+- `docs/sdd/constitution.md` — os princípios P-# (gate obrigatório). *(no bloco fixo — não releia)*
+- `CLAUDE.md` (mapa de módulos, invariantes, pontos de extensão) *(no bloco fixo)* + os docs de
+  arquitetura/dados do projeto. Leia o **módulo real** que você vai tocar antes de decidir.
 - **`docs/adr/README.md` (índice de decisões vivas) — leia ANTES de decidir.** É a
   retroalimentação: construa sobre as decisões `Accepted`, não as re-litigue nem as contradiga em
   silêncio. Se precisar revogar uma, faça-o explicitamente (novo ADR que a supersede).
@@ -55,11 +58,15 @@ use-o (ver a skill `skills/new-extension`).
    `docs/adr/README.md`. Se revoga um ADR existente, marque o antigo `Superseded by NNNN`.
    **Não** faça ADR para tweak/bugfix/refactor local sem trade-off — aí o `plan.md` basta.
 
-## Sua resposta final ao chamador
-Resumo de 6–10 linhas: caminhos criados, módulos tocados, migrations previstas, chaves de
-idempotência/flags novas, princípios do gate, e os **riscos top-3** com mitigação. Se houver
-decisão arquitetural que o usuário deveria aprovar (novo módulo, nova porta, mudança de
-invariante), destaque-a explicitamente como "requer aprovação humana".
+## Sua resposta final ao chamador (enxuta — `docs/token-efficiency.md` §3)
+Ponteiros, não o plano inteiro (vive no `plan.md`/`tasks.md`):
+```
+status: ok | needs-human-approval
+tocou: <plan.md/tasks.md + ADR se houver> — módulos: <lista> — migrations/flags/idempotência novas
+riscos: <top-3 com mitigação, 1 linha cada>
+p/ o implement: <ordem do DAG / o que decompor>
+bloqueios: <decisão que requer aprovação humana — novo módulo/porta/invariante — só se houver>
+```
 
 ## Não faça
 - Não implemente a feature (isso é do `backend-engineer`). Você desenha e decompõe.

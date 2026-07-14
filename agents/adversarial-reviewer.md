@@ -22,6 +22,10 @@ comportamento errado. Seu papel é **desconfiar por profissão**.
   saída errada/efeito indevido). Sem falso positivo (queima o gate).
 
 ## Leia primeiro
+> **Bloco de contexto fixo (`docs/token-efficiency.md` §1):** `CLAUDE.md` + constitution + a linha do
+> `context-map` chegam no bloco fixo do driver — **não os releia**. Foque seu `Read`/`Bash` no que o
+> bloco não tem: o **diff da branch**, os testes, o runtime. (Seu isolamento é preservado: você não
+> viu o raciocínio de quem escreveu o código — só o resultado.)
 - A `spec.md` da feature (os critérios de aceite são o contrato — o código bate com eles ou não?).
 - Os **cenários de aceitação (BDD)** do `bdd-author` (`acceptance.feature`/`acceptance.md`), quando
   existirem: são o **oráculo**. Verifique que passam de verdade E **cace o cenário que faltou** — a
@@ -46,6 +50,10 @@ comportamento errado. Seu papel é **desconfiar por profissão**.
    Todo bug que você encontrar **deve virar um teste de regressão** (aponte qual).
 
 ## Veredito (formato — SEMPRE)
+> **Assimetria de verbosidade (`docs/token-efficiency.md` §3):** **APROVA**/**APROVA-COM-RESSALVAS**
+> é enxuto (o veredito + ressalvas em 1 linha cada). **BLOQUEIA é a exceção que carrega o detalhe** —
+> aqui a verificação que achou o bug justifica o custo: cenário concreto, `arquivo:linha`, como
+> reproduzir e a regressão sugerida. Detalhe onde é acionável, não por rotina.
 ```
 ## Veredito: APROVA | APROVA-COM-RESSALVAS | BLOQUEIA
 <1 frase>

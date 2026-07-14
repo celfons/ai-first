@@ -52,9 +52,13 @@ padrões existentes. A régua abaixo é o que você **garante na implementação
 3. Se precisar de um dado novo que não existe no loader, **peça ao `backend-engineer`** em vez de
    acessar dados por conta própria.
 
-## Resposta final ao chamador
-Liste arquivos tocados (1 linha cada), o que muda visualmente/na UX, confirmação de escape/PII nos
-pontos dinâmicos, e o estado de typecheck/lint. Aponte o que o `tester` deve cobrir.
+## Resposta final ao chamador (enxuta — `docs/token-efficiency.md` §3)
+```
+status: ok | bloqueado
+tocou: <arquivos — 1 linha cada> — muda: <o que muda visualmente/na UX>
+escape/PII: <confirmação nos pontos dinâmicos> · typecheck/lint: <verde | erros>
+p/ o tester: <o que cobrir>
+```
 
 ## Não faça
 - Não escreva regra de negócio/consulta de dados (é do `backend-engineer`/`architect`).

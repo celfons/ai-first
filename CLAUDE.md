@@ -8,7 +8,10 @@ de qualquer coisa. Para detalhes, veja `docs/sdd/` (constituição, spec, plano,
 do domínio que vai tocar em vez de reler a base), `docs/product/rejections.md` (**ledger de
 rejeições**: o `product-owner` lê para não repropor o que o dono já recusou), `docs/knowledge.md`
 (**saber-fazer**: padrões + **anti-padrões** — carregue antes de implementar/revisar) e
-`docs/evolution.md` (**linha do tempo de aprendizados**: o que mudou e o que o uso real ensinou).
+`docs/evolution.md` (**linha do tempo de aprendizados**: o que mudou e o que o uso real ensinou) e
+`docs/token-efficiency.md` (**política de eficiência de token**: bloco de contexto fixo p/ cache,
+roteamento de modelo obrigatório, retorno enxuto, `Workflow` — como todo *driver* gasta token com
+intenção sem enfraquecer o isolamento/revisão independente).
 
 > ⚠️ **Este é o `CLAUDE.md` do framework `ai-first` (esqueleto).** As seções marcadas `_(preencha)_`
 > são preenchidas **na gênese, pela skill primária [`/ai-first-init`](skills/ai-first-init/SKILL.md)**,

@@ -41,15 +41,33 @@ gates mesmo se o usuário pediu autônomo — confirme antes de implementar.
 
 ### 2 · Plano de delegação + roteamento (orchestrator)
 Invoque o subagente **`sdd-orchestrator`** (que roda fixo em **opus/alto** — o único assim) passando o
-resumo da issue. Ele devolve: classificação de tamanho, princípios tocados, a **tag de roteamento**
-(`model:*`/`effort:*`, que ele aplica na issue), e o plano de delegação ordenado **com o modelo e o
-esforço recomendados por etapa** (custo-benefício). Use esse plano como roteiro — **trivial** pula
-spec/plan e vai direto a `backend-engineer` → `tester`.
+resumo da issue. Ele devolve: classificação de tamanho, o **contexto fixo da fatia** (linhas do
+`context-map`), princípios tocados, a **tag de roteamento** (`model:*`/`effort:*`, que ele aplica na
+issue), e o plano de delegação parseável **com modelo, esforço e `paralelo:` por etapa**. Use esse
+plano como roteiro — **trivial** pula spec/plan e vai direto a `backend-engineer` → `tester`.
 
-**Modelo + esforço por etapa:** invoque **cada** subagente com o **modelo** (`haiku`/`sonnet`/`opus`/
-`fable`) e o **esforço** (`baixo`/`médio`/`alto`/`extra`) que o orchestrator roteou — via os parâmetros
-`model`/`effort` do driver ao chamar o Agent. Nunca sub-provisione o `adversarial-reviewer` nem etapas
-de invariante/segurança (mínimo opus/alto), mesmo que o custo-benefício sugira menos.
+### 2½ · Eficiência de token (política — `docs/token-efficiency.md`)
+Antes de disparar os subagentes, aplique as três alavancas de custo (sem enfraquecer isolamento/
+revisão independente):
+- **Bloco de contexto fixo (§1).** Monte UMA vez, a partir das linhas do `context-map` que o
+  orchestrator citou, o **BLOCO DE CONTEXTO FIXO** = `CLAUDE.md` + `docs/sdd/constitution.md` + essas
+  linhas. Passe-o **idêntico e primeiro** a cada subagente (o que varia — papel, spec, escopo da slice
+  — vem depois). Prefixo estável = cache de prompt: o 2º…Nº subagente paga ~10% da leitura-base.
+- **Modelo + esforço por etapa (§2).** Invoque **cada** subagente via `Agent({model, effort})` com o
+  `model` (`haiku`/`sonnet`/`opus`/`fable`) e o `effort` (`baixo`/`médio`/`alto`/`extra`) **exatos** do
+  plano. Nunca deixe cair no modelo-default da sessão. **Piso inegociável:** `adversarial-reviewer` e
+  etapas de invariante/segurança/efeito de alto valor **nunca** abaixo de **opus/alto**.
+- **Retorno enxuto (§3).** Peça a cada subagente o retorno estruturado curto (status · tocou · p/ o
+  próximo · bloqueios) — ponteiros, não cópias (a auditoria vive no commit/spec/PR). Exceção: o
+  `adversarial-reviewer`, **ao BLOQUEAR**, devolve o detalhe (invariante/cenário quebrado + repro).
+
+### 2¾ · `Workflow` (opcional — só com opt-in do humano)
+Se — e só se — o humano pediu orquestração multi-agente (ex.: "use um workflow"/"ultracode"), rode a
+fatia via `Workflow` em vez de sequencial: paralelize as etapas marcadas `paralelo:sim` (`bdd-author`/
+`ux-designer`, que dependem só da spec/plan) com o implement, e imponha `budget.total` casado ao
+`daily_budget` do genoma. Dentro do `Workflow` valem as mesmas regras: bloco fixo, `model`/`effort` por
+`agent()`, piso opus/alto do `adversarial-reviewer`, isolamento preservado. **Sem opt-in, siga
+sequencial** — não dispare `Workflow` por conta própria.
 
 ### 3 · SPECIFY (gate)
 1. Invoque **`feature-spec`** com a issue. Ele cria `docs/sdd/features/<n>-<slug>/spec.md`.

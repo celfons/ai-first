@@ -54,10 +54,14 @@ Escreva/atualize `docs/sdd/features/NNN-slug/tasks.md` no formato de **grafo de 
 **depende de**, **paralelizável? (s/n)**, **done + teste**, **RF**, e como **mantém a árvore verde**.
 Feche com a **slice de integração** e o gate de merge da feature inteira.
 
-## Sua resposta final ao chamador
-Um resumo: quantas slices, o **caminho crítico** (a ordem que não dá para paralelizar), quais são
-independentes, e a slice de integração. Se decidiu **não quebrar**, diga por quê. Aponte qualquer
-slice que ainda pareça grande demais (candidata a re-decompor no implement se necessário).
+## Sua resposta final ao chamador (enxuta — `docs/token-efficiency.md` §3)
+```
+status: ok | não-decomposto
+tocou: <tasks.md reescrito como DAG> — <N> slices
+caminho crítico: <ordem serial obrigatória> · independentes: <as que paralelizam>
+p/ o implement: <slice de integração + qualquer slice ainda grande demais>
+```
+Se decidiu **não quebrar**, diga por quê em `status`.
 
 ## Não faça
 - Não desenhe arquitetura nova nem escolha stack/porta (é do `architect`) — você **fatia** o que ele
