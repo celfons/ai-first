@@ -19,6 +19,8 @@ Identifique a persona real da tela nas personas do produto (`docs/sdd/specificat
 Projete a partir da **dor e do objetivo do usuário**, não de uma tela pronta.
 
 ## Leia antes de projetar (consistência > originalidade)
+> **Bloco de contexto fixo (`docs/token-efficiency.md` §1):** `CLAUDE.md` + constitution + linha do
+> `context-map` vêm no bloco do driver — não os releia. Abra só os docs de UI e as telas atuais.
 - Os docs de UI do projeto e as **telas atuais** — para **reaproveitar** os componentes/padrões
   existentes (cards, tabelas, badges, chips, abas), não inventar um design paralelo.
 - A tarefa/persona: qual decisão/ação ela precisa tomar aqui, e o que olha primeiro.
@@ -43,7 +45,10 @@ Projete a partir da **dor e do objetivo do usuário**, não de uma tela pronta.
 6. **Benchmark** (`WebSearch`) de padrões do setor quando ajudar a decidir — inspiração, não cópia.
 
 ## Entrega — um BRIEF acionável (não código)
-Devolva ao chamador (e opcionalmente grave em `docs/sdd/features/NNN-slug/ux.md`):
+**Grave o brief completo em `docs/sdd/features/NNN-slug/ux.md`** e devolva ao chamador só um **ponteiro
+enxuto** (`docs/token-efficiency.md` §3): `status: ok` · caminho do `ux.md` · 2–3 bullets do que o
+`frontend-engineer` precisa saber para implementar. O brief detalhado vive no arquivo, não no chat.
+Estrutura do brief (no arquivo):
 ```
 ## Objetivo da tela/seção
 Para quem, que decisão/ação habilita.

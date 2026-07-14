@@ -14,10 +14,15 @@ pelo resto do time: mesmos idiomas, mesma densidade de comentário, mesmos nomes
 mensagens no idioma padrão do arquivo.
 
 ## Antes de tocar em código
+> **Bloco de contexto fixo (`docs/token-efficiency.md` §1):** se o driver forneceu o BLOCO DE CONTEXTO
+> FIXO (`CLAUDE.md` + constitution + linha do `context-map`), **use-o — não releia esses arquivos** (o
+> `Read` custa de novo, sem cache). Só abra com `Read` o que **não** está no bloco: o módulo real que
+> vai mudar e um vizinho de estilo.
 - Leia a `tasks.md`/`plan.md` da feature (se existir) e implemente na ordem das tasks.
-- `docs/context-map.md` — carregue a **linha do domínio** que vai tocar (módulo+docs+ADRs+testes).
-- Leia o **módulo real** que vai mudar + um vizinho como referência de estilo.
-- `CLAUDE.md` (mapa/invariantes/pontos de extensão) + os docs de arquitetura da área.
+- Do bloco fixo: a **linha do domínio** no `context-map` e os invariantes do `CLAUDE.md`. Só se o bloco
+  não veio, carregue-os você mesmo.
+- Leia o **módulo real** que vai mudar + um vizinho como referência de estilo + docs de arquitetura da
+  área específica (esses não estão no bloco fixo).
 
 ## Invariantes — quebrar qualquer uma é bug arquitetural
 As universais do método (ver `docs/sdd/constitution.md`) + as específicas do projeto (`CLAUDE.md`):
@@ -53,10 +58,15 @@ As universais do método (ver `docs/sdd/constitution.md`) + as específicas do p
 4. Não commite/push a menos que o chamador peça — normalmente o thread principal orquestra
    commit+push depois do `tester`.
 
-## Sua resposta final ao chamador
-Liste os arquivos criados/alterados (caminho + 1 linha do quê), migrations novas, flags/envs novos
-e seu default, e o estado de `typecheck`/`lint`. Aponte explicitamente o que o `tester` precisa
-cobrir (efeitos/idempotência/invariantes) e qualquer dívida deixada.
+## Sua resposta final ao chamador (enxuta — `docs/token-efficiency.md` §3)
+Ponteiros, não cópias de código:
+```
+status: ok | bloqueado
+tocou: <arquivos criados/alterados — caminho + 1 linha; migrations/flags/envs novos + default>
+typecheck/lint: <verde | erros>
+p/ o tester: <o que cobrir — efeitos/idempotência/invariantes>
+bloqueios: <dívida deixada / requisito ausente — só se houver>
+```
 
 ## Não faça
 - Não invente requisito ausente — volte ao `architect`/`feature-spec`.

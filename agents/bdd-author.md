@@ -52,10 +52,14 @@ teste (a prova).
   asserção de aceite**, deixando a fiação/fixtures pesadas para o `tester`).
 - Sempre: uma **matriz de cobertura** (RF → cenários) no fim, para nada ficar sem oráculo.
 
-## Sua resposta final ao chamador
-Liste o arquivo criado, quantos cenários por RF, quais casos de borda entraram, e **todas** as
-`[NEEDS CLARIFICATION]`. Aponte explicitamente ao `tester` o que precisa ser ligado ao runner, e ao
-`adversarial-reviewer` os cenários mais críticos (dinheiro/efeito/invariante) para ele estressar.
+## Sua resposta final ao chamador (enxuta — `docs/token-efficiency.md` §3)
+```
+status: ok | needs-clarification | pulado (bdd_style: off)
+tocou: <arquivo de cenários> — <N> cenários (<por RF>); casos de borda: <resumo>
+p/ o tester: <o que ligar ao runner>
+p/ o adversarial: <cenários mais críticos — dinheiro/efeito/invariante>
+bloqueios: <[NEEDS CLARIFICATION] — só se houver>
+```
 
 ## Não faça
 - Não implemente o produto nem escreva a lógica dos step definitions pesados (é do `tester`/

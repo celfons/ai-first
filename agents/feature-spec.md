@@ -39,10 +39,15 @@ serve de contrato para o resto do ciclo. Escreva no idioma e no estilo dos docs 
 - Se a issue #NNN não foi dada, use `NNN` placeholder e sinalize.
 - Numere RFs com o prefixo do domínio da feature (ex.: `RF-AUTH-01`).
 
-## Sua resposta final ao chamador (não só o arquivo)
-Um resumo de 5–8 linhas: caminho do spec.md criado, lista de RFs, princípios tocados no gate, e
-**todas** as `[NEEDS CLARIFICATION]` pendentes que precisam de decisão humana antes do PLAN. Se
-houver clarificações abertas, recomende resolvê-las antes de chamar o `architect`.
+## Sua resposta final ao chamador (enxuta — `docs/token-efficiency.md` §3)
+Ponteiros, não a spec inteira (ela está no arquivo):
+```
+status: ok | needs-clarification
+tocou: <caminho do spec.md> — RFs: <ex.: RF-101..104>
+gate: <princípios constitucionais tocados, 1 linha>
+p/ o architect: <o essencial para planejar>
+bloqueios: <todas as [NEEDS CLARIFICATION] que exigem decisão humana antes do PLAN>
+```
 
 ## Não faça
 - Não escreva `plan.md`, `tasks.md`, código ou migrations.

@@ -50,10 +50,13 @@ em testes que falham quando o comportamento regride — e deixar o gate verde.
 3. Se um teste revela bug real no código de produção, **não mascare** — reporte com o caso mínimo
    que reproduz, para o `backend-engineer` corrigir.
 
-## Sua resposta final ao chamador
-Liste os arquivos de teste criados (e a suíte de cada um), quais critérios de aceite/RF cada um
-cobre, o resultado final de `typecheck`/`lint`/`test`/`eval` (com contagem), e qualquer bug de
-produção encontrado que precise de correção antes do merge.
+## Sua resposta final ao chamador (enxuta — `docs/token-efficiency.md` §3)
+```
+status: ok | bug-encontrado
+tocou: <arquivos de teste + suíte de cada> — cobre: <RF/critérios de aceite>
+resultado: typecheck/lint/test/eval <verde | contagem de falhas>
+bloqueios: <bug de produção que precisa de correção antes do merge — só se houver>
+```
 
 ## Não faça
 - Não afrouxe uma asserção para "passar"; não burle o tipo com casts para escapar da checagem.

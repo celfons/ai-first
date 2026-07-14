@@ -32,8 +32,19 @@ sem reconstruir o passado lendo dez lugares.
 
 ## Linha do tempo
 
-> **Esqueleto** — sem entradas ainda. A primeira nasce quando a primeira feature for medida
-> (`/daily-outcome`) ou promovida (`docs-writer` no fim da feature). Exemplo do formato:
+### 2026-07-14 · Política de eficiência de token do método (meta)
+- **Sinal:** 🔧 processo (sem métrica de produto — é economia de custo do próprio método).
+- **Aprendizado:** o custo alto por fatia vinha de **desperdício por descuido**, não do isolamento:
+  releitura fria dos mesmos docs-base a cada subagente, modelo caro onde o barato serve, e relatório
+  verboso que inflava o contexto do driver. Correção sem tocar na troca deliberada (token↔corretude):
+  **bloco de contexto fixo** (prefixo estável → cache de prompt), **roteamento model/effort explícito
+  no `Agent()`**, **retorno enxuto** (detalhe só quando o `adversarial-reviewer` bloqueia) e
+  **`Workflow` opt-in** para paralelizar o independente + `budget.total`. Isolamento e revisão
+  independente preservados.
+- **Links:** `docs/token-efficiency.md` · `agents/sdd-orchestrator.md` · skills `/feature`, `/daily-build`.
+
+> Entradas de produto nascem quando a primeira feature for medida (`/daily-outcome`) ou promovida
+> (`docs-writer` no fim da feature). Exemplo do formato:
 
 <!--
 ### 2026-01-15 · Lembrete 1 dia antes da consulta (#42)

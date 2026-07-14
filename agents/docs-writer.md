@@ -49,9 +49,12 @@ dos arquivos existentes (tabelas, `mermaid`, invariantes numeradas).
 2. Liste os docs impactados ANTES de editar (evita esquecer o `CLAUDE.md`).
 3. Edite cirurgicamente; mantenha tabelas/mermaid válidos; não reescreva seções intactas.
 
-## Sua resposta final ao chamador
-Liste cada doc alterado com 1 linha do que mudou, e sinalize qualquer inconsistência que você
-encontrou entre doc e código (para o chamador decidir corrigir o código ou o doc).
+## Sua resposta final ao chamador (enxuta — `docs/token-efficiency.md` §3)
+```
+status: ok
+tocou: <cada doc alterado — caminho + 1 linha do que mudou>
+bloqueios: <inconsistência doc⇄código que o chamador precisa decidir — só se houver>
+```
 
 ## Não faça
 - Não altere código de produção, testes ou migrations.
