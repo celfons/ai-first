@@ -21,8 +21,9 @@ barato que faz o trabalho bem, reservando opus/extra para julgamento, risco e se
 a tag** (`model:*`/`effort:*`) na issue e o driver (skill) invoca cada subagente com o modelo+esforço
 indicados. **O `sdd-orchestrator` é o ÚNICO subagente com modelo fixo (opus, esforço alto)** — ele
 decide o barato/caro dos outros, então precisa ser o mais forte para não errar o roteamento. A
-verificação independente (`adversarial-reviewer`) e etapas que tocam invariante/segurança **nunca**
-descem abaixo de opus/alto, por mais que o custo-benefício empurre para baixo.
+verificação independente (`adversarial-reviewer`), o **gate de segurança (`security-reviewer`)** e
+etapas que tocam invariante/segurança **nunca** descem abaixo de opus/alto, por mais que o
+custo-benefício empurre para baixo.
 
 | Subagente | Fase SDD | Entrega |
 |---|---|---|
@@ -40,7 +41,9 @@ descem abaixo de opus/alto, por mais que o custo-benefício empurre para baixo.
 | `bdd-author` | 4¾ · ACCEPTANCE | critérios de aceite → cenários BDD executáveis (oráculo) — **se `bdd_style ≠ off`** |
 | `tester` | 5 · VERIFY | liga os cenários ao runner + testes + evals; gate verde |
 | `adversarial-reviewer` | 5½ · VERIFY (independente) | tenta QUEBRAR a mudança; dirige o runtime; veredito pode BLOQUEAR o merge |
+| `security-reviewer` | 5¾ · VERIFY (segurança) | **executa o gate de segurança** (P-11): threat model do diff, authz/escopo, injeção, segredo/PII, dependência/CVE; veredito pode BLOQUEAR. Modelo fixo opus/alto (P-14) |
 | `docs-writer` | 6 · DOCS | `docs/*`, `CLAUDE.md`, spec final coerente |
+| `release-manager` | 6½ · RELEASE/GROWTH | a **porta de saída**: o que chegou a `main` vira valor percebido — changelog/release notes em linguagem de persona, rascunho de anúncio, posicionamento |
 | `outcome-analyst` | (resultado) | mede se a feature entregou a métrica de sucesso (§8) com uso real |
 
 ## Diagrama de fluxo e interação
@@ -71,7 +74,9 @@ flowchart TD
   TEST -->|"bug de produção"| BE
   TEST -->|"verde"| ADV["🛡 adversarial-reviewer<br/>tenta quebrar · dirige runtime"]
   ADV -->|"bloqueia"| BE
-  ADV -->|"aprova"| DOCS["📚 docs-writer<br/>docs + spec coerentes"]
+  ADV -->|"aprova"| SEC["🔒 security-reviewer<br/>gate de segurança · opus/alto"]
+  SEC -->|"bloqueia"| BE
+  SEC -->|"aprova"| DOCS["📚 docs-writer<br/>docs + spec coerentes"]
   DOCS --> PRDEV["🔀 PR contra develop · Closes NNN"]
 
   PRDEV -->|"CI verde + veredito ok"| MERGEDEV(["✅ merge em develop"])
@@ -81,6 +86,8 @@ flowchart TD
   PROM --> REVIEW{{"👤 Revisão do stakeholder<br/>gate por risco"}}
   REVIEW -->|"aprova + merge"| PROD
   REVIEW -->|"reprova feature"| REJECT["↩️ skill /reject-feature<br/>revert em develop · reabre issue"]
+  PROD -->|"o que foi ao ar"| REL["📣 release-manager<br/>changelog · anúncio · posicionamento"]
+  REL -.->|"comunicou o valor"| OUT
   PROD -.->|"mede resultado"| OUT["📈 outcome-analyst<br/>/daily-outcome"]
   OUT -.->|"dado real"| PO
   PROD -.->|"incidente"| ROLL["🚑 /rollback"]
@@ -113,7 +120,9 @@ sdd-orchestrator  → devolve o plano de delegação (roteia modelo+esforço)
               └─ bdd-author  (ACCEPTANCE) → cenários executáveis dos critérios de aceite (oráculo)
                  └─ tester    (VERIFY)   → liga os cenários ao runner + testes por slice + integração
                     └─ adversarial-reviewer (VERIFY independente) → tenta quebrar o agregado
-                       └─ docs-writer (DOCS) → docs coerentes
+                       └─ security-reviewer (VERIFY segurança) → gate AppSec do diff (pode BLOQUEAR)
+                          └─ docs-writer (DOCS) → docs coerentes
+                             └─ (após promoção a main) release-manager → comunica o valor à persona
 ```
 
 > **Decompor para não alucinar:** feature grande é fatiada em **micro-slices** pelo `task-decomposer`;
@@ -122,8 +131,14 @@ sdd-orchestrator  → devolve o plano de delegação (roteia modelo+esforço)
 > inteira, provável de ponta a ponta. Feature pequena não é decomposta (o `tasks.md` do `architect` basta).
 
 > **Separação de papéis (P-13):** quem escreve (`backend-engineer`) **não** é quem aprova o risco. O
-> `adversarial-reviewer` — que não escreveu o código — pode **bloquear o auto-merge**; e a promoção a
-> produção é **por tier de risco** (P-10), não feature a feature.
+> `adversarial-reviewer` (correção) e o `security-reviewer` (segurança) — nenhum dos dois escreveu o
+> código — podem **bloquear o auto-merge** de forma independente; e a promoção a produção é **por tier
+> de risco** (P-10), não feature a feature.
+
+> **A porta de saída (`release-manager`):** o ciclo não termina no merge. Depois que a feature chega a
+> `main`, o `release-manager` traduz o que foi construído em **valor percebido** pela persona
+> (changelog, anúncio, posicionamento) e o `outcome-analyst` mede se esse valor se realizou — um
+> comunica, o outro afere. Sem a porta de saída, a squad constrói no vácuo.
 
 - **Trivial** (1 arquivo, sem novo efeito/dado/proatividade): pule o SDD →
   `backend-engineer` → `tester`.

@@ -1,6 +1,6 @@
 ---
 name: daily-build
-description: Rotina diária — PARTE 2 de 2 (desenvolvimento). Skill standalone, feita para rodar como trigger agendado ~1h DEPOIS do `/daily-backlog`. Pega as issues prontas no board (criadas pelo Product Owner), implementa até `features_per_day` (variável do genoma) via o fluxo `/feature` autônomo, submete cada uma à verificação independente (`adversarial-reviewer`) e auto-mergeia em `develop` só com CI verde + veredito não-bloqueante. Promove `develop → main` por TIER DE RISCO conforme o nível de autonomia do genoma (🟢 sozinha; 🟡/🔴 ao humano). Encerra com um resumo ao dono para aprovar/reprovar o que sobrou. Start por CRON.
+description: Rotina diária — PARTE 2 de 2 (desenvolvimento). Skill standalone, feita para rodar como trigger agendado ~1h DEPOIS do `/daily-backlog`. Pega as issues prontas no board (criadas pelo Product Owner), implementa até `features_per_day` (variável do genoma) via o fluxo `/feature` autônomo, submete cada uma à verificação independente (`adversarial-reviewer`) e ao gate de segurança (`security-reviewer`) e auto-mergeia em `develop` só com CI verde + os dois vereditos não-bloqueantes. Promove `develop → main` por TIER DE RISCO conforme o nível de autonomia do genoma (🟢 sozinha; 🟡/🔴 ao humano). Encerra com um resumo ao dono para aprovar/reprovar o que sobrou. Start por CRON.
 ---
 
 # /daily-build — implementa o backlog do dia (Parte 2/2)
@@ -20,8 +20,9 @@ Leia antes de começar:
   🔴, auto-promovem)**. Default **conservador**.
 - **`daily_budget`** — teto de gasto/esforço do loop (P-14). Pare de pegar novas features ao atingir.
 
-> Gates: CI verde **e** veredito não-bloqueante do `adversarial-reviewer` são obrigatórios para o
-> auto-merge em `develop`. A revisão humana da promoção é **por tier de risco** (P-10).
+> Gates: CI verde **e** vereditos não-bloqueantes do `adversarial-reviewer` (correção) **e** do
+> `security-reviewer` (segurança) são obrigatórios para o auto-merge em `develop`. A revisão humana da
+> promoção é **por tier de risco** (P-10).
 
 ## Fase 1 · Selecionar as issues do dia (até `features_per_day`)
 Busque no board (`search_issues`) as issues **prontas**: `open`, `po-suggested`,
@@ -38,7 +39,7 @@ Para **cada** issue selecionada, rode o **fluxo `/feature`** em **modo autônomo
 `sdd-orchestrator` (fixo opus/alto — roteia o resto) → `feature-spec` → `architect` →
 **`task-decomposer` (se grande/complexa)** → **`bdd-author` (cenários de aceitação, se `bdd_style ≠ off`)**
 → `backend-engineer` → `tester` (liga os cenários ao runner) → `adversarial-reviewer` (usa os cenários
-como oráculo) → `docs-writer`. **Invoque cada subagente com o modelo (`haiku`/`sonnet`/`opus`/`fable`) e o esforço
+como oráculo) → `security-reviewer` (gate de segurança) → `docs-writer`. **Invoque cada subagente com o modelo (`haiku`/`sonnet`/`opus`/`fable`) e o esforço
 (`baixo`/`médio`/`alto`/`extra`) que o orchestrator roteou** (ele também aplica a tag `model:*`/
 `effort:*` na issue).
 
@@ -78,6 +79,18 @@ ele tenta quebrar a mudança (correção vs. spec, invariantes, segurança) e, e
   bug vira teste de regressão). Se não fechar nesta rodada, deixe o PR aberto e reporte.
 - **APROVA / APROVA-COM-RESSALVAS** → segue. Registre as ressalvas no corpo do PR.
 
+## Fase 3½ · Gate de segurança (gate obrigatório — pode BLOQUEAR)
+Para cada feature, invoque o subagente **`security-reviewer`** (modelo fixo **opus/alto** — P-14,
+nunca abaixe). Independente do `adversarial-reviewer`: ele pergunta "é **seguro**?" (authz/escopo,
+injeção, segredo/PII, saída de IA não validada, dependência nova/CVE, config perigosa). É o **gate de
+segurança** que a constituição exige para o auto-merge (P-11). Veredito:
+- **BLOQUEIA** → **não auto-mergeie.** Devolva ao `backend-engineer` (todo vetor vira teste de
+  regressão). Se não fechar nesta rodada, deixe o PR aberto e reporte.
+- **APROVA / APROVA-COM-RESSALVAS** → segue. Registre as ressalvas de segurança no corpo do PR.
+
+> Ambos os gates (correção **e** segurança) precisam ser não-bloqueantes para o auto-merge — em
+> **qualquer** `autonomy_level`, inclusive `autônomo`.
+
 ## Fase 4 · Impacto, risco e TIER de autonomia (grounded no diff)
 Rode o **`/code-review`** (ou o `architect`) sobre o diff de cada feature e produza:
 - **Impacto (negócio):** 🟢/🟡/🔴 — quanto move o ponteiro. 1 linha.
@@ -86,9 +99,10 @@ Rode o **`/code-review`** (ou o `architect`) sobre o diff de cada feature e prod
 - **Tier de promoção** = o **maior** entre impacto e risco (conservador). Ele decide o caminho na
   Fase 6, conforme o `autonomy_level`.
 
-## Fase 5 · Auto-merge em develop (CI verde + veredito não-bloqueante)
-Para cada PR de feature: **só** mergeie com **CI verde E `adversarial-reviewer` não-bloqueante**. Se
-falhar, deixe aberto, comente o diagnóstico, siga. Nunca force-merge nem contorne branch protection.
+## Fase 5 · Auto-merge em develop (CI verde + vereditos não-bloqueantes: correção + segurança)
+Para cada PR de feature: **só** mergeie com **CI verde E `adversarial-reviewer` não-bloqueante E
+`security-reviewer` não-bloqueante**. Se qualquer um falhar, deixe aberto, comente o diagnóstico, siga.
+Nunca force-merge nem contorne branch protection.
 O `Closes #NNN` fecha a issue.
 
 ## Fase 6 · Promoção develop → main POR TIER DE RISCO (autonomia progressiva)
@@ -118,6 +132,20 @@ Decida por feature, conforme o `autonomy_level` e o **tier** (Fase 4):
 > kill-switch). Suba o nível só quando o histórico (baixa taxa de rejeição/rollback) justificar — a
 > decisão é humana, ajustável no genoma. Em `autônomo`, os gates automáticos (CI + `adversarial-reviewer`
 > + segurança + orçamento) continuam obrigatórios: é a única barreira antes de `main`.
+
+## Fase 6½ · Release/growth (para o que chegou a `main`)
+Para as features que **de fato foram promovidas a `main`** nesta rodada (auto-promovidas 🟢/🟡/🔴 no
+nível vigente — **não** as que só esperam o OK humano), invoque o subagente **`release-manager`**. Ele
+transforma o que foi ao ar em **valor percebido pela persona**:
+- **Entrada de changelog/release notes** em linguagem de usuário (o `docs-writer`/a skill grava no
+  changelog do projeto; o `release-manager` entrega o texto pronto).
+- **Rascunho de anúncio** por canal do genoma **só para as features de impacto real** — é rascunho, o
+  disparo externo é decisão do dono (ação irreversível, nunca automática).
+- **Posicionamento** (1 linha por destaque) e o **sinal de adoção a medir** (casa com a §8 da spec) →
+  alimenta o `outcome-analyst`.
+
+Se nada foi promovido nesta rodada (tudo espera OK humano), **pule esta fase**. Anexe o resumo de
+release ao material da Fase 7 (o que foi comunicado / o rascunho de anúncio pendente de disparo).
 
 ## Fase 7 · Resumo ao dono (linguagem simples)
 Sua última mensagem vira o **e-mail/push**. Linguagem de negócio, **sem jargão** (proibido "PR",
@@ -155,10 +183,10 @@ Para tentar de novo: responda "<instrução curta>".
 **Sucesso parcial também avisa** (o que entrou, o que ficou).
 
 ## Invariantes da rotina
-- Start por **cron**. Auto-merge em `develop` **só** com CI verde **+** veredito não-bloqueante.
+- Start por **cron**. Auto-merge em `develop` **só** com CI verde **+** veredito não-bloqueante (correção + segurança).
 - Promoção a `main` **por tier**, conforme o `autonomy_level` — 🔴 **nunca** auto-promove, **exceto no
   nível `autônomo`** (100% AI, sem gate humano), onde todos os tiers auto-promovem e o dono só audita.
-  Os gates automáticos (CI + veredito não-bloqueante + segurança + orçamento) valem em **todos** os
+  Os gates automáticos (CI + vereditos não-bloqueantes de correção e segurança + orçamento) valem em **todos** os
   níveis, inclusive `autônomo`.
 - Respeita `features_per_day`, `parallelism` e `daily_budget` (P-14/P-15). Paralelo na implementação,
   **serial no merge** em `develop`. `grande`/arquitetural → `needs-human-triage`.

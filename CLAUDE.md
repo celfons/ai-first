@@ -77,8 +77,9 @@ reserva de idempotência, laço da fila, chamada de LLM com timeout+validação+
   aberto **contra `develop`**. `main` (produção) só recebe promoção `develop → main` — **nunca** PR de
   feature direto. **A promoção é por tier de risco** (P-10): no nível `conservador` o humano aprova
   tudo; em `progressivo`/`amplo`, 🟢/🟡 podem promover sozinhas e só as arriscadas sobem.
-- PR com `Closes #NNN`; `typecheck` + `lint` + `test` limpos (P-10); **gate de segurança** e
-  **`adversarial-reviewer` não-bloqueante** obrigatórios para o auto-merge (P-11/P-13).
+- PR com `Closes #NNN`; `typecheck` + `lint` + `test` limpos (P-10); **gate de segurança
+  (`security-reviewer`, opus/alto)** e **`adversarial-reviewer` não-bloqueante** obrigatórios para o
+  auto-merge (P-11/P-13). O que chega a `main` passa pelo **`release-manager`** (changelog/anúncio).
 - **Ciclo SDD** para toda mudança de comportamento: ver `docs/sdd/README.md`. Uma issue = uma
   feature = uma branch = um `Closes #NNN`.
 - **Feature grande é decomposta** (`task-decomposer`) em **micro-slices** implementadas em contexto
