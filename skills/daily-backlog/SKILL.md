@@ -33,6 +33,9 @@ economize no julgamento). Ajuste para `sonnet` se o backlog for óbvio. (Tabela 
 3. Garanta os labels que o `/daily-build` usa: `po-suggested` (sempre) + exatamente uma `size:*` +
    label de área opcional.
 4. **NÃO implemente, não crie branch, não abra PR.** Esta parte só cria as issues.
+5. **Atualize o cache de benchmarking:** se o PO emitiu um digest de mercado novo/atualizado, **grave-o**
+   em `docs/product/market-scan.md` (o PO é só-leitura de docs — quem escreve é a skill). É o cache
+   compartilhado com o `/backlog` e o `/kickoff`: da próxima vez, ninguém re-varre a frio.
 
 ## Regras
 - **`features_per_day` issues/dia** — alinhado à cadência de entrega (sem inchar o backlog). Se não

@@ -6,7 +6,9 @@ de qualquer coisa. Para detalhes, veja `docs/sdd/` (constituição, spec, plano,
 `docs/adr/` (decisões arquiteturais — **leia o índice antes de decidir algo durável**),
 `docs/context-map.md` (**mapa de contexto**: domínio → código+docs+ADRs+testes — carregue a linha
 do domínio que vai tocar em vez de reler a base), `docs/product/rejections.md` (**ledger de
-rejeições**: o `product-owner` lê para não repropor o que o dono já recusou), `docs/knowledge.md`
+rejeições**: o `product-owner` lê para não repropor o que o dono já recusou),
+`docs/product/market-scan.md` (**cache de benchmarking auto-evolutivo**: o `product-owner` lê o digest
+datado e busca só o delta — compartilhado por `/daily-backlog`, `/backlog` e `/kickoff`), `docs/knowledge.md`
 (**saber-fazer**: padrões + **anti-padrões** — carregue antes de implementar/revisar) e
 `docs/evolution.md` (**linha do tempo de aprendizados**: o que mudou e o que o uso real ensinou) e
 `docs/token-efficiency.md` (**política de eficiência de token**: bloco de contexto fixo p/ cache,

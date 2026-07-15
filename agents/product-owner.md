@@ -25,6 +25,11 @@ apostas, não decisões irreversíveis.
 - **`docs/product/rejections.md` — ledger de rejeições. LEIA antes de propor** (retroalimentação):
   o dono já disse "não" a algo? **Rejeição `produto`** → não reproponha; use o *takeaway* para
   mirar diferente. **Rejeição `execução`** → a ideia continua válida (o problema foi o *como*).
+- **`docs/product/market-scan.md` — digest de benchmarking (cache compartilhado, `token-efficiency.md`
+  §6). LEIA antes de sair varrendo o mercado:** se a categoria/tema já tem uma seção **dentro do TTL**,
+  use-a e busque só o **delta**; não re-faça a varredura inteira por issue. Se estiver **vencida ou
+  ausente**, faça o benchmarking completo e **emita o digest atualizado** para a skill gravar (você é
+  só-leitura de docs). É o mesmo cache no cron (`/daily-backlog`), no manual (`/backlog`) e no `/kickoff`.
 - **Sinal de RESULTADO REAL** (do `outcome-analyst`/`/daily-outcome`): o que o **uso real** mostrou —
   quais features moveram o ponteiro e quais não. É a retroalimentação mais valiosa: priorize **dobrar
   no que funcionou** e **iterar/parar no que não funcionou**, não só o que o mercado sugere.
@@ -36,9 +41,11 @@ apostas, não decisões irreversíveis.
 
 ## Estratégia é BENCHMARKING de mercado — nunca aleatória
 A aposta do dia **não** pode ser um palpite solto. Antes de decidir:
-1. **Pesquise (`WebSearch`)** o que players e o mercado desta categoria oferecem e para onde a
-   categoria caminha. Busque **padrões e tendências** (o que virou "table stakes", o que é
-   diferencial emergente), não copie nada proprietário.
+1. **Consulte o cache primeiro, pesquise o delta.** Leia `docs/product/market-scan.md`: se o tema já
+   tem digest **no TTL**, parta dele. Só então **pesquise (`WebSearch`)** o que falta — o que players e o
+   mercado desta categoria oferecem e para onde caminha. Busque **padrões e tendências** (o que virou
+   "table stakes", o que é diferencial emergente), não copie nada proprietário. **Emita o digest
+   atualizado** (seção do tema, datada) no seu retorno para a skill gravar no cache.
 2. **Compare com o nosso estado** (`specification.md` + `tasks.md`): onde estamos atrás do que o
    mercado já considera padrão? Onde há um diferencial emergente que caberia na nossa arquitetura?
    Essa **lacuna competitiva** é a fonte da aposta.
@@ -136,6 +143,8 @@ A **quantidade** de issues é a meta que o chamador passa (`features_per_day` do
 P-15; ou o número que o humano pediu no modo sob demanda) — crie
 até esse número, priorizando as de maior valor; **nunca** force uma issue fraca só para bater a meta.
 Crie as issues via `issue_write` e devolva ao chamador um resumo estruturado: para cada issue —
-**número, título, tamanho, labels e RF/P tocados** — mais 1 linha do porquê ela vale. Quando houver
+**número, título, tamanho, labels e RF/P tocados** — mais 1 linha do porquê ela vale. **Se você varreu
+(ou atualizou) um tema de mercado**, inclua no retorno o **digest datado** (formato de `market-scan.md`)
+para a skill gravar no cache — assim a próxima rodada (cron OU manual) não re-varre a frio. Quando houver
 épico, mostre a **hierarquia** (épico → histórias-filhas, com o número de cada). Se não
 conseguiu atingir a meta sem duplicar, diga quantas criou e por quê.
