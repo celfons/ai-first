@@ -45,6 +45,7 @@ custo-benefício empurre para baixo.
 | `docs-writer` | 6 · DOCS | `docs/*`, `CLAUDE.md`, spec final coerente |
 | `release-manager` | 6½ · RELEASE/GROWTH | a **porta de saída**: o que chegou a `main` vira valor percebido — changelog/release notes em linguagem de persona, rascunho de anúncio, posicionamento |
 | `outcome-analyst` | (resultado) | mede se a feature entregou a métrica de sucesso (§8) com uso real |
+| `finops-steward` | (economia · AIOps/FinOps) | mede o **custo** do pipeline (tokens/etapa, custo por feature mergeada, re-run do modelo barato, cache-hit) + runtime/cloud; cruza com o `outcome-analyst` (ROI) e **realimenta o roteamento** do `sdd-orchestrator`. Só mede/sugere |
 
 ## Diagrama de fluxo e interação
 
@@ -90,6 +91,10 @@ flowchart TD
   REL -.->|"comunicou o valor"| OUT
   PROD -.->|"mede resultado"| OUT["📈 outcome-analyst<br/>/daily-outcome"]
   OUT -.->|"dado real"| PO
+  OUT -.->|"valor movido"| FIN["💰 finops-steward<br/>custo · ROI · AIOps"]
+  ORCH -.->|"custo planejado (model/effort tags)"| FIN
+  FIN -.->|"ajuste de roteamento (piso ↑)"| ORCH
+  FIN -.->|"ROI ao CEO · feature cara sem retorno"| PO
   PROD -.->|"incidente"| ROLL["🚑 /rollback"]
 
   REJECT -.->|"retrabalho"| BOARD
@@ -190,6 +195,12 @@ migration-analyst (CARACTERIZAÇÃO) → characterization.md (RF observáveis) +
   o que o uso real ensinou, costurando ADRs + rejeições + resultado numa narrativa única. Alimentada
   pelo `outcome-analyst` (`/daily-outcome`), pelo `docs-writer` e pelo `/reject-feature`; o
   `product-owner` lê para dobrar no que funcionou.
+- **Loop de AIOps/custo** ([`docs/token-efficiency.md`](token-efficiency.md) §5) — o par econômico do
+  resultado: o `finops-steward` mede o **custo** do pipeline e a **qualidade do roteamento** (re-run do
+  modelo barato) e devolve um **ajuste de roteamento** ao `sdd-orchestrator` (sobe o piso onde o barato
+  saiu caro) e o **ROI por feature** ao `product-owner`/CEO. O piso de segurança (P-14) nunca desce por
+  esse loop. Derivações caras (market-scan, diff-digest, índice de repo) viram **artefato datado** (§6),
+  lido em vez de re-derivado a cada feature.
 
 ## Vertical slice — na FEATURE, não no código
 

@@ -90,6 +90,9 @@ segurança** que a constituição exige para o auto-merge (P-11). Veredito:
 
 > Ambos os gates (correção **e** segurança) precisam ser não-bloqueantes para o auto-merge — em
 > **qualquer** `autonomy_level`, inclusive `autônomo`.
+> **Diff-digest compartilhado (`docs/token-efficiency.md` §6):** monte **um** resumo do diff (arquivos/
+> hunks tocados) e passe-o como **fato de entrada** aos dois revisores — corta a releitura do diff sem
+> fundir os julgamentos (cada um ainda conclui o veredito sozinho; o isolamento fica intacto).
 
 ## Fase 4 · Impacto, risco e TIER de autonomia (grounded no diff)
 Rode o **`/code-review`** (ou o `architect`) sobre o diff de cada feature e produza:

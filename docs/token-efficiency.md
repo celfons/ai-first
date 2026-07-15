@@ -129,6 +129,73 @@ Ganho: wall-clock + teto de gasto. Risco: médio (nova mecânica). Toca corretud
 
 ---
 
+## 5 · AIOps — telemetria do pipeline + feedback de roteamento
+
+**O problema.** As alavancas 1–4 **otimizam** o gasto, mas ninguém o **mede**. O `sdd-orchestrator`
+roteia modelo/esforço por heurística fixa (§2) **sem sinal de acerto**: quando o `haiku`/`sonnet`
+barato produz algo que o `adversarial-reviewer`/`security-reviewer` bloqueia e força reimplementação, o
+roteamento foi **net-negativo** — saiu mais caro que ter usado o modelo bom de cara. Esse sinal existe e
+está sendo jogado fora. Sem medir, `daily_budget` é um teto cego e o roteamento nunca aprende.
+
+**A regra.** O pipeline é **instrumentado como um sistema de produção** — ops para a própria fábrica de
+IA. O `finops-steward` (ver `agents/`) fecha o loop, numa cadência (não por fatia):
+- **Contabiliza** por feature/etapa: tokens e custo (das tags `model:*`/`effort:*` na issue + do
+  `budget.spent()` do `Workflow` quando houver), **custo por feature mergeada**, cache-hit, wall-clock.
+- **Mede a qualidade do roteamento:** *taxa de re-run do modelo barato* — quantas vezes uma etapa
+  roteada barata foi bloqueada e refeita. Alta taxa numa classe de tarefa = o piso daquela classe está
+  baixo demais (o "barato" saiu caro).
+- **Realimenta o `sdd-orchestrator`:** emite um **ajuste de roteamento** ("classe X: haiku forçou 2
+  re-runs esta semana → suba o piso para sonnet/alto") que o orchestrator lê como insumo (ver seu
+  "Contexto obrigatório"). O piso de segurança (P-14) **nunca** desce por esse loop — só sobe.
+- **Honestidade de acesso** (como o `outcome-analyst`): se a telemetria de custo não é alcançável, **diz**
+  ("custo por feature não medível — falta instrumentar o contador de tokens"). É achado, não silêncio.
+  **Nunca inventa número.**
+
+Ganho: alto e **composto** (cada rodada afina o roteamento das seguintes). Risco: baixo (só mede + sugere;
+não muta o fluxo). Toca corretude: não (o piso de segurança protege).
+
+---
+
+## 6 · Cache de derivações determinísticas ENTRE features (read-through de fatos)
+
+**O problema.** O prompt cache (§1) vale **dentro de uma fatia** (~1h TTL). Mas há derivações **caras e
+determinísticas** re-executadas do zero a cada feature/dia: o `product-owner` roda o **mesmo
+benchmarking de mercado** (`WebSearch` de categoria) todo dia; vários agentes reconstroem o **mapa de
+repo/símbolos**; o `security-reviewer` re-audita as **mesmas dependências**.
+
+**A distinção que a política assume.** Compartilhar uma **derivação determinística é compartilhar um
+FATO, não um raciocínio** — não fere o isolamento (que a premissa protege). O que o método proíbe é
+fundir o *histórico de decisão* de quem escreveu com quem revisa; um digest de mercado ou um índice de
+símbolos não é isso.
+
+**A regra.** Derivações caras e estáveis viram **artefato versionado com validade**, lido em vez de
+re-derivado:
+- **Digest de market-scan** (`docs/product/market-scan.md`, TTL de dias) — o `product-owner` o **lê** e só
+  re-busca o delta; não repete a varredura inteira por feature.
+- **Diff-digest compartilhado** — `adversarial-reviewer` e `security-reviewer` recebem **um** resumo do
+  diff (arquivos/hunks tocados) como fato de entrada; cada um ainda **conclui o veredito sozinho** (o
+  julgamento continua independente). Corta uma releitura, não uma opinião.
+- **Índice de repo/dependências** — derivado uma vez por rodada, lido pelos agentes que precisam.
+- **Invalidação explícita:** todo artefato de cache carrega a **data/base** que o gerou; ao expirar ou ao
+  mudar a base, re-deriva. Cache vencido servido como fresco é bug — datar é obrigatório.
+
+Ganho: médio-alto entre features (mata re-derivação diária). Risco: baixo (fato, não raciocínio; datado).
+Toca corretude: não.
+
+---
+
+## Consciência de janela de cache (afinação do agendamento)
+
+O prompt cache (§1) tem TTL ~1h. Duas consequências operacionais:
+- **Mantenha as slices de uma mesma feature dentro da janela** — espaçar as etapas de uma fatia além de
+  ~1h joga o bloco fixo fora do cache e paga a leitura de novo. O espaçamento dos crons pesados
+  (`docs/roster.md`) é sobre **janela de uso do modelo**; dentro de **uma** feature, o objetivo oposto
+  vale: **agrupe** para manter o cache quente.
+- **O gap de ~1h entre `/daily-backlog` e `/daily-build` é cache-frio de propósito** (fatias diferentes,
+  blocos diferentes) — está correto; não é o alvo desta afinação.
+
+---
+
 ## Resumo operacional (o que o driver faz em toda fatia)
 
 1. **Monta o BLOCO DE CONTEXTO FIXO uma vez** (CLAUDE.md + constitution + linha(s) do context-map que o
@@ -137,7 +204,12 @@ Ganho: wall-clock + teto de gasto. Risco: médio (nova mecânica). Toca corretud
    default. Piso opus/alto para `adversarial-reviewer` e invariante/segurança.
 3. **Exige retorno enxuto** (status · tocou · p/ o próximo · bloqueios). Detalhe só quando bloqueia.
 4. **Com opt-in do humano:** usa `Workflow` para paralelizar o independente e impor `budget.total`.
+5. **Reaproveita as derivações caras** (§6) que já existem como artefato datado — market-scan,
+   diff-digest, índice de repo — em vez de re-derivá-las; agrupa as slices de uma feature na janela de
+   cache (~1h).
 
-Itens 1–3 são puro ganho, sem trade-off. Item 4 é estrutural e opt-in.
+Itens 1–3 são puro ganho, sem trade-off. Item 4 é estrutural e opt-in. A telemetria da alavanca **5**
+(AIOps) é medida **fora da fatia** pelo `finops-steward`, numa cadência, e realimenta o roteamento —
+puro ganho (só mede e sugere).
 </content>
 </invoke>

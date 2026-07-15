@@ -30,6 +30,10 @@ Só leia o que o pedido exige; não abra a base inteira.
 - `docs/token-efficiency.md` — a política de eficiência que seu plano habilita: você produz o
   **contexto fixo da fatia** (§1) e o **roteamento parseável por etapa** (§2), e marca o que é
   `paralelo:sim` para um eventual `Workflow` (§4).
+- **Feedback de roteamento do `finops-steward`** (`docs/token-efficiency.md` §5) — se houver um **ajuste
+  de roteamento** registrado (uma classe de tarefa onde o modelo barato forçou re-runs → piso subiu),
+  **respeite-o**: aquele "barato" saiu caro. É o loop de AIOps que afina sua heurística com custo real.
+  O ajuste só **sobe** piso; o piso de segurança (P-14) é intocável por ele.
 
 ## O roster que você orquestra
 | Subagente | Fase | Entrega |

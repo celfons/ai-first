@@ -119,7 +119,8 @@ reserva de idempotência, laço da fila, chamada de LLM com timeout+validação+
 - **Rotinas autônomas (crons):** `/daily-backlog` (cria `features_per_day` issues) → ~1h →
   `/daily-build` (implementa + verificação independente + auto-merge em develop + promoção por risco).
   Auditorias que só levantam issues: `/daily-tech-scan` (código + drift), `/daily-ops-scan` (runtime).
-  Loop de resultado: `/daily-outcome` (mede se as features moveram o ponteiro). Espace os crons pesados.
+  Loop de resultado: `/daily-outcome` (mede se as features moveram o ponteiro; roda junto o
+  **`finops-steward`** = custo/ROI + **AIOps**: realimenta o roteamento do `sdd-orchestrator`). Espace os crons pesados.
 - **Cadência/paralelismo/autonomia/orçamento** são knobs do genoma (`features_per_day`, `parallelism`,
   `autonomy_level` — incl. `autônomo` (sem gate humano), `daily_budget`), ajustáveis a qualquer momento
   (P-15). Mesmo em `autônomo`, os gates automáticos (CI + `adversarial-reviewer` + segurança) e o

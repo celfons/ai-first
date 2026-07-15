@@ -1,6 +1,6 @@
 ---
 name: daily-outcome
-description: Rotina de RESULTADO (fecha o loop com a realidade). Skill standalone para trigger agendado. Aciona o subagente `outcome-analyst` para medir se as features já promovidas para produção entregaram a MÉTRICA DE SUCESSO declarada na spec (§8), usando telemetria/uso real. Reporta o que funcionou, o que não moveu o ponteiro (candidato a iterar/remover) e abre issues de melhoria/instrumentação — SEM implementar. Alimenta o `product-owner` com aprendizado de dado real. Notifica o dono.
+description: Rotina de RESULTADO (fecha o loop com a realidade). Skill standalone para trigger agendado. Aciona o subagente `outcome-analyst` para medir se as features já promovidas para produção entregaram a MÉTRICA DE SUCESSO declarada na spec (§8), usando telemetria/uso real. Reporta o que funcionou, o que não moveu o ponteiro (candidato a iterar/remover) e abre issues de melhoria/instrumentação — SEM implementar. Alimenta o `product-owner` com aprendizado de dado real. Roda junto o `finops-steward` (custo/ROI + AIOps: realimenta o roteamento do `sdd-orchestrator`). Notifica o dono.
 ---
 
 # /daily-outcome — a feature deu certo? (loop fechado)
@@ -29,6 +29,18 @@ Para achados acionáveis, o `outcome-analyst` abre issues:
 - **Lacuna de instrumentação** → issue `needs-human-triage` (sem medir, o loop fica cego ali).
 Nada é implementado aqui — a correção/iteração é uma feature nova pelo fluxo normal.
 
+## Fase 2¾ · Custo e ROI (AIOps/FinOps)
+Invoque o subagente **`finops-steward`** (`sonnet`/`alto`) sobre a **mesma janela**: ele traz o
+**custo** que fecha o ROI com o valor que o `outcome-analyst` acabou de medir — custo por feature
+mergeada, gasto vs. `daily_budget`, e a **taxa de re-run do modelo barato**. Ele produz:
+- **Ajuste de roteamento ao `sdd-orchestrator`** (`docs/token-efficiency.md` §5) quando uma classe de
+  tarefa mostra re-run recorrente do modelo barato — sobe o piso onde o "barato" saiu caro (o piso de
+  segurança P-14 nunca desce). Registre o ajuste onde o orchestrator o lê.
+- **ROI por feature ao `product-owner`/CEO:** ✅ cara mas de alto retorno = bom investimento; ❌ cara e
+  sem retorno = candidata a parar (issue como na Fase 2). Lacuna de instrumentação de custo →
+  `needs-human-triage`.
+Se a telemetria de custo não é alcançável, ele **diz** (não inventa número) — some ao ⚠️ da Fase 3.
+
 ## Fase 2½ · Registrar o aprendizado em `docs/evolution.md`
 Pegue as **linhas de aprendizado** que o `outcome-analyst` emitiu (item 4 dele) e **grave-as no topo**
 da linha do tempo em `docs/evolution.md` (mais recente primeiro), no formato do doc — data, feature/
@@ -44,6 +56,7 @@ Sua última mensagem vira o **e-mail/push**. Linguagem de negócio, foco em resu
 ❌ Não moveram (M):  • <feature> — <o que era esperado vs. real> → sugeri <iterar/rever>
 〜 Ainda cedo (K):   • <feature> — reavaliar em <quando>
 🔧 Ficou cego (J):   • <métrica não instrumentada> — precisa medir para saber
+💰 Custo/ROI:        • gasto no período vs. orçamento · feature cara sem retorno (se houver) · roteamento afinado
 
 Nada é mexido sozinho. Para iterar alguma, o número já está no board.
 ```
