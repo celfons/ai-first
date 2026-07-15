@@ -144,9 +144,12 @@ IA. O `finops-steward` (ver `agents/`) fecha o loop, numa cadência (não por fa
 - **Mede a qualidade do roteamento:** *taxa de re-run do modelo barato* — quantas vezes uma etapa
   roteada barata foi bloqueada e refeita. Alta taxa numa classe de tarefa = o piso daquela classe está
   baixo demais (o "barato" saiu caro).
-- **Realimenta o `sdd-orchestrator`:** emite um **ajuste de roteamento** ("classe X: haiku forçou 2
-  re-runs esta semana → suba o piso para sonnet/alto") que o orchestrator lê como insumo (ver seu
-  "Contexto obrigatório"). O piso de segurança (P-14) **nunca** desce por esse loop — só sobe.
+- **Realimenta o `sdd-orchestrator` por um documento que se altera:** o ajuste é **persistido em
+  `docs/ai-first/routing-policy.md`** — a **memória auto-evolutiva do roteamento**. O `finops-steward`
+  grava ali (via a skill) os overrides de piso vigentes ("classe X: haiku forçou 2 re-runs → piso
+  sonnet/alto") + o histórico append-only; o `sdd-orchestrator` **lê a tabela vigente** antes de rotear a
+  próxima feature. **É esse arquivo que fecha o loop:** ele nasce vazio em todo projeto e **melhora a
+  cada rodada** com o custo real. O piso de segurança (P-14) **nunca** desce por ele — só sobe.
 - **Honestidade de acesso** (como o `outcome-analyst`): se a telemetria de custo não é alcançável, **diz**
   ("custo por feature não medível — falta instrumentar o contador de tokens"). É achado, não silêncio.
   **Nunca inventa número.**

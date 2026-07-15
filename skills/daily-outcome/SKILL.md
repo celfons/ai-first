@@ -33,9 +33,13 @@ Nada é implementado aqui — a correção/iteração é uma feature nova pelo f
 Invoque o subagente **`finops-steward`** (`sonnet`/`alto`) sobre a **mesma janela**: ele traz o
 **custo** que fecha o ROI com o valor que o `outcome-analyst` acabou de medir — custo por feature
 mergeada, gasto vs. `daily_budget`, e a **taxa de re-run do modelo barato**. Ele produz:
-- **Ajuste de roteamento ao `sdd-orchestrator`** (`docs/token-efficiency.md` §5) quando uma classe de
-  tarefa mostra re-run recorrente do modelo barato — sobe o piso onde o "barato" saiu caro (o piso de
-  segurança P-14 nunca desce). Registre o ajuste onde o orchestrator o lê.
+- **Ajuste de roteamento** (`docs/token-efficiency.md` §5) quando uma classe de tarefa mostra re-run
+  recorrente do modelo barato — sobe o piso onde o "barato" saiu caro (o piso de segurança P-14 nunca
+  desce). **Você (a skill) grava** o que o `finops-steward` emitir em **`docs/ai-first/routing-policy.md`**
+  (o subagente é só-leitura de docs, como no `evolution.md`): atualize a **tabela de overrides vigentes
+  (seção 1)** e **acrescente** a entrada no **histórico append-only (seção 2)**, logo abaixo do marcador
+  `<!-- FINOPS:APPEND-AQUI -->`. É esse arquivo que o `sdd-orchestrator` lê na próxima feature — o loop
+  que faz o roteamento **melhorar sozinho a cada rodada**. Se nada mudou, não escreva.
 - **ROI por feature ao `product-owner`/CEO:** ✅ cara mas de alto retorno = bom investimento; ❌ cara e
   sem retorno = candidata a parar (issue como na Fase 2). Lacuna de instrumentação de custo →
   `needs-human-triage`.

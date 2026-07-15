@@ -10,8 +10,11 @@ rejeições**: o `product-owner` lê para não repropor o que o dono já recusou
 (**saber-fazer**: padrões + **anti-padrões** — carregue antes de implementar/revisar) e
 `docs/evolution.md` (**linha do tempo de aprendizados**: o que mudou e o que o uso real ensinou) e
 `docs/token-efficiency.md` (**política de eficiência de token**: bloco de contexto fixo p/ cache,
-roteamento de modelo obrigatório, retorno enxuto, `Workflow` — como todo *driver* gasta token com
-intenção sem enfraquecer o isolamento/revisão independente).
+roteamento de modelo obrigatório, retorno enxuto, `Workflow`, **AIOps** — como todo *driver* gasta token
+com intenção sem enfraquecer o isolamento/revisão independente) e `docs/ai-first/routing-policy.md`
+(**memória auto-evolutiva do roteamento**: nasce vazia e se altera a cada rodada — o `finops-steward`
+grava o custo real aprendido, o `sdd-orchestrator` lê antes de rotear; é o loop de AIOps que faz o
+pipeline **melhorar sozinho com o uso**).
 
 > ⚠️ **Este é o `CLAUDE.md` do framework `ai-first` (esqueleto).** As seções marcadas `_(preencha)_`
 > são preenchidas **na gênese, pela skill primária [`/ai-first-init`](skills/ai-first-init/SKILL.md)**,

@@ -45,10 +45,15 @@ alocação de capital que o humano-CEO faz hoje na mão, às cegas.
 ## O que produzir
 1. **Relatório de economia** ao chamador: por feature — custo (estimado/real), veredito de ROI quando o
    `outcome-analyst` já tiver medido, e o gasto do período vs. `daily_budget`.
-2. **Ajuste de roteamento ao `sdd-orchestrator`** (o loop da §5): quando uma classe de tarefa mostra
-   re-run recorrente do modelo barato, **emita a recomendação** em formato que o orchestrator consome —
-   ex.: `roteamento: classe "implement c/ efeito de pagamento" → piso sonnet/alto (haiku forçou 2 re-runs/7d)`.
-   **O piso de segurança (P-14) NUNCA desce por este loop** — ele só sobe pisos que estavam baixos demais.
+2. **Ajuste de roteamento ao `sdd-orchestrator`** (o loop da §5) — **materializado em
+   `docs/ai-first/routing-policy.md`**, a memória auto-evolutiva que o orchestrator lê antes de rotear.
+   Quando uma classe de tarefa mostra re-run recorrente do modelo barato, **emita duas coisas** (você é
+   só-leitura de docs; a skill `/daily-outcome` grava, como faz com `evolution.md`):
+   - a **linha de override vigente** (seção 1 do doc): `classe | piso model/effort | motivo (métrica) | desde | rev. em`;
+   - a **entrada de histórico** (seção 2, append-only): observado → ajuste → efeito esperado → links.
+   Quando uma classe **volta a se comportar** (baixa taxa de re-run após o vencimento da revisão),
+   **relaxe/remova** a linha vigente e registre no histórico. **O piso de segurança (P-14) NUNCA desce
+   por este loop** — ele só sobe pisos que estavam baixos demais; a base do `sdd-orchestrator` é o chão.
 3. **Issues ao board** (via `issue_write`, quando houver ação clara): lacuna de instrumentação de custo
    → `needs-human-triage`; feature de ROI negativo persistente → sinal ao `product-owner`
    (`po-suggested`, "custa X e não move Y — iterar ou parar?"). Dedup contra o board; cap ~3/rodada.
