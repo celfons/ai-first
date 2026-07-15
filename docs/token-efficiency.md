@@ -125,7 +125,56 @@ Regras de fan-out (barreira só quando a etapa N precisa de **todos** os resulta
 `pipeline()`), roteamento por etapa (`model`/`effort` no `agent()`) e piso de segurança do
 `adversarial-reviewer` valem **igual** dentro do `Workflow`.
 
-Ganho: wall-clock + teto de gasto. Risco: médio (nova mecânica). Toca corretude: não.
+### Escala 2 · N FEATURES num único `Workflow` (recursos compartilhados + teto por feature)
+
+O grafo acima é de **uma** feature. Quando `parallelism > 1`, o `/daily-build` (e o `/kickoff`)
+constroem **várias features na mesma rodada** — e o ganho de fazê-lo **num só `Workflow`** (em vez de N
+invocações soltas) é **compartilhar o que é comum uma vez** e **orçar cada feature isoladamente**. A
+`feature` vira a **dimensão externa** do `pipeline()`; cada feature é um **sub-pipeline isolado** (a
+Escala 1 inteira) rodando concorrente, em **worktree próprio** e **branch `claude/<slug>` própria**.
+
+**(a) Bundle de recursos compartilhado — derivado UMA vez, lido por todas.** Antes de abrir as
+features, uma **pré-fase** computa o que é **idêntico entre elas** e o passa **read-through** a cada
+sub-pipeline (é **fato, não raciocínio** — o isolamento da §1/§6 fica intacto):
+- o **BLOCO DE CONTEXTO FIXO base** (`CLAUDE.md` + constitution) — imutável na rodada → cache de prompt
+  entre features, não só entre etapas de uma feature;
+- o **índice de repo/símbolos** e o **audit de dependências** (§6) — uma varredura serve a todas;
+- o **digest de market-scan** (§6) e, quando útil, o **diff-digest** por feature.
+Cada feature **sobrepõe** só o que é seu (a linha do `context-map` do seu domínio, sua `spec.md`/
+`plan.md`). O que **não** se compartilha: o histórico de raciocínio, o código de uma feature com a
+revisão de outra — cada `adversarial-reviewer`/`security-reviewer` continua cego ao resto.
+
+**(b) Teto de gasto POR FEATURE — não só o do loop.** O `Workflow` impõe **dois** limites:
+- **`daily_budget`** = `budget.total` (teto global da rodada — já existente);
+- **`budget_per_feature`** (novo knob do genoma) = teto de **cada** sub-pipeline. Antes de escalar a
+  profundidade de uma feature (mais slices, opus/extra, re-runs), o driver checa o **gasto acumulado
+  daquela feature** contra o seu teto. **Estourou → aquela feature PARA** (marca `awaiting-human`/
+  `needs-human-triage`, deixa o PR parcial atrás de flag ou fecha-o), **as outras seguem**. Um runaway
+  não consome o orçamento das vizinhas nem derruba o lote. Contabilize o gasto por feature via o
+  `budget.spent()` do `Workflow` mais as tags `model:*`/`effort:*` (o `finops-steward` fecha depois).
+
+**(c) Merge continua SERIALIZADO.** Paralelo na construção; **serial no merge** em `develop` (uma
+branch de cada vez, rebase sobre o `develop` já avançado antes de cada merge — conflito volta ao
+`backend-engineer`). Duas features nunca tocam `develop` ao mesmo tempo. Cada feature respeita seus
+próprios gates (CI + `adversarial-reviewer` + `security-reviewer`) — o compartilhamento é de **insumo**,
+nunca de **veredito**.
+
+Esboço (a `feature` é a dimensão externa; cada uma é a Escala 1 com o bundle injetado e o teto próprio):
+```
+bundle = derivaShared()                        // 1x: contexto base + índice + deps + market-scan
+pipeline(features,                             // dimensão externa: N features concorrentes
+  f => subPipelineDaFeature(f, bundle,         // Escala 1 inteira, isolada em worktree próprio
+         capBudget = budget_per_feature),      // teto por feature; estourou → pausa SÓ esta
+  ...                                          // gates por feature; merge serializado fora do fan-out
+)
+```
+
+Ganho: wall-clock (features concorrentes) **+** token (bundle derivado 1×, não N×) **+** contenção de
+custo justa (o teto por feature impede um runaway de queimar a rodada). Risco: médio-alto (mecânica
+nova + worktrees). Toca corretude: não (gates e isolamento por feature intactos).
+
+Ganho geral do `Workflow`: wall-clock + teto de gasto (global e por feature). Risco: médio (nova
+mecânica). Toca corretude: não.
 
 ---
 
@@ -207,6 +256,9 @@ O prompt cache (§1) tem TTL ~1h. Duas consequências operacionais:
    default. Piso opus/alto para `adversarial-reviewer` e invariante/segurança.
 3. **Exige retorno enxuto** (status · tocou · p/ o próximo · bloqueios). Detalhe só quando bloqueia.
 4. **Com opt-in do humano:** usa `Workflow` para paralelizar o independente e impor `budget.total`.
+   Com `parallelism > 1`, constrói **N features num só `Workflow`** (§4 Escala 2): deriva o **bundle
+   compartilhado 1×**, roda cada feature isolada com **teto `budget_per_feature`** e mantém o **merge
+   serializado** — um runaway pausa só a sua feature, não o lote.
 5. **Reaproveita as derivações caras** (§6) que já existem como artefato datado — market-scan,
    diff-digest, índice de repo — em vez de re-derivá-las; agrupa as slices de uma feature na janela de
    cache (~1h).

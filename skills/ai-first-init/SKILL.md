@@ -160,8 +160,10 @@ Estes são os **knobs ajustáveis** (P-15) — o humano pode mudá-los aqui e a 
   **reversível** a qualquer momento (basta baixar o nível) e o dono segue **dono da constituição**.
   **Default conservador** — o nível **sobe com o histórico** (baixa taxa de rejeição/rollback), nunca
   por pressa; recomende começar conservador e chegar a `autônomo` só com track record.
-- **`daily_budget` (P-14):** teto de gasto/esforço do loop por período. E o **modelo fixado** (upgrade
-  é decisão explícita, com re-baseline de evals).
+- **`daily_budget` (P-14):** teto de gasto/esforço do loop por período. E **`budget_per_feature`** (teto
+  de **cada** feature no build paralelo — default `daily_budget / features_per_day`; a que estoura para
+  sozinha, as vizinhas seguem — ADR-0003). E o **modelo fixado** (upgrade é decisão explícita, com
+  re-baseline de evals).
 - **Crons (cadência + fuso, espaçados):** `daily-backlog` → ~1h → `daily-build`; e, espaçados,
   `daily-tech-scan`, `daily-ops-scan`, e `daily-outcome` (algumas vezes/semana — o resultado leva dias
   para maturar).

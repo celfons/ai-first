@@ -84,6 +84,11 @@
   definido: `sem-teto`** (o loop respeita só `features_per_day`/`parallelism`; nenhuma parada por
   orçamento). Defina um número (tokens/moeda/features) para impor um teto rígido — ao atingi-lo, o
   `/daily-build` para de pegar novas features e o `finops-steward` alerta.
+- **`budget_per_feature`** (teto de gasto de **cada** feature no build paralelo, P-14): `[A DEFINIR]` —
+  **default = `daily_budget / features_per_day`** (ou `sem-teto` se `daily_budget` for `sem-teto`).
+  É o teto que o `Workflow` multi-feature aplica por sub-pipeline (`docs/token-efficiency.md` §4 Escala
+  2): a feature que **estoura o seu teto PARA** (marca `awaiting-human`/`needs-human-triage`, PR parcial
+  atrás de flag), as vizinhas seguem — um runaway não queima o orçamento das outras nem derruba o lote.
 - **Modelo fixado** (P-14 — upgrade é decisão explícita com re-baseline de evals): `[A DEFINIR]`
 - **Crons (cadência + fuso, espaçados):**
   - `/daily-backlog`: `[A DEFINIR]`
