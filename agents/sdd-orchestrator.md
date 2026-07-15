@@ -30,6 +30,12 @@ Só leia o que o pedido exige; não abra a base inteira.
 - `docs/token-efficiency.md` — a política de eficiência que seu plano habilita: você produz o
   **contexto fixo da fatia** (§1) e o **roteamento parseável por etapa** (§2), e marca o que é
   `paralelo:sim` para um eventual `Workflow` (§4).
+- **`docs/ai-first/routing-policy.md` — a memória auto-evolutiva do roteamento (LEIA a seção 1).**
+  É o loop de AIOps (`docs/token-efficiency.md` §5) materializado: o `finops-steward` grava ali, a cada
+  rodada, os **overrides de piso vigentes** por classe de tarefa — casos em que o modelo barato forçou
+  re-runs e saiu caro. **Aplique a tabela da seção 1 POR CIMA da sua heurística-base** abaixo: se a
+  feature cai numa classe com override, use o piso de lá. O override só **sobe** piso; o piso de
+  segurança (P-14) é intocável. Arquivo vazio (projeto novo, sem rodadas) = use só a heurística-base.
 
 ## O roster que você orquestra
 | Subagente | Fase | Entrega |
@@ -43,6 +49,7 @@ Só leia o que o pedido exige; não abra a base inteira.
 | `bdd-author` | ACCEPTANCE (BDD) | cenários de comportamento executáveis (oráculo) — **se `bdd_style ≠ off`** |
 | `tester` | VERIFY | liga os cenários ao runner + unidade/integração/invariante/runtime + regressão |
 | `adversarial-reviewer` | VERIFY (independente) | tenta quebrar; dirige runtime; pode bloquear |
+| `security-reviewer` | VERIFY (segurança) | gate AppSec do diff (authz/escopo, injeção, segredo/PII, dependência/CVE); pode bloquear — **fixo opus/alto (P-14)** |
 | `docs-writer` | DOCS | atualiza `docs/*`, `CLAUDE.md`, spec final |
 
 ## 1) Classifique o tamanho (calibra tudo)
@@ -94,6 +101,9 @@ Guia por papel (ponto de partida — ajuste ao caso):
 - **`adversarial-reviewer`: nunca sub-provisione (é a rede de segurança, P-11).** Mínimo **opus/alto**;
   efeito de alto valor (dinheiro/dado/segurança) → **opus/extra**. Custo-benefício otimiza o mecânico,
   **não** a verificação independente nem o que toca invariante/segurança.
+- **`security-reviewer`: idem — fixo opus/alto (P-13/P-14), nunca abaixa.** É o dono do gate de
+  segurança (AppSec do diff); nova dependência/authz/PII/efeito de alto valor → **opus/extra**. O loop
+  de custo (`routing-policy.md`) nunca rebaixa este piso.
 
 ## 3) Aplique a TAG de roteamento na issue
 Se houver `#NNN`, rotule a issue (via `issue_write`; o GitHub cria a label ao aplicar) com o

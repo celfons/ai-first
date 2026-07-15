@@ -1,6 +1,6 @@
 ---
 name: daily-outcome
-description: Rotina de RESULTADO (fecha o loop com a realidade). Skill standalone para trigger agendado. Aciona o subagente `outcome-analyst` para medir se as features já promovidas para produção entregaram a MÉTRICA DE SUCESSO declarada na spec (§8), usando telemetria/uso real. Reporta o que funcionou, o que não moveu o ponteiro (candidato a iterar/remover) e abre issues de melhoria/instrumentação — SEM implementar. Alimenta o `product-owner` com aprendizado de dado real. Notifica o dono.
+description: Rotina de RESULTADO (fecha o loop com a realidade). Skill standalone para trigger agendado. Aciona o subagente `outcome-analyst` para medir se as features já promovidas para produção entregaram a MÉTRICA DE SUCESSO declarada na spec (§8), usando telemetria/uso real. Reporta o que funcionou, o que não moveu o ponteiro (candidato a iterar/remover) e abre issues de melhoria/instrumentação — SEM implementar. Alimenta o `product-owner` com aprendizado de dado real. Roda junto o `finops-steward` (custo/ROI + AIOps: realimenta o roteamento do `sdd-orchestrator`). Notifica o dono.
 ---
 
 # /daily-outcome — a feature deu certo? (loop fechado)
@@ -29,10 +29,29 @@ Para achados acionáveis, o `outcome-analyst` abre issues:
 - **Lacuna de instrumentação** → issue `needs-human-triage` (sem medir, o loop fica cego ali).
 Nada é implementado aqui — a correção/iteração é uma feature nova pelo fluxo normal.
 
-## Fase 2½ · Registrar o aprendizado em `docs/evolution.md`
-Pegue as **linhas de aprendizado** que o `outcome-analyst` emitiu (item 4 dele) e **grave-as no topo**
-da linha do tempo em `docs/evolution.md` (mais recente primeiro), no formato do doc — data, feature/
-#NNN, sinal (✅/〜/❌/🔧), aprendizado e links. O subagente é só-leitura de docs; **quem escreve é a
+## Fase 2¾ · Custo e ROI (AIOps/FinOps)
+Invoque o subagente **`finops-steward`** (`sonnet`/`alto`) sobre a **mesma janela**: ele traz o
+**custo** que fecha o ROI com o valor que o `outcome-analyst` acabou de medir — custo por feature
+mergeada, gasto vs. `daily_budget`, e a **taxa de re-run do modelo barato**. Ele produz:
+- **Ajuste de roteamento** (`docs/token-efficiency.md` §5) quando uma classe de tarefa mostra re-run
+  recorrente do modelo barato — sobe o piso onde o "barato" saiu caro (o piso de segurança P-14 nunca
+  desce). **Você (a skill) grava** o que o `finops-steward` emitir em **`docs/ai-first/routing-policy.md`**
+  (o subagente é só-leitura de docs, como no `evolution.md`): atualize a **tabela de overrides vigentes
+  (seção 1)** e **acrescente** a entrada no **histórico append-only (seção 2)**, logo abaixo do marcador
+  `<!-- FINOPS:APPEND-AQUI -->`. É esse arquivo que o `sdd-orchestrator` lê na próxima feature — o loop
+  que faz o roteamento **melhorar sozinho a cada rodada**. Se nada mudou, não escreva.
+- **ROI por feature ao `product-owner`/CEO:** ✅ cara mas de alto retorno = bom investimento; ❌ cara e
+  sem retorno = candidata a parar (issue como na Fase 2). Lacuna de instrumentação de custo →
+  `needs-human-triage`.
+Se a telemetria de custo não é alcançável, ele **diz** (não inventa número) — some ao ⚠️ da Fase 3.
+
+## Fase 2½ · Registrar o aprendizado em `docs/evolution.md`  ← o carregador que o `product-owner` LÊ
+Pegue as **linhas de aprendizado** que o `outcome-analyst` emitiu (item 4 dele) **e a linha de custo/ROI
+do `finops-steward`** (💰) e **grave-as no topo** da linha do tempo em `docs/evolution.md` (mais recente
+primeiro), no formato do doc — data, feature/#NNN, sinal (✅/〜/❌/🔧/💰), aprendizado e links. **Este
+arquivo é a memória que o `product-owner` relê antes de propor** (é como o sinal ✅/💰 atravessa a
+fronteira entre os crons `/daily-outcome` e `/daily-backlog`, que não compartilham contexto). O
+subagente é só-leitura de docs; **quem escreve é a
 skill** (thread principal). Uma linha por feature avaliada; não duplique entrada já registrada.
 
 ## Fase 3 · Notificação ao dono (o que o mundo real disse)
@@ -44,6 +63,7 @@ Sua última mensagem vira o **e-mail/push**. Linguagem de negócio, foco em resu
 ❌ Não moveram (M):  • <feature> — <o que era esperado vs. real> → sugeri <iterar/rever>
 〜 Ainda cedo (K):   • <feature> — reavaliar em <quando>
 🔧 Ficou cego (J):   • <métrica não instrumentada> — precisa medir para saber
+💰 Custo/ROI:        • gasto no período vs. orçamento · feature cara sem retorno (se houver) · roteamento afinado
 
 Nada é mexido sozinho. Para iterar alguma, o número já está no board.
 ```

@@ -27,6 +27,9 @@ as invariantes, e decompõe em tasks pequenas. Escreva no idioma dos docs existe
   silêncio. Se precisar revogar uma, faça-o explicitamente (novo ADR que a supersede).
 - **`docs/context-map.md`** — carregue a **linha do domínio** que a feature toca (código+docs+
   ADRs+testes de referência) em vez de reler a base.
+- **`docs/knowledge.md`** — os **padrões e anti-padrões** curados. Leia antes de desenhar: o plano deve
+  seguir os padrões do hot path e **não recair** num anti-padrão já registrado (cada um nasceu de um bug
+  real). É a retroalimentação de know-how que impede o organismo de repetir o mesmo erro de arquitetura.
 
 ## Invariantes que seu plano NÃO pode quebrar
 Estas são as **universais do método** (P-1…P-15 da constituição — inclui verificação independente

@@ -6,12 +6,17 @@ de qualquer coisa. Para detalhes, veja `docs/sdd/` (constituição, spec, plano,
 `docs/adr/` (decisões arquiteturais — **leia o índice antes de decidir algo durável**),
 `docs/context-map.md` (**mapa de contexto**: domínio → código+docs+ADRs+testes — carregue a linha
 do domínio que vai tocar em vez de reler a base), `docs/product/rejections.md` (**ledger de
-rejeições**: o `product-owner` lê para não repropor o que o dono já recusou), `docs/knowledge.md`
+rejeições**: o `product-owner` lê para não repropor o que o dono já recusou),
+`docs/product/market-scan.md` (**cache de benchmarking auto-evolutivo**: o `product-owner` lê o digest
+datado e busca só o delta — compartilhado por `/daily-backlog`, `/backlog` e `/kickoff`), `docs/knowledge.md`
 (**saber-fazer**: padrões + **anti-padrões** — carregue antes de implementar/revisar) e
 `docs/evolution.md` (**linha do tempo de aprendizados**: o que mudou e o que o uso real ensinou) e
 `docs/token-efficiency.md` (**política de eficiência de token**: bloco de contexto fixo p/ cache,
-roteamento de modelo obrigatório, retorno enxuto, `Workflow` — como todo *driver* gasta token com
-intenção sem enfraquecer o isolamento/revisão independente).
+roteamento de modelo obrigatório, retorno enxuto, `Workflow`, **AIOps** — como todo *driver* gasta token
+com intenção sem enfraquecer o isolamento/revisão independente) e `docs/ai-first/routing-policy.md`
+(**memória auto-evolutiva do roteamento**: nasce vazia e se altera a cada rodada — o `finops-steward`
+grava o custo real aprendido, o `sdd-orchestrator` lê antes de rotear; é o loop de AIOps que faz o
+pipeline **melhorar sozinho com o uso**).
 
 > ⚠️ **Este é o `CLAUDE.md` do framework `ai-first` (esqueleto).** As seções marcadas `_(preencha)_`
 > são preenchidas **na gênese, pela skill primária [`/ai-first-init`](skills/ai-first-init/SKILL.md)**,
@@ -119,7 +124,8 @@ reserva de idempotência, laço da fila, chamada de LLM com timeout+validação+
 - **Rotinas autônomas (crons):** `/daily-backlog` (cria `features_per_day` issues) → ~1h →
   `/daily-build` (implementa + verificação independente + auto-merge em develop + promoção por risco).
   Auditorias que só levantam issues: `/daily-tech-scan` (código + drift), `/daily-ops-scan` (runtime).
-  Loop de resultado: `/daily-outcome` (mede se as features moveram o ponteiro). Espace os crons pesados.
+  Loop de resultado: `/daily-outcome` (mede se as features moveram o ponteiro; roda junto o
+  **`finops-steward`** = custo/ROI + **AIOps**: realimenta o roteamento do `sdd-orchestrator`). Espace os crons pesados.
 - **Cadência/paralelismo/autonomia/orçamento** são knobs do genoma (`features_per_day`, `parallelism`,
   `autonomy_level` — incl. `autônomo` (sem gate humano), `daily_budget`), ajustáveis a qualquer momento
   (P-15). Mesmo em `autônomo`, os gates automáticos (CI + `adversarial-reviewer` + segurança) e o

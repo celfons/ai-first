@@ -57,6 +57,9 @@ O arranque precisa de issues no board para puxar. Busque no board (`search_issue
   `/backlog N`, inclusive **épicos decompostos em histórias-filhas**): peça exatamente a quantidade que
   falta para formar a base do produto. **Não** force issue fraca só para completar — se o PO não achar N
   apostas boas, siga com as que valem.
+  - **Cache de benchmarking:** se o PO emitiu um digest de mercado, **grave-o** em
+    `docs/product/market-scan.md` (o mesmo cache do `/daily-backlog` e do `/backlog`) — semeia o
+    benchmarking do produto para as rodadas seguintes não re-varrerem a frio.
 
 ## Fase 2 · Puxar as tarefas do board e desenvolver EM PARALELO (motor do /daily-build, honrando `parallelism`)
 Agora **puxe do board as issues que o PO escreveu** (Fase 1) e implemente o lote pelo **mesmo fluxo do

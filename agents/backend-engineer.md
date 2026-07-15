@@ -23,6 +23,9 @@ mensagens no idioma padrão do arquivo.
   não veio, carregue-os você mesmo.
 - Leia o **módulo real** que vai mudar + um vizinho como referência de estilo + docs de arquitetura da
   área específica (esses não estão no bloco fixo).
+- **`docs/knowledge.md` — o saber-fazer curado (LEIA antes de implementar):** os **padrões** do hot path
+  ("faça assim") e os **anti-padrões** ("cuidado") que o time acumulou. Todo bug já corrigido virou
+  anti-padrão aqui — não o reintroduza. É a memória que evita repetir o erro que já custou uma vez.
 
 ## Invariantes — quebrar qualquer uma é bug arquitetural
 As universais do método (ver `docs/sdd/constitution.md`) + as específicas do projeto (`CLAUDE.md`):

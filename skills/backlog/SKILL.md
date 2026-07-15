@@ -62,7 +62,11 @@ tema como foco quando houver. Reforce que ele deve:
 Modelo/esforço: **`opus`/`alto`** por padrão (escolha de produto é de alta alavancagem). Baixe para
 `sonnet` só se o recorte for óbvio/mecânico.
 
-### 4 · Devolva o resultado ao humano
+### 4 · Grave o cache de benchmarking + devolva o resultado ao humano
+Se o PO emitiu um digest de mercado novo/atualizado, **grave-o** em `docs/product/market-scan.md` (o PO
+é só-leitura de docs — quem escreve é a skill). É o **mesmo** cache do `/daily-backlog` e do `/kickoff`:
+o benchmarking que você fez agora poupa a varredura fria da próxima rodada — manual **ou** cron.
+
 Repasse o resumo estruturado do PO: uma linha por issue (**número, título, tamanho, labels**) e, quando
 houver épico, a **hierarquia** (épico → filhas). Se o PO criou menos que o pedido, diga quantas e por
 quê (dedup, sem aposta nova boa, etc.). Aponte o próximo passo:
