@@ -127,7 +127,8 @@ reserva de idempotência, laço da fila, chamada de LLM com timeout+validação+
   Loop de resultado: `/daily-outcome` (mede se as features moveram o ponteiro; roda junto o
   **`finops-steward`** = custo/ROI + **AIOps**: realimenta o roteamento do `sdd-orchestrator`). Espace os crons pesados.
 - **Cadência/paralelismo/autonomia/orçamento** são knobs do genoma (`features_per_day`, `parallelism`,
-  `autonomy_level` — incl. `autônomo` (sem gate humano), `daily_budget`), ajustáveis a qualquer momento
+  `autonomy_level` — incl. `autônomo` (sem gate humano), `daily_budget`, `budget_per_feature` — teto por
+  feature no build paralelo, ADR-0003), ajustáveis a qualquer momento
   (P-15). Mesmo em `autônomo`, os gates automáticos (CI + `adversarial-reviewer` + segurança) e o
   `/rollback` permanecem.
 - **Reprovar uma feature antes de `main`:** `/reject-feature <issue#> [motivo]`.

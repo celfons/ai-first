@@ -18,7 +18,11 @@ Leia antes de começar:
 - **`autonomy_level`** — `conservador` (humano aprova tudo) · `progressivo` (🟢 promove sozinha) ·
   `amplo` (🟢🟡 promovem sozinhas) · **`autônomo` (100% AI — sem gate humano: todos os tiers, inclusive
   🔴, auto-promovem)**. Default **conservador**.
-- **`daily_budget`** — teto de gasto/esforço do loop (P-14). Pare de pegar novas features ao atingir.
+- **`daily_budget`** — teto de gasto/esforço **do loop** (P-14). Pare de pegar novas features ao atingir.
+- **`budget_per_feature`** — teto de gasto de **cada** feature no build paralelo (P-14; default
+  `daily_budget / features_per_day`). No `Workflow` multi-feature, a feature que estoura o seu teto
+  **para sozinha** (`awaiting-human`/`needs-human-triage`), as vizinhas seguem. Complementa o teto do
+  loop, não o substitui.
 
 > Gates: CI verde **e** vereditos não-bloqueantes do `adversarial-reviewer` (correção) **e** do
 > `security-reviewer` (segurança) são obrigatórios para o auto-merge em `develop`. A revisão humana da
@@ -50,16 +54,30 @@ como oráculo) → `security-reviewer` (gate de segurança) → `docs-writer`. *
 > `adversarial-reviewer` e invariante/segurança); (3) exija **retorno enxuto** (status · tocou · p/ o
 > próximo · bloqueios), detalhe só quando o `adversarial-reviewer` bloqueia. Com opt-in do humano por
 > `Workflow`, paralelize as etapas `paralelo:sim` e imponha `budget.total` = `daily_budget`.
+>
+> **Paralelismo de FEATURES num único `Workflow` (`parallelism > 1` + opt-in — `token-efficiency.md` §4
+> Escala 2).** Em vez de N invocações soltas, construa as features **na mesma orquestração**:
+> (1) **pré-fase** deriva **1×** o **bundle compartilhado** — BLOCO DE CONTEXTO FIXO base (CLAUDE.md +
+> constitution), índice de repo, audit de dependências, digest de market-scan — e o passa **read-through**
+> a cada feature (fato, não raciocínio → isolamento intacto); (2) a `feature` é a **dimensão externa** do
+> `pipeline()`, cada uma um **sub-pipeline isolado** (worktree + branch próprios); (3) **teto por
+> feature**: imponha `budget_per_feature` (genoma §8; default `daily_budget / features_per_day`) a cada
+> sub-pipeline — a feature que **estoura PARA** (marca `awaiting-human`/`needs-human-triage`, PR parcial
+> atrás de flag), **as outras seguem**; o `budget.total` = `daily_budget` continua como teto global.
 - **Se a feature foi decomposta:** implemente **slice a slice, cada uma numa invocação isolada** do
   `backend-engineer` (só o contexto da slice → janela menor, menos alucinação), **árvore verde ao fim
   de cada slice** (parcial atrás de flag), e a **slice de integração** por último. Verifique cada slice
   e faça o `adversarial-reviewer` sobre o **agregado**.
 **Desenvolvimento paralelo (`parallelism` > 1):** desenvolva até `parallelism` features **ao mesmo
 tempo**, cada uma em **contexto isolado** (subagentes de implementação com `isolation: 'worktree'`, uma
-branch `claude/<slug>` por feature a partir de `develop`). Mas **o merge em `develop` é SERIALIZADO**:
-mergeie uma de cada vez (Fase 5) e **rebase/atualize** cada branch sobre o `develop` já avançado antes
-do merge — conflito volta ao `backend-engineer`. Duas features nunca tocam `develop` ao mesmo tempo.
-Com `parallelism: 1`, o comportamento é o sequencial de sempre.
+branch `claude/<slug>` por feature a partir de `develop`). **Com opt-in de `Workflow`, faça-o num único
+Workflow** (Escala 2 acima): **bundle de recursos compartilhado derivado 1×** (contexto base + índice de
+repo + deps + market-scan, passados read-through) e **teto `budget_per_feature`** por sub-pipeline — a
+feature que estoura o seu teto **para sozinha** (as vizinhas seguem). Sem `Workflow`, o mesmo desenho
+vale de forma sequencializada. Mas **o merge em `develop` é SERIALIZADO** em qualquer caso: mergeie uma
+de cada vez (Fase 5) e **rebase/atualize** cada branch sobre o `develop` já avançado antes do merge —
+conflito volta ao `backend-engineer`. Duas features nunca tocam `develop` ao mesmo tempo. Com
+`parallelism: 1`, o comportamento é o sequencial de sempre.
 
 Sem parar nos gates de spec/plan, MAS:
 - **Grande/risco arquitetural** apesar do size → **PARE essa issue**: comente o porquê, aplique

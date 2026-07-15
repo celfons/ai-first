@@ -69,7 +69,10 @@ Agora **puxe do board as issues que o PO escreveu** (Fase 1) e implemente o lote
 - Desenvolva até **`parallelism`** features **ao mesmo tempo**, cada uma em **contexto isolado**
   (dispare os subagentes de implementação com `isolation: 'worktree'`, uma branch `claude/<slug>` por
   feature a partir de `develop`). Isso mantém a janela curta por feature (menos alucinação) e encurta o
-  wall-clock do arranque.
+  wall-clock do arranque. **Com opt-in de `Workflow`, num único Workflow multi-feature**
+  (`docs/token-efficiency.md` §4 Escala 2): **bundle compartilhado derivado 1×** (contexto base + índice
+  de repo + deps + market-scan, read-through) e **teto `budget_per_feature`** por sub-pipeline — o
+  arranque semeia o cache que as rodadas seguintes reusam.
 - **O merge em `develop` é SERIALIZADO**, nunca paralelo: mergeie uma feature de cada vez (CI verde +
   veredito não-bloqueante), e antes de cada merge **rebase/atualize** a branch sobre o `develop` já
   avançado, resolvendo conflito ou devolvendo ao `backend-engineer` se o rebase quebrar. Duas features
@@ -77,8 +80,9 @@ Agora **puxe do board as issues que o PO escreveu** (Fase 1) e implemente o lote
 - Todos os gates do `/daily-build` continuam valendo por feature: `grande`/arquitetural →
   `needs-human-triage` (pula); `[NEEDS CLARIFICATION]` → `awaiting-human` (pergunta, não chuta);
   `adversarial-reviewer` pode **bloquear**; promoção `develop → main` **por tier × `autonomy_level`**.
-- Respeite o **`daily_budget`**: pare de arrancar novas features ao atingir o teto e registre quantas
-  ficaram para a próxima rodada/cron.
+- Respeite os **dois tetos** (P-14): **`daily_budget`** (global — pare de arrancar novas features ao
+  atingir e registre quantas ficaram) e **`budget_per_feature`** (por feature no build paralelo — a que
+  estoura para sozinha com `awaiting-human`/`needs-human-triage`; as vizinhas seguem).
 
 ## Fase 3 · Resumo ao dono (linguagem simples)
 Igual à Fase 7 do `/daily-build` — sua última mensagem vira o push/e-mail, em linguagem de negócio

@@ -48,5 +48,6 @@ trade-off. Nesses casos, o `plan.md` da feature já basta.
 |---|---|---|---|---|
 | [0001](0001-adotar-metodo-ai-first.md) | Adotar o método `ai-first` (SDD + subagentes + gate humano ajustável) | Accepted | baseline | P-1, P-2, P-10 |
 | [0002](0002-migracao-strangler-fig.md) | Migração/reescrita como capacidade de primeira classe (strangler-fig + caracterização) | Accepted | capacidade de migração | P-1, P-11, P-13 |
+| [0003](0003-build-multi-feature-workflow.md) | Build paralelo multi-feature num único `Workflow` (recursos compartilhados + teto de gasto por feature) | Accepted | capacidade de build paralelo | P-14, P-11, P-13, P-15 |
 
 > Ao criar um ADR, adicione a linha aqui (o `docs-writer` fecha isso no fim da feature).

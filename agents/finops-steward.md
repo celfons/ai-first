@@ -31,6 +31,11 @@ alocação de capital que o humano-CEO faz hoje na mão, às cegas.
 1. **Custo por feature/etapa:** tokens e custo estimado por etapa (das tags `model:*`/`effort:*` +
    `budget.spent()` do `Workflow` quando houver) e **custo por feature MERGEADA** (o que foi abandonado
    também custou — conte). Cache-hit e wall-clock quando alcançáveis.
+   - **Adesão ao teto por feature (`budget_per_feature`):** no build paralelo, quantas features
+     **estouraram** o teto e pararam. Estouro recorrente numa classe = o teto está apertado demais **ou**
+     o roteamento daquela classe está caro (cruze com o item 2) → recomende ajustar `budget_per_feature`
+     no genoma **ou** subir o piso no `routing-policy.md`. Ganho do bundle compartilhado (custo derivado
+     1× vs. N×) também entra aqui quando mensurável.
 2. **Qualidade do roteamento (o sinal mais valioso):** **taxa de re-run do modelo barato** — quantas
    etapas roteadas baratas foram **bloqueadas** (pelo `adversarial-reviewer`/`security-reviewer`/CI) e
    **refeitas**. Alta taxa numa classe de tarefa = o "barato" saiu caro (o piso está baixo demais).
