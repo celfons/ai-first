@@ -80,7 +80,10 @@
   humano** — todos os tiers (inclusive 🔴) promovem sozinhos; o produto é construído e publicado sem
   ação manual. Opt-in explícito e reversível; os gates automáticos (CI + `adversarial-reviewer` +
   segurança + orçamento) **permanecem**. Só a aprovação humana da promoção sai.
-- **`daily_budget`** (teto de gasto/esforço do loop, P-14): `[A DEFINIR]`
+- **`daily_budget`** (teto de gasto/esforço do loop, P-14): `[A DEFINIR]` — **default quando não
+  definido: `sem-teto`** (o loop respeita só `features_per_day`/`parallelism`; nenhuma parada por
+  orçamento). Defina um número (tokens/moeda/features) para impor um teto rígido — ao atingi-lo, o
+  `/daily-build` para de pegar novas features e o `finops-steward` alerta.
 - **Modelo fixado** (P-14 — upgrade é decisão explícita com re-baseline de evals): `[A DEFINIR]`
 - **Crons (cadência + fuso, espaçados):**
   - `/daily-backlog`: `[A DEFINIR]`

@@ -45,10 +45,13 @@ mergeada, gasto vs. `daily_budget`, e a **taxa de re-run do modelo barato**. Ele
   `needs-human-triage`.
 Se a telemetria de custo não é alcançável, ele **diz** (não inventa número) — some ao ⚠️ da Fase 3.
 
-## Fase 2½ · Registrar o aprendizado em `docs/evolution.md`
-Pegue as **linhas de aprendizado** que o `outcome-analyst` emitiu (item 4 dele) e **grave-as no topo**
-da linha do tempo em `docs/evolution.md` (mais recente primeiro), no formato do doc — data, feature/
-#NNN, sinal (✅/〜/❌/🔧), aprendizado e links. O subagente é só-leitura de docs; **quem escreve é a
+## Fase 2½ · Registrar o aprendizado em `docs/evolution.md`  ← o carregador que o `product-owner` LÊ
+Pegue as **linhas de aprendizado** que o `outcome-analyst` emitiu (item 4 dele) **e a linha de custo/ROI
+do `finops-steward`** (💰) e **grave-as no topo** da linha do tempo em `docs/evolution.md` (mais recente
+primeiro), no formato do doc — data, feature/#NNN, sinal (✅/〜/❌/🔧/💰), aprendizado e links. **Este
+arquivo é a memória que o `product-owner` relê antes de propor** (é como o sinal ✅/💰 atravessa a
+fronteira entre os crons `/daily-outcome` e `/daily-backlog`, que não compartilham contexto). O
+subagente é só-leitura de docs; **quem escreve é a
 skill** (thread principal). Uma linha por feature avaliada; não duplique entrada já registrada.
 
 ## Fase 3 · Notificação ao dono (o que o mundo real disse)

@@ -71,4 +71,4 @@ Adotamos o método `ai-first`, composto por:
 
 Constituição (P-1 spec-first, P-2 soberania, P-10 autonomia progressiva, P-11 verificação independente,
 P-12 loop de resultado), [`docs/sdd/README.md`](../sdd/README.md), [`docs/context-map.md`](../context-map.md),
-[`agents/README.md`](../roster.md).
+[`docs/roster.md`](../roster.md).

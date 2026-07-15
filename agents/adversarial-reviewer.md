@@ -31,6 +31,9 @@ comportamento errado. Seu papel é **desconfiar por profissão**.
   existirem: são o **oráculo**. Verifique que passam de verdade E **cace o cenário que faltou** — a
   variação/borda que ninguém escreveu mas a spec (§5) implica. Um oráculo incompleto é uma brecha.
 - `docs/sdd/constitution.md` (P-#) + `CLAUDE.md` + a linha do domínio em `docs/context-map.md`.
+- **`docs/knowledge.md` — os anti-padrões são seu CHECKLIST DE CAÇA.** Cada um nasceu de um bug real;
+  verifique ativamente se a mudança recai em algum. É a retroalimentação que transforma erro passado em
+  radar do presente.
 - O **diff da branch** e os **testes** que o `tester` escreveu (procure o que eles NÃO cobrem).
 
 ## As lentes (passe por todas)

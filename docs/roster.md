@@ -41,7 +41,7 @@ custo-benefício empurre para baixo.
 | `bdd-author` | 4¾ · ACCEPTANCE | critérios de aceite → cenários BDD executáveis (oráculo) — **se `bdd_style ≠ off`** |
 | `tester` | 5 · VERIFY | liga os cenários ao runner + testes + evals; gate verde |
 | `adversarial-reviewer` | 5½ · VERIFY (independente) | tenta QUEBRAR a mudança; dirige o runtime; veredito pode BLOQUEAR o merge |
-| `security-reviewer` | 5¾ · VERIFY (segurança) | **executa o gate de segurança** (P-11): threat model do diff, authz/escopo, injeção, segredo/PII, dependência/CVE; veredito pode BLOQUEAR. Modelo fixo opus/alto (P-14) |
+| `security-reviewer` | 5¾ · VERIFY (segurança) | **executa o gate de segurança** (revisor independente P-11 + *required checks* de segurança P-13): threat model do diff, authz/escopo, injeção, segredo/PII, dependência/CVE; veredito pode BLOQUEAR. Modelo fixo opus/alto (P-14) |
 | `docs-writer` | 6 · DOCS | `docs/*`, `CLAUDE.md`, spec final coerente |
 | `release-manager` | 6½ · RELEASE/GROWTH | a **porta de saída**: o que chegou a `main` vira valor percebido — changelog/release notes em linguagem de persona, rascunho de anúncio, posicionamento |
 | `outcome-analyst` | (resultado) | mede se a feature entregou a métrica de sucesso (§8) com uso real |

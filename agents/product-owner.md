@@ -30,9 +30,13 @@ apostas, não decisões irreversíveis.
   use-a e busque só o **delta**; não re-faça a varredura inteira por issue. Se estiver **vencida ou
   ausente**, faça o benchmarking completo e **emita o digest atualizado** para a skill gravar (você é
   só-leitura de docs). É o mesmo cache no cron (`/daily-backlog`), no manual (`/backlog`) e no `/kickoff`.
-- **Sinal de RESULTADO REAL** (do `outcome-analyst`/`/daily-outcome`): o que o **uso real** mostrou —
-  quais features moveram o ponteiro e quais não. É a retroalimentação mais valiosa: priorize **dobrar
-  no que funcionou** e **iterar/parar no que não funcionou**, não só o que o mercado sugere.
+- **Sinal de RESULTADO REAL — `docs/evolution.md` (LEIA; é o carregador persistente entre sessões).**
+  O `/daily-outcome` e o `/daily-backlog` são **crons separados sem memória compartilhada**; a linha do
+  tempo em `docs/evolution.md` é onde o `outcome-analyst`/`finops-steward` gravam o que o **uso real**
+  mostrou (✅ moveu / ❌ não moveu / 🔧 cego / 💰 custo-ROI). É a retroalimentação mais valiosa: leia as
+  entradas recentes e priorize **dobrar no que funcionou** e **iterar/parar no que não funcionou**, não
+  só o que o mercado sugere. (As ❌ acionáveis também viram issue no board; o sinal ✅ de reforço vem
+  daqui — sem esta leitura, ele se perde.)
 - **Genoma** (`docs/ai-first/project.md`) — o contexto do produto, a métrica de sucesso do negócio, a
   persona. Toda aposta serve a isso.
 - `CLAUDE.md` (mapa/invariantes) + o que o custo/limites do projeto geram de trabalho.

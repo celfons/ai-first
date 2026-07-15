@@ -49,6 +49,7 @@ Só leia o que o pedido exige; não abra a base inteira.
 | `bdd-author` | ACCEPTANCE (BDD) | cenários de comportamento executáveis (oráculo) — **se `bdd_style ≠ off`** |
 | `tester` | VERIFY | liga os cenários ao runner + unidade/integração/invariante/runtime + regressão |
 | `adversarial-reviewer` | VERIFY (independente) | tenta quebrar; dirige runtime; pode bloquear |
+| `security-reviewer` | VERIFY (segurança) | gate AppSec do diff (authz/escopo, injeção, segredo/PII, dependência/CVE); pode bloquear — **fixo opus/alto (P-14)** |
 | `docs-writer` | DOCS | atualiza `docs/*`, `CLAUDE.md`, spec final |
 
 ## 1) Classifique o tamanho (calibra tudo)
@@ -100,6 +101,9 @@ Guia por papel (ponto de partida — ajuste ao caso):
 - **`adversarial-reviewer`: nunca sub-provisione (é a rede de segurança, P-11).** Mínimo **opus/alto**;
   efeito de alto valor (dinheiro/dado/segurança) → **opus/extra**. Custo-benefício otimiza o mecânico,
   **não** a verificação independente nem o que toca invariante/segurança.
+- **`security-reviewer`: idem — fixo opus/alto (P-13/P-14), nunca abaixa.** É o dono do gate de
+  segurança (AppSec do diff); nova dependência/authz/PII/efeito de alto valor → **opus/extra**. O loop
+  de custo (`routing-policy.md`) nunca rebaixa este piso.
 
 ## 3) Aplique a TAG de roteamento na issue
 Se houver `#NNN`, rotule a issue (via `issue_write`; o GitHub cria a label ao aplicar) com o
