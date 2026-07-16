@@ -17,14 +17,17 @@
   palpite. Sem esta fase, o organismo cresce em capacidades mas não em **escala**, e a decisão de
   growth continua manual e enviesada.
 - **O que acontece se não fizermos:** growth permanece implícito; apostas de escala competem no board
-  sem lente própria; a autonomia "de crescimento" ou não existe ou é insegura (um agente mutando
-  preço/canal sem freio).
+  sem lente própria; a autonomia "de crescimento" ou não existe ou é insegura. **Decisão do dono:**
+  autonomia total de experimentação, **inclusive mundo-externo** (preço/canal/comunicação em massa) —
+  a segurança vem de **freios automáticos** (canário, teto de volume, guarda, conformidade, kill), não
+  de um gate humano.
 
 ## 2 · User stories
 
-- **US-A** Como **dono/CEO**, quero um time de subagentes que **decide estratégias de escala pelo funil
-  e por dado real, sem meu gate**, para o produto crescer 24/7 — mas com a garantia de que **nada vai a
-  produção sem os gates automáticos** (CI, adversarial, segurança) e sem estourar o **orçamento/CAC**.
+- **US-A** Como **dono/CEO**, quero um time de subagentes com **autonomia total de experimentação —
+  inclusive preço, canal externo e comunicação em massa, sem meu gate** — para o produto crescer 24/7,
+  com a garantia de que a autonomia é **contida por freios automáticos** (CI, adversarial, segurança,
+  canário, teto de volume/CAC, métricas de guarda, kill), nunca solta.
 - **US-B** Como **`growth-strategist`**, quero ler a North Star + o funil + o sinal real e **criar
   issues de experimento** na alavanca de maior ROI, para abastecer o board com apostas de crescimento
   (não paridade de feature).
@@ -46,8 +49,8 @@
 | RF-GRW-06 | O sistema DEVE prover a skill `/growth-outcome` que aciona `growth-analyst` + `finops-steward` sobre a janela recente, grava as entradas em `docs/evolution.md` e abre issues de escalar/iterar/matar no fluxo normal. |
 | RF-GRW-07 | Todo experimento DEVE ser entregue atrás de flag com rollout percentual; nenhum experimento vai a 100% sem veredito ✅ do `growth-analyst`, e todo experimento é reversível via `/rollback`. |
 | RF-GRW-08 | Em `growth_autonomy_level: autônomo`, a **seleção/priorização** de experimentos ocorre sem gate humano, PORÉM CI verde + `adversarial-reviewer` + `security-reviewer` + tier de risco na promoção `develop → main` permanecem obrigatórios (P-10/P-11/P-13). |
-| RF-GRW-09 | O `finops-steward` DEVE cortar (marcar para não escalar) experimento cujo CAC/gasto exceda `cac_ceiling`/`experiment_budget`; experimento que mute **preço, canal externo ou comunicação em massa** DEVE receber `needs-human-triage` mesmo em modo autônomo. |
-| RF-GRW-10 | O genoma DEVE expor os knobs: `north_star_metric`, `growth_model`, `growth_experiments_per_cycle`, `growth_autonomy_level`, `guardrail_metrics`, `cac_ceiling`/`experiment_budget`, `growth_budget_per_cycle`, `budget_per_experiment` (P-15, ajustáveis a qualquer momento). |
+| RF-GRW-09 | O `finops-steward` DEVE cortar (marcar para não escalar) experimento cujo CAC/gasto exceda `cac_ceiling`/`experiment_budget`. Em `growth_autonomy_level: autônomo`, experimento que mute **preço, canal externo ou comunicação em massa** roda **sem gate humano**, PORÉM contido por freios automáticos obrigatórios: **canário** (`canary_pct` antes de qualquer ramp), **teto de volume** para ação irreversível (`external_action_cap` por ciclo), **métricas de guarda** + kill, e o **gate de conformidade do `security-reviewer`** (consentimento/opt-out/LGPD/CAN-SPAM) como *required check*. |
+| RF-GRW-10 | O genoma DEVE expor os knobs: `north_star_metric`, `growth_model`, `growth_experiments_per_cycle`, `growth_autonomy_level`, `guardrail_metrics`, `cac_ceiling`/`experiment_budget`, `growth_budget_per_cycle`, `budget_per_experiment`, `canary_pct`, `external_action_cap` (P-15, ajustáveis a qualquer momento). |
 | RF-GRW-11 | O `growth-strategist` DEVE escolher a alavanca por **ROI esperado** (`argmax(lift por coorte × custo/CAC)`), reusando o ROI-por-feature do `finops-steward`, e DEVE registrar o racional de ROI no corpo da issue. Não DEVE priorizar por novidade. |
 | RF-GRW-12 | O sistema DEVE manter uma memória auto-evolutiva `docs/product/growth-playbook.md` (nasce vazia; tabela de táticas vigentes + histórico append-only). O `growth-analyst`/`finops-steward` emitem as entradas e a skill `/growth-outcome` as grava; o `growth-strategist` a lê antes de propor (é só-leitura de docs). |
 | RF-GRW-13 | O `/daily-growth` DEVE rodar sob um teto de token por ciclo (`growth_budget_per_cycle`) e DEVE decidir o grau de fan-out por `fan = min(parallelism, max(1, floor(budget.remaining() / budget_per_experiment)))` — serializando quando o orçamento não paga mais de um experimento. |
@@ -67,9 +70,15 @@
 - **Dado** modo `autônomo`, **quando** um experimento é implementado, **então** ele só chega a `main`
   com CI verde + veredito não-bloqueante do `adversarial-reviewer` + gate de segurança aprovado.
   *(RF-GRW-08)*
-- **Dado** um experimento que muta canal externo/preço, **quando** o `growth-strategist`/
-  `experiment-designer` o cria, **então** ele recebe `needs-human-triage` mesmo em `autônomo`.
-  *(RF-GRW-09)*
+- **Dado** modo `autônomo` e um experimento que muta canal externo/preço, **quando** o
+  `experiment-designer` o especifica, **então** ele roda sem gate humano MAS nasce com `canary_pct` > 0,
+  `external_action_cap` definido, `guardrail_metrics` e critério de kill — e a spec é recusada se faltar
+  qualquer um. *(RF-GRW-09)*
+- **Dado** um experimento de comunicação em massa, **quando** ele é implementado, **então** só chega a
+  `main` com o gate de conformidade do `security-reviewer` aprovado (opt-out/consentimento), que **não**
+  relaxa em modo autônomo. *(RF-GRW-09)*
+- **Dado** um experimento externo que atinge o `external_action_cap` do ciclo, **quando** o
+  `finops-steward` mede, **então** o disparo para (não escala) e a decisão vai ao board. *(RF-GRW-09)*
 - **Dado** um experimento com CAC acima do `cac_ceiling`, **quando** o `finops-steward` mede,
   **então** ele é marcado para não escalar e a decisão vai ao board. *(RF-GRW-09)*
 - **Dado** duas alavancas candidatas com lift semelhante e custos diferentes, **quando** o
@@ -112,28 +121,40 @@
 - **P-11** — verificação independente (`adversarial-reviewer`) permanece obrigatória. ✅
 - **P-12** — o `growth-analyst` fecha o loop com dado real (coorte). ✅
 - **P-13** — separação de papéis: quem propõe o experimento não declara sua vitória; canal externo/preço
-  sobe a humano. ✅
+  é autônomo, mas o **gate de conformidade do `security-reviewer`** (opt-out/consentimento) permanece
+  como *required check* e não relaxa. ✅
 - **P-14** — teto de CAC/orçamento imposto pelo `finops-steward`; piso de segurança nunca desce. ✅
 - **P-15** — cadência/autonomia/orçamento de growth são knobs ajustáveis. ✅
 - **Nova invariante de projeto?** Recomenda-se registrar como **P-16+** na Parte B da constituição:
-  *"Experimento de growth nunca escala sem métrica-alvo verde e guarda intacta; mutação de preço/canal
-  externo nunca é autônoma."* — decisão do humano na gênese/PR próprio. **Sem violação** dos universais.
+  *"Experimento de growth nunca escala sem métrica-alvo verde e guarda intacta; experimento de
+  mundo-externo (preço/canal/comunicação em massa) é autônomo, mas nunca sem canário, teto de volume
+  (`external_action_cap`) e gate de conformidade."* — decisão do dono na gênese/PR próprio. **Sem
+  violação** dos universais. O `guardrail_metrics` + `external_action_cap` são o freio automático que
+  substitui o gate humano (P-14).
 
 ## 7 · Fora de escopo
 
-- **Execução em canais externos** (envio real de e-mail/ads, integração com plataformas de mídia) —
-  esta fase decide e mede; a operação de canal externo é feature própria com `needs-human-triage`.
 - **Motor de A/B estatístico embutido** — o `growth-analyst` consome a telemetria/analytics que o
   projeto já tiver; construir plataforma de experimentação é outra decisão (ADR futuro).
-- **Precificação dinâmica autônoma** — explicitamente fora; preço é sempre gate humano.
+- **Ação externa sem os freios automáticos** — mundo-externo é autônomo, mas **nunca** sem canário +
+  `external_action_cap` + guarda + gate de conformidade. Um caminho de disparo que ignore esses freios
+  está fora de escopo (é bug, não feature).
 - **Substituir o `product-owner`** — growth complementa (funil), não substitui (valor de produto).
+
+> **Nota — mundo-externo é autônomo por decisão do dono.** Ao contrário do rascunho inicial, preço,
+> canal externo e comunicação em massa **não** exigem `needs-human-triage`: o dono optou por autonomia
+> total de experimentação. A contenção passou a ser **automática** (canário, teto de volume,
+> conformidade, kill), não humana. O único adaptador de canal externo em si (SMTP/ads API) continua
+> sendo implementação a construir pelo fluxo normal, com o `security-reviewer` no gate.
 
 ## 8 · Métricas de sucesso
 
 - **Adoção do loop:** ao menos 1 experimento de growth criado, implementado (passando todos os gates) e
   **medido por coorte** por ciclo, com entrada gravada em `docs/evolution.md`.
 - **Segurança da autonomia:** 0 experimentos chegando a `main` sem CI + adversarial + segurança; 0
-  mutações de preço/canal externo sem `needs-human-triage` — verificável no histórico de PRs/labels.
+  experimentos de mundo-externo sem canário + `external_action_cap` + gate de conformidade; 0 estouros
+  de `external_action_cap`/`cac_ceiling` que escalaram — verificável no histórico de PRs/labels e no
+  relatório do `finops-steward`.
 - **Sinal econômico:** todo experimento medido tem CAC/gasto reportado pelo `finops-steward` e nenhum
   acima do `cac_ceiling` escala — verificável no relatório de `/growth-outcome`.
 - **Efeito no funil (meta de negócio):** ao longo de N ciclos, a North Star declarada no genoma se move

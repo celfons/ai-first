@@ -25,7 +25,11 @@ vira um vetor de risco: um agente que muta preço, dispara e-mail em massa ou em
 experimento sem freio econômico/ético.
 
 A força adicional: growth **toca o mundo externo** (canais, preço, comunicação, gasto de mídia) de um
-jeito que uma feature interna não toca. O modelo de autonomia precisa refletir esse blast radius maior.
+jeito que uma feature interna não toca. O modelo de autonomia precisa refletir esse blast radius maior —
+**a decisão do dono é dar autonomia total de experimentação também aqui**, então a contenção não pode
+ser um gate humano (que anularia a autonomia); tem de ser um conjunto de **freios automáticos** que
+mantêm o experimento pequeno, medido e reversível/parável, com uma ressalva honesta: envio externo já
+disparado não se desfaz.
 
 ## Decisão
 
@@ -59,10 +63,25 @@ autônoma; a execução passa pelos mesmos gates automáticos.
    isenção: CI verde, `adversarial-reviewer` (pode BLOQUEAR), `security-reviewer` (gate AppSec,
    opus/alto) e o tier de risco na promoção `develop → main` valem **iguais**. Quem escreve não aprova
    o risco (P-13).
-5. **Guard-rails econômicos e de mundo-externo:** o `finops-steward` impõe um **teto de CAC/orçamento
-   de experimento** (`cac_ceiling`/`experiment_budget`, P-14) — experimento que compra crescimento
-   net-negativo é cortado. Experimento que toca **canal externo, preço ou comunicação em massa** sobe
-   `needs-human-triage` **mesmo em modo autônomo** (blast radius maior que uma feature interna).
+5. **Autonomia total inclui o mundo externo — mas contida como experimento, não solta (P-9/P-12/P-14):**
+   em `growth_autonomy_level: autônomo`, experimentos que tocam **canal externo, preço ou comunicação em
+   massa** também rodam **sem gate humano** — o dono optou por autonomia total de experimentação. O gate
+   humano é substituído por **freios automáticos que mantêm o experimento contido e reversível**, não
+   por ausência de freio:
+   - **Canário obrigatório** — todo experimento de mundo-externo começa numa fração pequena
+     (`canary_pct`) de coorte antes de qualquer ramp; nunca nasce a 100%.
+   - **Teto de volume/gasto** — o `finops-steward` impõe `cac_ceiling`/`experiment_budget` e um **teto de
+     volume** para ações irreversíveis (`external_action_cap`: nº de e-mails/impressões/gasto de mídia por
+     ciclo). Estourou → para, não escala.
+   - **Métricas de guarda + kill** — o `growth-analyst` mata na hora o experimento que piora uma
+     `guardrail_metric` (receita, churn, reclamação/spam-rate); o `/rollback` desliga a flag.
+   - **Honestidade sobre irreversibilidade:** e-mail/ad/push já **disparado** não se reverte (só se para
+     o disparo futuro) — por isso a contenção do mundo-externo é **canário + teto de volume + guarda**, e
+     não a reversibilidade da flag. O `security-reviewer` mantém o gate de conformidade (consentimento/
+     opt-out/LGPD-CAN-SPAM) como *required check* — isso é execução, não estratégia, e **não** relaxa.
+   - **Kill-switch de mundo-externo:** o `daily_budget`/`external_action_cap` e o `/rollback` são o freio
+     de último recurso; o humano continua podendo pausar tudo a qualquer momento (P-15), só não é
+     **exigido** por card.
 6. **Métricas de guarda são um freio automático (P-12):** o `growth-analyst` **mata** um experimento
    que sobe a alavanca-alvo mas **piora uma `guardrail_metric`** (ex.: ativação sobe, mas churn de
    receita também). Ganho local que causa dano global não escala.
@@ -95,10 +114,14 @@ autônoma; a execução passa pelos mesmos gates automáticos.
   produto para a persona*, não *alavancas de funil*. Sem uma lente própria, growth fica implícito e
   perde para features "brilhantes" que não movem aquisição/retenção. São trabalhos com oráculos
   diferentes (métrica de negócio da feature vs. lift de coorte do experimento).
-- **Growth autônomo sem gate nenhum (estratégia E execução sem humano)** — descartado como perigoso:
-  removeria os freios (CI/adversarial/security/CAC/guardrail) que são exatamente o que torna a
-  autonomia segura. Contra P-10/P-11/P-13/P-14. "Sem gate humano" é da **decisão estratégica**, nunca
-  do que vai a produção.
+- **Growth autônomo sem freio nenhum (nem gate humano, nem freio automático)** — descartado como
+  perigoso: removeria os freios (CI/adversarial/security/CAC/guardrail/canário) que são exatamente o
+  que torna a autonomia segura. Contra P-10/P-11/P-13/P-14. Autonomia total de **decisão** (inclusive
+  mundo-externo) é a escolha do dono; ela **substitui o gate humano por freios automáticos**, não os
+  remove — o que vai a produção nunca perde CI/adversarial/segurança.
+- **Manter gate humano para preço/canal externo** — descartado *a pedido do dono*: anularia a autonomia
+  total de experimentação que ele escolheu. Trocado por **canário + teto de volume/gasto + guarda + kill**
+  (contenção automática em vez de aprovação manual).
 - **Pipeline de growth separado do SDD** — descartado: duplicaria spec/build/verify e perderia a
   verificação independente e o loop de custo. O experimento é uma feature atrás de flag; usa o
   **mesmo** fluxo, só a fase de entrada (estratégia) e a de medição (coorte) diferem.
@@ -125,14 +148,19 @@ autônoma; a execução passa pelos mesmos gates automáticos.
   autônomo pode operar a estratégia 24/7 sem que uma decisão ruim escape dos gates. Fecha o loop
   crescimento↔custo (ROI de growth via `finops-steward`).
 - **Custos/limites:** exige instrumentação de funil/coorte (sem telemetria, o `growth-analyst` fica
-  cego e **diz isso** — não inventa lift); introduz mais knobs no genoma; growth que toca canal externo
-  ainda pede humano (por desenho). O ramp-up por flag adiciona flags temporárias a limpar quando o
-  experimento vira permanente ou morre (o `docs-writer` fecha o critério de remoção).
+  cego e **diz isso** — não inventa lift); introduz mais knobs no genoma. Autonomia total de mundo-externo
+  concentra o risco nos **freios automáticos** (canário, teto de volume, guarda, gate de conformidade do
+  `security-reviewer`) — se um deles estiver mal calibrado, o dano externo (envio já disparado) não é
+  reversível; por isso os tetos nascem conservadores e o `finops`/`growth-analyst` os ajustam com dado.
+  O ramp-up por flag adiciona flags temporárias a limpar quando o experimento vira permanente ou morre
+  (o `docs-writer` fecha o critério de remoção).
 - **Restrições futuras:** todo experimento de crescimento conduzido pelo método nasce com métrica-alvo,
   `guardrail_metrics` e critério de kill (o `experiment-designer` recusa hipótese sem oráculo); nenhum
-  experimento vai a 100% sem veredito do `growth-analyst`; nenhuma mutação de preço/canal externo é
-  autônoma; o teto de CAC (P-14) nunca é ignorado; a autonomia de estratégia jamais desliga os gates
-  de execução (P-10/P-11/P-13); a direção estratégica é sempre por ROI com leitura prévia do
+  experimento (interno ou de mundo-externo) vai a 100% sem passar pelo **canário** e pelo veredito do
+  `growth-analyst`; mundo-externo é autônomo mas **sempre** contido por canário + `external_action_cap` +
+  guarda + gate de conformidade do `security-reviewer`; o teto de CAC (P-14) nunca é ignorado; a
+  autonomia (mesmo total) jamais desliga os gates de execução (P-10/P-11/P-13); a direção estratégica é
+  sempre por ROI com leitura prévia do
   `growth-playbook.md`; o fan-out do `/daily-growth` é sempre limitado pela sobra de orçamento e a
   cadência respeita a janela de uso (nenhum ciclo ignora `growth_budget_per_cycle`).
 
