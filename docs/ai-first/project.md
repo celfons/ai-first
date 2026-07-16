@@ -90,9 +90,35 @@
   2): a feature que **estoura o seu teto PARA** (marca `awaiting-human`/`needs-human-triage`, PR parcial
   atrás de flag), as vizinhas seguem — um runaway não queima o orçamento das outras nem derruba o lote.
 - **Modelo fixado** (P-14 — upgrade é decisão explícita com re-baseline de evals): `[A DEFINIR]`
+
+### Growth autônomo (ADR-0004 — knobs do ecossistema de crescimento)
+- **`north_star_metric`** (a métrica-mãe que os experimentos de growth movem): `[A DEFINIR]`
+- **`growth_model`** (funil de referência): `[aarrr | pirate | custom]` (default **aarrr** =
+  aquisição→ativação→retenção→receita→referência)
+- **`growth_experiments_per_cycle`** (quantos experimentos o `/daily-growth` cria por ciclo): `[A DEFINIR]`
+  (default **1**)
+- **`growth_autonomy_level`** (P-10, específico de growth): `[conservador | progressivo | amplo | autônomo]`
+  (default **conservador**). **`autônomo` = experimentação 100% AI, sem gate humano — inclusive preço,
+  canal externo e comunicação em massa.** A contenção vem dos freios automáticos abaixo (canário, teto de
+  volume, guardas, kill), não de aprovação manual; os gates de execução (CI + adversarial + segurança/
+  conformidade + orçamento) **permanecem**.
+- **`guardrail_metrics`** (o que um experimento NÃO pode piorar — receita, churn, spam-rate, latência…):
+  `[A DEFINIR]` — guarda ferida = kill automático (P-12).
+- **`cac_ceiling`** / **`experiment_budget`** (teto de CAC/gasto por experimento, P-14): `[A DEFINIR]` —
+  experimento acima do teto não escala.
+- **`canary_pct`** (fração de coorte inicial de todo experimento — nunca nasce a 100%): `[A DEFINIR]`
+  (default **5%**). O ramp só sobe após veredito ✅ do `growth-analyst`.
+- **`external_action_cap`** (teto de volume por ciclo para ação IRREVERSÍVEL — nº de e-mails/impressões/
+  gasto de mídia): `[A DEFINIR]` — o freio primário do mundo-externo (envio disparado não se reverte).
+- **`growth_budget_per_cycle`** / **`budget_per_experiment`** (teto de token do ciclo de growth e custo
+  típico por experimento, P-14): `[A DEFINIR]` — governam o fan-out: `min(parallelism,
+  floor(budget.remaining()/budget_per_experiment))`. Default `growth_budget_per_cycle` = `sem-teto`.
+
 - **Crons (cadência + fuso, espaçados):**
   - `/daily-backlog`: `[A DEFINIR]`
   - `/daily-build`: `[A DEFINIR]` (~1h após o backlog)
+  - `/daily-growth`: `[A DEFINIR]` (cria os experimentos do ciclo — irmã do backlog, lente de funil)
+  - `/growth-outcome`: `[A DEFINIR]` (algumas vezes/semana — coorte matura em dias; espaçar do outcome)
   - `/daily-tech-scan`: `[A DEFINIR]` (opcional, espaçado)
   - `/daily-ops-scan`: `[A DEFINIR]` (opcional, espaçado)
   - `/daily-outcome`: `[A DEFINIR]` (algumas vezes/semana — métrica leva dias para maturar)

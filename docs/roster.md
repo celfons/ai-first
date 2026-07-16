@@ -28,11 +28,13 @@ custo-benefício empurre para baixo.
 | Subagente | Fase SDD | Entrega |
 |---|---|---|
 | `product-owner` | (backlog) | propõe features de negócio e **cria issues** no board (histórias e **épicos → histórias-filhas** via sub-issue; quantidade do diário ou sob demanda via `/backlog`) |
+| `growth-strategist` | (backlog · GROWTH) | irmão do PO pela lente de **funil/escala**: escolhe a alavanca (AARRR) por **ROI**, lê o `growth-playbook.md` (o que pagou) e **cria issues de experimento** (`growth:*`) via `/daily-growth`. Mundo-externo é autônomo, contido por freios |
 | `tech-auditor` | (saúde do código) | varre bugs críticos + débito técnico e **cria issues** (não corrige) |
 | `ops-investigator` | (saúde de runtime) | investiga métricas/logs/DLQ e **cria issues** c/ sugestão (não corrige) |
 | `migration-analyst` | 0 · CARACTERIZAÇÃO (brownfield) | lê a solução de ORIGEM (qualquer stack) e destila comportamento observável em spec de caracterização + mapa de migração — **só em migração/reescrita** (skill `/migrate`) |
 | `sdd-orchestrator` | (entrada · **roteador**) | classifica tamanho; roteia **modelo+esforço** por etapa (custo-benefício); tag na issue. **Único de modelo fixo (opus/alto)** |
 | `feature-spec` | 1 · SPECIFY | `docs/sdd/features/NNN-slug/spec.md` |
+| `experiment-designer` | 1 · SPECIFY (GROWTH) | `feature-spec` especializado: spec do experimento cuja **§8 é um contrato** (métrica-alvo + guardas + canário + `external_action_cap` + kill). Recusa experimento sem oráculo/freio |
 | `architect` | 2 · PLAN | `plan.md` + `tasks.md` (+ ADR se durável) |
 | `task-decomposer` | 2½ · DECOMPOSE | quebra em micro-slices isoladas + slice de integração — **só se grande/complexa** |
 | `ux-designer` | 3½ · DESIGN (UI) | brief de UI/UX — só em UI significativa |
@@ -45,6 +47,7 @@ custo-benefício empurre para baixo.
 | `docs-writer` | 6 · DOCS | `docs/*`, `CLAUDE.md`, spec final coerente |
 | `release-manager` | 6½ · RELEASE/GROWTH | a **porta de saída**: o que chegou a `main` vira valor percebido — changelog/release notes em linguagem de persona, rascunho de anúncio, posicionamento |
 | `outcome-analyst` | (resultado) | mede se a feature entregou a métrica de sucesso (§8) com uso real |
+| `growth-analyst` | (resultado · GROWTH) | irmão do outcome pela lente de **coorte/funil**: mede o experimento (§8) sem ferir as `guardrail_metrics` e decide **escalar (subir %) / iterar / matar**; grava o que pagou no `growth-playbook.md`. Nunca sobe % sozinho |
 | `finops-steward` | (economia · AIOps/FinOps) | mede o **custo** do pipeline (tokens/etapa, custo por feature mergeada, re-run do modelo barato, cache-hit) + runtime/cloud; cruza com o `outcome-analyst` (ROI) e **realimenta o roteamento** do `sdd-orchestrator`. Só mede/sugere |
 
 ## Diagrama de fluxo e interação
@@ -201,6 +204,22 @@ migration-analyst (CARACTERIZAÇÃO) → characterization.md (RF observáveis) +
   saiu caro) e o **ROI por feature** ao `product-owner`/CEO. O piso de segurança (P-14) nunca desce por
   esse loop. Derivações caras (market-scan, diff-digest, índice de repo) viram **artefato datado** (§6),
   lido em vez de re-derivado a cada feature.
+- **Growth playbook** ([`docs/product/growth-playbook.md`](product/growth-playbook.md), ADR-0004) — o
+  par de crescimento do `routing-policy.md`: o `growth-analyst`/`finops-steward` gravam qual **alavanca ×
+  canal** moveu a North Star a que **CAC**; o `growth-strategist` lê antes de propor o próximo experimento
+  (dobra no que pagou, evita o que falhou). É como a estratégia de **escala** melhora sozinha com o uso.
+
+## Fluxo de growth (experimentação autônoma) — skills `/daily-growth` + `/growth-outcome`
+
+Espelha o par backlog→outcome, mas pela lente de **funil/escala** (ADR-0004). O `growth-strategist`
+diagnostica onde o funil vaza e cria issues de **experimento** (`growth:*`) por ROI; o
+`experiment-designer` as especifica com uma **§8-contrato** (métrica-alvo + guardas + canário +
+`external_action_cap` + kill); o resto do roster implementa **atrás de flag, no canário** (mesmos gates);
+o `growth-analyst` mede por **coorte** e decide **escalar (ramp) / iterar / matar**; o `finops-steward`
+fecha CAC/ROI e a **queima de token** (governa o paralelismo do ciclo). **Autonomia total inclui
+mundo-externo** (preço/canal/comunicação em massa) — sem gate humano, mas contido por canário + teto de
+volume + guardas + o gate de conformidade do `security-reviewer` (que **não** relaxa). Nenhum experimento
+vai a 100% sem o ✅ do `growth-analyst`.
 
 ## Vertical slice — na FEATURE, não no código
 
