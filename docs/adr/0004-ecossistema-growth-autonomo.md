@@ -66,6 +66,28 @@ autônoma; a execução passa pelos mesmos gates automáticos.
 6. **Métricas de guarda são um freio automático (P-12):** o `growth-analyst` **mata** um experimento
    que sobe a alavanca-alvo mas **piora uma `guardrail_metric`** (ex.: ativação sobe, mas churn de
    receita também). Ganho local que causa dano global não escala.
+7. **A direção estratégica é escolhida por ROI, com memória que aprende (P-12/P-14):** o
+   `growth-strategist` prioriza a alavanca de funil por **`argmax(ROI esperado)`** — `ROI = lift por
+   coorte (growth-analyst) × custo/CAC (finops-steward)` — não por novidade. Reusa o ROI-por-feature que
+   o `finops-steward` já fecha (`docs/token-efficiency.md` §5). O aprendizado é persistido numa **memória
+   auto-evolutiva nova, `docs/product/growth-playbook.md`**, no mesmo molde do `routing-policy.md`: nasce
+   vazia, o `growth-analyst`/`finops-steward` **gravam** (via a skill — subagente é só-leitura de docs)
+   qual *alavanca × canal* moveu a North Star a que CAC (tabela vigente + histórico append-only), e o
+   `growth-strategist` **lê antes de propor**. O sinal de resultado real continua fluindo por
+   `docs/evolution.md`; o playbook é a destilação acionável "o que pagou".
+8. **Governança de orçamento e paralelização, dentro da janela de uso (P-14/P-15):** o `/daily-growth`
+   roda como `Workflow` sob um **teto de token por ciclo** (`growth_budget_per_cycle`, análogo a
+   `daily_budget`/`budget_per_feature` do ADR-0003) usando o objeto `budget` do runtime
+   (`budget.total`/`spent()`/`remaining()`, teto rígido). O **grau de fan-out é decidido pela sobra**:
+   `fan = min(parallelism, max(1, floor(budget.remaining() / budget_per_experiment)))` — se o orçamento
+   não paga mais de um, **serializa**; se paga, paraleliza até onde cobre. A **janela de uso ~5h do
+   Claude** (distinta do TTL ~1h do prompt cache, que a alavanca 1 do `token-efficiency.md` já cobre) é
+   respeitada por **contabilidade + espaçamento**, não por API: teto por ciclo × cadência do cron ≤ cota
+   da janela. O `finops-steward` mede a **taxa de queima** real e realimenta `parallelism`/cadência/teto
+   pelo mesmo loop AIOps (grava no `growth-playbook`/`routing-policy`) — se está queimando a janela rápido
+   demais, baixa o fan-out ou adia para o próximo ciclo. **Honestidade de acesso:** a cota exata restante
+   da janela não é legível de dentro do agente; o mecanismo é orçamento+pacing, e o `finops-steward`
+   **diz** quando o número não é alcançável em vez de inventá-lo.
 
 ## Alternativas consideradas
 
@@ -87,6 +109,14 @@ autônoma; a execução passa pelos mesmos gates automáticos.
   sem métrica-alvo, guarda e kill.
 - **Big-bang (experimento a 100% direto)** — descartado: concentra o risco e impede ramp-up/kill
   seguros. Todo experimento entra atrás de flag com rollout percentual (P-9).
+- **Priorizar growth por novidade/palpite (sem ROI nem memória)** — descartado: repetiria o viés que o
+  método já combate no roteamento. A direção precisa de um árbitro (`argmax(ROI)`) e de memória que
+  aprende (`growth-playbook.md`), senão o autônomo re-testa alavancas que já provaram não pagar.
+- **Paralelismo fixo sem teto de token** — descartado: fan-out cego estoura `daily_budget` e a janela de
+  uso ~5h. O grau de paralelização precisa ser **função da sobra de orçamento**, decidida a cada ciclo.
+- **Tentar ler a cota exata da janela de 5h de dentro do agente** — descartado por não ser alcançável;
+  adotamos **orçamento por ciclo + espaçamento por cron + feedback de taxa de queima do `finops`**, com
+  honestidade de acesso quando o número não é medível.
 
 ## Consequências
 
@@ -102,7 +132,13 @@ autônoma; a execução passa pelos mesmos gates automáticos.
   `guardrail_metrics` e critério de kill (o `experiment-designer` recusa hipótese sem oráculo); nenhum
   experimento vai a 100% sem veredito do `growth-analyst`; nenhuma mutação de preço/canal externo é
   autônoma; o teto de CAC (P-14) nunca é ignorado; a autonomia de estratégia jamais desliga os gates
-  de execução (P-10/P-11/P-13).
+  de execução (P-10/P-11/P-13); a direção estratégica é sempre por ROI com leitura prévia do
+  `growth-playbook.md`; o fan-out do `/daily-growth` é sempre limitado pela sobra de orçamento e a
+  cadência respeita a janela de uso (nenhum ciclo ignora `growth_budget_per_cycle`).
+
+- **Aprendizado composto:** além do custo de instrumentação já citado, o `growth-playbook.md` só ganha
+  valor com o acúmulo de ciclos (as primeiras rodadas decidem mais pela heurística/mercado, como o
+  `routing-policy.md` vazio); é dívida de maturação esperada, não defeito.
 
 ## Relacionados
 
@@ -114,4 +150,7 @@ flag/strangler reusado), [ADR-0003](0003-build-multi-feature-workflow.md) (teto 
 [`agents/product-owner.md`](../../agents/product-owner.md),
 [`agents/outcome-analyst.md`](../../agents/outcome-analyst.md),
 [`agents/finops-steward.md`](../../agents/finops-steward.md),
+[`docs/ai-first/routing-policy.md`](../ai-first/routing-policy.md) (molde da memória auto-evolutiva
+reusado no `growth-playbook.md`), [`docs/token-efficiency.md`](../token-efficiency.md) (§5 AIOps + o
+objeto `budget` do `Workflow`), `docs/product/growth-playbook.md` (a criar),
 `docs/sdd/features/002-ecossistema-growth-autonomo/spec.md`, [`docs/roster.md`](../roster.md).

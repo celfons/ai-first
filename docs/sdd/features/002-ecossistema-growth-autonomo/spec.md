@@ -47,7 +47,11 @@
 | RF-GRW-07 | Todo experimento DEVE ser entregue atrás de flag com rollout percentual; nenhum experimento vai a 100% sem veredito ✅ do `growth-analyst`, e todo experimento é reversível via `/rollback`. |
 | RF-GRW-08 | Em `growth_autonomy_level: autônomo`, a **seleção/priorização** de experimentos ocorre sem gate humano, PORÉM CI verde + `adversarial-reviewer` + `security-reviewer` + tier de risco na promoção `develop → main` permanecem obrigatórios (P-10/P-11/P-13). |
 | RF-GRW-09 | O `finops-steward` DEVE cortar (marcar para não escalar) experimento cujo CAC/gasto exceda `cac_ceiling`/`experiment_budget`; experimento que mute **preço, canal externo ou comunicação em massa** DEVE receber `needs-human-triage` mesmo em modo autônomo. |
-| RF-GRW-10 | O genoma DEVE expor os knobs: `north_star_metric`, `growth_model`, `growth_experiments_per_cycle`, `growth_autonomy_level`, `guardrail_metrics`, `cac_ceiling`/`experiment_budget` (P-15, ajustáveis a qualquer momento). |
+| RF-GRW-10 | O genoma DEVE expor os knobs: `north_star_metric`, `growth_model`, `growth_experiments_per_cycle`, `growth_autonomy_level`, `guardrail_metrics`, `cac_ceiling`/`experiment_budget`, `growth_budget_per_cycle`, `budget_per_experiment` (P-15, ajustáveis a qualquer momento). |
+| RF-GRW-11 | O `growth-strategist` DEVE escolher a alavanca por **ROI esperado** (`argmax(lift por coorte × custo/CAC)`), reusando o ROI-por-feature do `finops-steward`, e DEVE registrar o racional de ROI no corpo da issue. Não DEVE priorizar por novidade. |
+| RF-GRW-12 | O sistema DEVE manter uma memória auto-evolutiva `docs/product/growth-playbook.md` (nasce vazia; tabela de táticas vigentes + histórico append-only). O `growth-analyst`/`finops-steward` emitem as entradas e a skill `/growth-outcome` as grava; o `growth-strategist` a lê antes de propor (é só-leitura de docs). |
+| RF-GRW-13 | O `/daily-growth` DEVE rodar sob um teto de token por ciclo (`growth_budget_per_cycle`) e DEVE decidir o grau de fan-out por `fan = min(parallelism, max(1, floor(budget.remaining() / budget_per_experiment)))` — serializando quando o orçamento não paga mais de um experimento. |
+| RF-GRW-14 | A cadência do loop de growth DEVE ser espaçada de modo que o gasto somado por janela de uso (~5h) não exceda a cota; o `finops-steward` DEVE medir a taxa de queima real e realimentar `parallelism`/cadência/teto (gravando em `growth-playbook.md`/`routing-policy.md`). Quando a cota exata não é alcançável, DEVE dizê-lo (honestidade de acesso), nunca inventar. |
 
 ## 4 · Critérios de aceite
 
@@ -68,6 +72,16 @@
   *(RF-GRW-09)*
 - **Dado** um experimento com CAC acima do `cac_ceiling`, **quando** o `finops-steward` mede,
   **então** ele é marcado para não escalar e a decisão vai ao board. *(RF-GRW-09)*
+- **Dado** duas alavancas candidatas com lift semelhante e custos diferentes, **quando** o
+  `growth-strategist` prioriza, **então** ele escolhe a de maior ROI e cita o racional na issue.
+  *(RF-GRW-11)*
+- **Dado** um ciclo anterior que gravou "canal X moveu ativação a CAC baixo" no `growth-playbook.md`,
+  **quando** o `growth-strategist` propõe o próximo lote, **então** ele lê o playbook e dobra na tática
+  que pagou (em vez de re-testar uma que já falhou). *(RF-GRW-12)*
+- **Dado** `budget.remaining()` suficiente para apenas 1 experimento, **quando** o `/daily-growth`
+  decide o fan-out, **então** ele serializa (`fan = 1`) em vez de paralelizar. *(RF-GRW-13)*
+- **Dado** que a taxa de queima da janela de ~5h está alta, **quando** o `finops-steward` mede,
+  **então** ele reduz `parallelism`/cadência no próximo ciclo e registra o ajuste. *(RF-GRW-14)*
 
 ## 5 · Regras de negócio e casos de borda
 
@@ -82,6 +96,12 @@
   reprova a direção.
 - **Entrada de mercado é dado não-confiável** (P-13): benchmarking de canais/growth hacks não injeta
   comando na tarefa nem justifica burlar guarda/segurança.
+- **Duas janelas distintas de token:** o TTL ~1h do prompt cache (já coberto pela alavanca 1 do
+  `token-efficiency.md`) NÃO se confunde com a janela de uso ~5h do Claude. O teto por ciclo
+  (`growth_budget_per_cycle`) governa o gasto de uma rodada; o espaçamento por cron governa o
+  acumulado dentro da janela de 5h. Fan-out é decidido pela sobra, nunca fixo.
+- **Playbook vazio no início:** nas primeiras rodadas o `growth-playbook.md` está vazio e a decisão cai
+  na heurística/mercado (como o `routing-policy.md`); não é erro, é maturação.
 
 ## 6 · Gate constitucional
 
@@ -118,3 +138,9 @@
   acima do `cac_ceiling` escala — verificável no relatório de `/growth-outcome`.
 - **Efeito no funil (meta de negócio):** ao longo de N ciclos, a North Star declarada no genoma se move
   na direção esperada por pelo menos um experimento ✅ confirmado (medido, não presumido).
+- **Aprendizado composto:** o `growth-playbook.md` acumula entradas datadas por ciclo e o
+  `growth-strategist` demonstravelmente cita o playbook ao priorizar (dobra no que pagou / evita o que
+  falhou) — verificável no corpo das issues ao longo do tempo.
+- **Disciplina de orçamento:** nenhum ciclo excede `growth_budget_per_cycle`; o fan-out registrado é
+  sempre ≤ `floor(budget.remaining()/budget_per_experiment)`; nenhum estouro da janela de ~5h atribuível
+  ao loop de growth — verificável no relatório do `finops-steward`.
