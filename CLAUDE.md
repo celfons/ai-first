@@ -126,6 +126,13 @@ reserva de idempotência, laço da fila, chamada de LLM com timeout+validação+
   Auditorias que só levantam issues: `/daily-tech-scan` (código + drift), `/daily-ops-scan` (runtime).
   Loop de resultado: `/daily-outcome` (mede se as features moveram o ponteiro; roda junto o
   **`finops-steward`** = custo/ROI + **AIOps**: realimenta o roteamento do `sdd-orchestrator`). Espace os crons pesados.
+- **Loop de growth autônomo (ADR-0004):** `/daily-growth` (o `growth-strategist` cria
+  `growth_experiments_per_cycle` issues de experimento `growth:*` pela lente do funil AARRR, por ROI) →
+  `/daily-build` implementa **atrás de flag, no canário** → `/growth-outcome` (o `growth-analyst` mede
+  por coorte e decide **escalar/iterar/matar**; o `finops-steward` fecha CAC/ROI e a queima de token). A
+  memória auto-evolutiva é `docs/product/growth-playbook.md`. **Autonomia total inclui mundo-externo**
+  (preço/canal/comunicação em massa), contida por freios automáticos — canário, `external_action_cap`,
+  `guardrail_metrics`, kill e o gate de conformidade do `security-reviewer` (não relaxa).
 - **Cadência/paralelismo/autonomia/orçamento** são knobs do genoma (`features_per_day`, `parallelism`,
   `autonomy_level` — incl. `autônomo` (sem gate humano), `daily_budget`, `budget_per_feature` — teto por
   feature no build paralelo, ADR-0003), ajustáveis a qualquer momento

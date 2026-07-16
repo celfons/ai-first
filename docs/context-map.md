@@ -30,6 +30,7 @@ que vai mexer no domínio X carrega **exatamente** esta linha, em vez de reler a
 | _(ex.: Provedores externos)_ | `ai/`, `payments/` | architecture.md | 0006 | #NNN | `providerAdapter` |
 | _(ex.: UI/painel)_ | `dashboard/` | dashboard.md | — | #NNN | `*dashboard*` |
 | _(ex.: Observabilidade)_ | `core/metrics.ts` | observability.md | — | — | `metrics*` |
+| Growth/experimentação | _(flags/experimentos + adapters de canal)_ | `product/growth-playbook.md`, `sdd/features/002-ecossistema-growth-autonomo/spec.md` | 0004 | issues `growth:*` | _(canário, guardas, `external_action_cap`)_ |
 
 ## Invariantes transversais (valem em TODO domínio)
 
@@ -43,6 +44,9 @@ Aprendizado de produto (o que o dono recusou): [`docs/product/rejections.md`](pr
 **anti-padrões** ("cuidado") do projeto; carregue os relevantes ao domínio antes de implementar/revisar.
 **Trajetória:** [`docs/evolution.md`](evolution.md) — linha do tempo de mudanças + aprendizados (o que
 o uso real ensinou); leia antes de grandes apostas para não reabrir o que já se aprendeu.
+**Táticas de escala (o que pagou):** [`docs/product/growth-playbook.md`](product/growth-playbook.md) —
+memória auto-evolutiva de growth (alavanca × canal → North Star × CAC); o `growth-strategist` lê antes de
+propor experimento.
 
 > **Ligação de volta (ADR → código):** cada ADR referencia os módulos/`P-#` que restringe; este
 > mapa é o caminho inverso (domínio → ADRs). Juntos formam o grafo navegável leve.
