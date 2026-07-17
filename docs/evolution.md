@@ -6,6 +6,12 @@ O **diário do organismo**: em ordem cronológica, o que **mudou** e — mais im
 resultado) numa história única — para um humano (ou uma sessão futura) entender **como chegamos aqui**
 sem reconstruir o passado lendo dez lugares.
 
+> **Retenção (memória episódica — ver [`ai-first/memory.md`](ai-first/memory.md)):** ledger *append-only*
+> que **consolida + poda** na cadência `/distill`. Conforme o knob `memory_retention` (genoma, default
+> 90 dias / 50 entradas), entradas antigas são destiladas em padrões (`knowledge.md`) pelo
+> `knowledge-curator` e **movidas** para `archive/AAAA-MM.md` — nunca apagadas (reversível via git;
+> ponteiro de volta obrigatório).
+
 > **Onde este doc se encaixa (não duplica, indexa):**
 > - **`docs/adr/`** = *decisões arquiteturais duráveis* (contexto → decisão → consequências). Este doc
 >   **linka** o ADR, não reconta a decisão.

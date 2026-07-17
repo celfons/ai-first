@@ -17,6 +17,11 @@ recorte novo). É **fato compartilhado, não raciocínio** — não fere o isola
 > que o `product-owner` emitiu — o subagente é só-leitura de docs (mesmo padrão de `evolution.md`).
 > **Quem lê:** o `product-owner`, antes de propor.
 
+> **Retenção (cache semantic datado — ver [`../ai-first/memory.md`](../ai-first/memory.md)):** cada
+> seção já carrega um **TTL em dias**; ao vencer, o PO re-busca o delta. O `knowledge-curator` **poda**
+> recortes vencidos e não reusados há mais de `memory_retention`, movendo-os para `archive/AAAA-MM.md`
+> — um digest vencido servido como fresco é bug (datar é obrigatório).
+
 ---
 
 ## Digest vigente por categoria/tema

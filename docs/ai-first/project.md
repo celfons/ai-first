@@ -91,6 +91,21 @@
   atrás de flag), as vizinhas seguem — um runaway não queima o orçamento das outras nem derruba o lote.
 - **Modelo fixado** (P-14 — upgrade é decisão explícita com re-baseline de evals): `[A DEFINIR]`
 
+### Arquitetura cognitiva (ADR-0005 — knobs de memória e verificação)
+> Ver [`docs/ai-first/memory.md`](memory.md). Todos ajustáveis a qualquer momento (P-15); defaults conservadores.
+- **`memory_retention`** (higiene da memória episódica — limite dos ledgers antes de consolidar/podar):
+  `[A DEFINIR]` (default **90 dias / 50 entradas** por ledger; poda **move** para `archive/`, nunca apaga).
+- **`distill_cadence`** (cadência do cron `/distill` — consolida episódico→semantic + poda): `[A DEFINIR]`
+  (default **semanal**, espaçado dos demais crons).
+- **`verification_mode`** (P-11): `[single | panel]` (default **single**). **`panel`** roda o
+  `adversarial-reviewer` como **N céticos de lentes distintas** (aciona automaticamente no tier 🔴 e em
+  `autonomy_level: autônomo` — o ponto sem gate humano). Um `BLOQUEIA` isolado já barra; piso opus/alto
+  por membro (P-14).
+- **`adversarial_panel_size`** (nº de céticos quando `panel`): `[A DEFINIR]` (default **3**).
+- **`uncertainty_escalation`** (P-10): `[on | off]` + limiar (default **on**, limiar `confidence: baixa`).
+  Etapa de **baixa confiança** escala ao humano (`awaiting-human`) **independentemente do tier de risco** —
+  a escalada é por **risco OU incerteza, o maior**. Barato e seguro; ligado por default mesmo no conservador.
+
 ### Growth autônomo (ADR-0004 — knobs do ecossistema de crescimento)
 - **`north_star_metric`** (a métrica-mãe que os experimentos de growth movem): `[A DEFINIR]`
 - **`growth_model`** (funil de referência): `[aarrr | pirate | custom]` (default **aarrr** =
