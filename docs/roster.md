@@ -49,6 +49,7 @@ custo-benefício empurre para baixo.
 | `outcome-analyst` | (resultado) | mede se a feature entregou a métrica de sucesso (§8) com uso real |
 | `growth-analyst` | (resultado · GROWTH) | irmão do outcome pela lente de **coorte/funil**: mede o experimento (§8) sem ferir as `guardrail_metrics` e decide **escalar (subir %) / iterar / matar**; grava o que pagou no `growth-playbook.md`. Nunca sobe % sozinho |
 | `finops-steward` | (economia · AIOps/FinOps) | mede o **custo** do pipeline (tokens/etapa, custo por feature mergeada, re-run do modelo barato, cache-hit) + runtime/cloud; cruza com o `outcome-analyst` (ROI) e **realimenta o roteamento** do `sdd-orchestrator`. Só mede/sugere |
+| `knowledge-curator` | (memória · higiene) | jardineiro da memória (ADR-0005): **destila** o episódico recorrente em padrões/anti-padrões (`knowledge.md`), **poda** para `archive/` datado, audita o índice `context-map.md` e propõe **procedimento → skill**. Roda na cadência `/distill`, sob gate PR+validate. Só escreve docs/skills de memória |
 
 ## Diagrama de fluxo e interação
 
@@ -208,6 +209,11 @@ migration-analyst (CARACTERIZAÇÃO) → characterization.md (RF observáveis) +
   par de crescimento do `routing-policy.md`: o `growth-analyst`/`finops-steward` gravam qual **alavanca ×
   canal** moveu a North Star a que **CAC**; o `growth-strategist` lê antes de propor o próximo experimento
   (dobra no que pagou, evita o que falhou). É como a estratégia de **escala** melhora sozinha com o uso.
+- **Arquitetura de memória** ([`docs/ai-first/memory.md`](ai-first/memory.md), ADR-0005) — o mapa das **4
+  camadas** (working/semantic/episodic/procedural) e sua **higiene**: o `knowledge-curator` (cron
+  `/distill`) consolida o episódico recorrente em `knowledge.md`, poda o resto e mantém o índice de
+  recuperação (`context-map.md`) coerente. É o que impede a memória de inchar e faz o **saber-fazer**
+  (semantic + procedural) melhorar com o uso, não só acumular.
 
 ## Fluxo de growth (experimentação autônoma) — skills `/daily-growth` + `/growth-outcome`
 
@@ -273,6 +279,15 @@ O `outcome-analyst` mede se as features **já promovidas** entregaram a **métri
 iterar/remover e **alimenta o `product-owner`** com dado real — a retroalimentação mais valiosa.
 Cadência menor (algumas vezes/semana — resultado leva dias para maturar).
 
+### Cron 6 · /distill — higiene da memória (consolida e esquece, não corrige)
+
+O `knowledge-curator` roda numa cadência (`distill_cadence`, default semanal): **destila** a memória
+episódica recorrente (`evolution.md`, `rejections.md`, históricos de `routing-policy`/`growth-playbook`)
+em padrões datados em `knowledge.md`, **poda** o consumido para `archive/AAAA-MM.md` (nunca apaga), audita
+o índice `context-map.md` e propõe **procedimento → skill**. Entrega numa branch sob **gate PR + validate**
+(quem escreve ≠ quem aprova, P-13). Ledger jovem/vazio = `sem-sinal` (maturação, não erro). Ver ADR-0005 e
+`docs/ai-first/memory.md`.
+
 ### Espaçamento dos crons
 
 Rode os crons **pesados** (agênticos) **espaçados** (várias horas) para não empilharem na mesma
@@ -314,6 +329,10 @@ nos gates após a spec e após o plan.
 que já existe de outra base/stack, começando pela **caracterização** do comportamento da origem
 (`migration-analyst`) e conduzindo o port por **equivalência**, fatia a fatia (strangler-fig), até o
 PR contra `develop`. Ver ADR-0002.
+
+**Higiene da memória (cadência):** `/distill` (skill `skills/distill`). Aciona o `knowledge-curator`
+para consolidar o episódico recorrente em `knowledge.md`, podar para `archive/` e auditar o índice —
+numa branch sob gate PR + validate. Ver ADR-0005 e `docs/ai-first/memory.md`.
 
 **Reprovar no gate:** `/reject-feature <issue#> [motivo]` — reverte de `develop` (revert commit,
 sem reescrever histórico) uma feature reprovada no PR `develop → main`, reabre a issue e registra

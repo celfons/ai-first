@@ -125,6 +125,19 @@ Regras de fan-out (barreira só quando a etapa N precisa de **todos** os resulta
 `pipeline()`), roteamento por etapa (`model`/`effort` no `agent()`) e piso de segurança do
 `adversarial-reviewer` valem **igual** dentro do `Workflow`.
 
+### Painel adversarial · fan-out da verificação independente (ADR-0005)
+
+Quando `verification_mode: panel` (tier 🔴 ou `autonomy_level: autônomo`), a etapa de verificação vira um
+**fan-out**: em vez de um `adversarial-reviewer`, o driver dispara **N céticos concorrentes**
+(`adversarial_panel_size`), **cada um com uma lente distinta** (correção · invariante/segurança ·
+reprodução/runtime), com **barreira só na agregação** dos vereditos (`parallel()` → decide). Maioria refuta
+⇒ bloqueia; um `BLOQUEIA` já barra. Regras que **não** mudam no painel: **piso opus/alto por membro**
+(P-14 — a verificação é onde o custo-benefício não otimiza) e **isolamento** (cada membro é cego ao
+raciocínio dos outros; recebe o **diff-digest** como fato, §6, não a opinião alheia). É o mesmo motor da
+Escala 2, aplicado a **uma** feature de alto risco: gasta-se N× em verificação exatamente onde o gate
+humano some — a troca token↔corretude no ponto mais frágil do modo autônomo. Ver
+[`agents/adversarial-reviewer.md`](../agents/adversarial-reviewer.md).
+
 ### Escala 2 · N FEATURES num único `Workflow` (recursos compartilhados + teto por feature)
 
 O grafo acima é de **uma** feature. Quando `parallelism > 1`, o `/daily-build` (e o `/kickoff`)
@@ -233,6 +246,33 @@ re-derivado:
 
 Ganho: médio-alto entre features (mata re-derivação diária). Risco: baixo (fato, não raciocínio; datado).
 Toca corretude: não.
+
+---
+
+## 7 · Higiene de memória — consolidar e esquecer (não só acumular)
+
+**O problema.** As alavancas 1–6 otimizam o gasto **por rodada**, mas a memória episódica do método
+(`evolution.md`, `rejections.md`, históricos de `routing-policy.md`/`growth-playbook.md`) só **cresce**.
+Ledger *append-only* que incha por meses vira um custo de contexto silencioso: quem o lê paga por N
+entradas onde 3 padrões destilados bastariam. Acumular sem esquecer **contradiz a §1** (contexto enxuto).
+
+**A distinção que a política assume.** Consolidar não é perder informação — é **promover** o recorrente do
+episódico (o que aconteceu) para o semantic (o padrão que se aprendeu), e **arquivar** o episódico
+consumido. É higiene, não amnésia: a poda **move** para `archive/AAAA-MM.md` (reversível via git), com
+ponteiro de volta. É a mesma lógica de "fato datado, não raciocínio" da §6, aplicada ao **tempo**.
+
+**A regra.** Numa cadência (`distill_cadence`, cron `/distill`), o `knowledge-curator`:
+- **Destila** ocorrências recorrentes (≥ limiar) num padrão/anti-padrão datado em `docs/knowledge.md` —
+  N entradas episódicas viram 1 linha semantic que os agentes leem no lugar.
+- **Poda** o episódico consumido/vencido (conforme `memory_retention`) para `archive/` datado — o ledger
+  ativo encolhe, o cache de quem o lê barateia.
+- **Sinal fraco = achado**, nunca padrão inventado (poluir o semantic é mais caro que não consolidar).
+
+Isolamento intacto: o curator compartilha **fato datado** (padrão), nunca raciocínio. Ver
+[`docs/ai-first/memory.md`](ai-first/memory.md) e ADR-0005.
+
+Ganho: composto ao longo dos meses (o custo de ler a memória para de crescer sem limite). Risco: baixo
+(poda reversível + gate PR/validate). Toca corretude: não.
 
 ---
 

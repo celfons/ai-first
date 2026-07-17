@@ -47,7 +47,12 @@ tocou: <caminho do spec.md> — RFs: <ex.: RF-101..104>
 gate: <princípios constitucionais tocados, 1 linha>
 p/ o architect: <o essencial para planejar>
 bloqueios: <todas as [NEEDS CLARIFICATION] que exigem decisão humana antes do PLAN>
+confidence: alta | média | baixa — <o que gerou incerteza: requisito vago, persona/valor incerto, domínio novo>
 ```
+> **Sinal de confiança (RF-COG-09/10):** separado do `status`. Baixa confiança **roteia** a decisão ao
+> humano (`awaiting-human`) por **incerteza**, mesmo que o tier de risco seja baixo — ver
+> `uncertainty_escalation` no genoma. Não confunda com `[NEEDS CLARIFICATION]` (pergunta pontual): a
+> confiança é o seu grau de segurança sobre a spec inteira.
 
 ## Não faça
 - Não escreva `plan.md`, `tasks.md`, código ou migrations.

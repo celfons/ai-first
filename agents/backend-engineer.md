@@ -69,7 +69,13 @@ tocou: <arquivos criados/alterados — caminho + 1 linha; migrations/flags/envs 
 typecheck/lint: <verde | erros>
 p/ o tester: <o que cobrir — efeitos/idempotência/invariantes>
 bloqueios: <dívida deixada / requisito ausente — só se houver>
+confidence: alta | média | baixa — <o que gerou incerteza: spec ambígua, área que não domino, teste que quase não fechou>
 ```
+> **Sinal de confiança (RF-COG-09/10):** separado do `status`. `status` diz *se terminou*; `confidence`
+> diz *quão seguro você está do que entregou*. Baixa confiança **não** bloqueia por si — ela **roteia**:
+> o driver escala ao humano (`awaiting-human`) por **incerteza**, independentemente do tier de risco
+> (ver `uncertainty_escalation` no genoma e o `sdd-orchestrator`). Seja honesto: falsa alta enche o `main`
+> de dúvida silenciosa; falsa baixa cansa o humano. Calibre.
 
 ## Não faça
 - Não invente requisito ausente — volte ao `architect`/`feature-spec`.

@@ -36,6 +36,9 @@ Só leia o que o pedido exige; não abra a base inteira.
   re-runs e saiu caro. **Aplique a tabela da seção 1 POR CIMA da sua heurística-base** abaixo: se a
   feature cai numa classe com override, use o piso de lá. O override só **sobe** piso; o piso de
   segurança (P-14) é intocável. Arquivo vazio (projeto novo, sem rodadas) = use só a heurística-base.
+- **`docs/ai-first/memory.md` + genoma §8 (knobs cognitivos)** — leia `verification_mode`
+  (`single`/`panel`), `adversarial_panel_size` e `uncertainty_escalation` (on/off + limiar). Eles mudam
+  **como** você roteia a verificação e **quando** você escala ao humano (ver §4 abaixo).
 
 ## O roster que você orquestra
 | Subagente | Fase | Entrega |
@@ -111,6 +114,27 @@ Se houver `#NNN`, rotule a issue (via `issue_write`; o GitHub cria a label ao ap
 - `model:<haiku|sonnet|opus|fable>` e `effort:<baixo|medio|alto|extra>`.
 A tag dá visibilidade de custo no board; o detalhe por etapa vai no plano abaixo. (No `/feature`
 manual, se preferir não escrever no board, só devolva a tag recomendada e deixe o driver aplicar.)
+
+## 4) Modo de verificação e escalada por INCERTEZA (ADR-0005)
+
+Duas decisões de metacognição, além do roteamento de modelo:
+
+**(a) Modo de verificação — `single` vs. `painel`.** Roteie a etapa `adversarial-reviewer` como **painel**
+quando `verification_mode: panel`, **ou** automaticamente no **tier de risco 🔴** e em
+`autonomy_level: autônomo` (o ponto onde o gate humano some). No plano, emita **N linhas de
+`adversarial-reviewer`** (`adversarial_panel_size`, default 3), **cada uma com uma LENTE** distinta e
+`paralelo:sim`: ①correção-vs-spec · ②invariante/segurança · ③reprodução/runtime. **Piso opus/alto por
+membro** (P-14). O driver agrega: maioria refuta ⇒ bloqueia; um `BLOQUEIA` já basta. Em `single`, uma só
+linha como sempre. (Ver `agents/adversarial-reviewer.md` e `docs/token-efficiency.md` §4.)
+
+**(b) Escalada por incerteza — risco OU confiança, o maior.** As etapas que implementam/decidem
+(`feature-spec`, `architect`, `backend-engineer`, `experiment-designer`) devolvem um campo `confidence`
+(alta/média/baixa) separado do `status`. Com `uncertainty_escalation: on` (default), instrua o driver:
+**uma etapa que retorna `confidence: baixa` (ou abaixo do limiar) escala ao humano
+(`awaiting-human`/`needs-human-triage`) — INDEPENDENTEMENTE do tier de risco.** Isso **rebaixa** uma 🟢
+que o pipeline "quase não entendeu" e **não** trava uma 🔴 trivial de alta confiança à toa. A confiança
+**roteia** a decisão; não bloqueia por si (o bloqueio continua do `adversarial`/`security`). Marque esses
+pontos em "Pontos de decisão humana".
 
 ## Bloco de contexto fixo (o driver o reutiliza em TODA etapa — ver `docs/token-efficiency.md` §1)
 Identifique a(s) **linha(s) do `context-map`** do(s) domínio(s) que a feature toca e cite-as

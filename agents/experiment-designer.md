@@ -67,7 +67,12 @@ tocou: <caminho do spec.md> — RFs: <ex.: RF-GRWX-01..03>
 mundo-externo: sim/não (se sim: conformidade fica com o security-reviewer)
 p/ o architect: <o essencial para planejar a flag/rollout/adapter>
 bloqueios: <NEEDS CLARIFICATION ou freio ausente que impede o PLAN>
+confidence: alta | média | baixa — <o que gerou incerteza: hipótese frágil, métrica-alvo mal instrumentada, guarda incerta>
 ```
+> **Sinal de confiança (RF-COG-09/10):** separado do `status`. Baixa confiança **roteia** ao humano
+> (`awaiting-human`) por **incerteza** — ver `uncertainty_escalation` no genoma. Especialmente crítico em
+> mundo-externo (preço/canal): experimento incerto com ação irreversível é candidato natural à escalada,
+> além dos freios automáticos.
 
 ## Não faça
 - Não escreva `plan.md`, `tasks.md`, código, nomes de flag/tabela ou desenho de adapter.

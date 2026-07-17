@@ -6,6 +6,12 @@ O **diário do organismo**: em ordem cronológica, o que **mudou** e — mais im
 resultado) numa história única — para um humano (ou uma sessão futura) entender **como chegamos aqui**
 sem reconstruir o passado lendo dez lugares.
 
+> **Retenção (memória episódica — ver [`ai-first/memory.md`](ai-first/memory.md)):** ledger *append-only*
+> que **consolida + poda** na cadência `/distill`. Conforme o knob `memory_retention` (genoma, default
+> 90 dias / 50 entradas), entradas antigas são destiladas em padrões (`knowledge.md`) pelo
+> `knowledge-curator` e **movidas** para `archive/AAAA-MM.md` — nunca apagadas (reversível via git;
+> ponteiro de volta obrigatório).
+
 > **Onde este doc se encaixa (não duplica, indexa):**
 > - **`docs/adr/`** = *decisões arquiteturais duráveis* (contexto → decisão → consequências). Este doc
 >   **linka** o ADR, não reconta a decisão.
@@ -31,6 +37,20 @@ sem reconstruir o passado lendo dez lugares.
 ```
 
 ## Linha do tempo
+
+### 2026-07-17 · Arquitetura cognitiva de 2ª ordem (meta) — feature 003
+- **Sinal:** 🔧 processo (sem métrica de produto — é maturidade cognitiva do próprio método).
+- **Aprendizado:** o método já tinha uma **memória de fato** (knowledge/context-map/evolution/routing-
+  policy/rejections/market-scan/growth-playbook), mas sem nomear as camadas ninguém cuidava de **higiene**
+  (o episódico inchava) nem de **recuperação** (dependia da memória do orchestrator). Correção sem ferir o
+  isolamento: nomear as **4 camadas** (`memory.md`), dar **retenção + consolidação/poda** ao episódico
+  (`knowledge-curator` + `/distill`, esquece **movendo** para `archive/`, nunca apaga), promover o
+  `context-map` a **índice por tag** (determinístico — vetorial adiado), e tornar a verificação
+  **proporcional ao risco**: **painel** de N céticos onde o gate humano some, e **escalada por incerteza**
+  (confiança baixa sobe ao humano, independentemente do tier). Tudo opt-in por knob; "fato datado, não
+  raciocínio" preserva a troca token↔corretude.
+- **Links:** ADR-0005 · `docs/sdd/features/003-arquitetura-cognitiva/` · `docs/ai-first/memory.md` ·
+  `docs/token-efficiency.md` §7 · corolário P-10/P-11.
 
 ### 2026-07-14 · Política de eficiência de token do método (meta)
 - **Sinal:** 🔧 processo (sem métrica de produto — é economia de custo do próprio método).

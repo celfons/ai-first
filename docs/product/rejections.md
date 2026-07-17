@@ -8,6 +8,11 @@ o **motivo** e o **takeaway**. É o par negativo dos [ADRs](../adr/): os ADRs gu
 > Sem este registro, o sinal mais valioso (o "não" do dono) se perde e o PO tende a repetir.
 > É a retroalimentação mais barata do fluxo.
 
+> **Retenção (memória episódica — ver [`../ai-first/memory.md`](../ai-first/memory.md)):** ledger
+> *append-only* sob `memory_retention`. O `knowledge-curator` destila **rejeições recorrentes** num
+> anti-padrão de produto em `knowledge.md`/`evolution.md` e **move** as linhas antigas para
+> `archive/AAAA-MM.md` — nunca apaga um "não" do dono (reversível via git; ponteiro de volta).
+
 ## Como o PO usa (retroalimentação)
 
 Antes de propor a issue do dia, o `product-owner` **lê este log**:

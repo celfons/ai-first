@@ -19,6 +19,11 @@ que pagou, evita o que falhou — em vez de re-testar as mesmas apostas.
 > `growth-analyst`/`finops-steward` emitem — o subagente é só-leitura de docs (como no `evolution.md`).
 > **Quem lê:** o `growth-strategist`, antes de propor (está nas "Fontes de verdade" dele).
 
+> **Retenção (memória episódica — ver [`../ai-first/memory.md`](../ai-first/memory.md)):** a **tabela
+> vigente** (§1) é o estado atual (não expira). O **histórico append-only** obedece `memory_retention`:
+> o `knowledge-curator` destila táticas recorrentes que pagaram/falharam e **move** o histórico antigo
+> para `archive/AAAA-MM.md` (nunca apaga).
+
 ---
 
 ## 1 · Táticas VIGENTES  ← o growth-strategist prioriza a partir daqui

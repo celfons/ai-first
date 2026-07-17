@@ -50,5 +50,6 @@ trade-off. Nesses casos, o `plan.md` da feature já basta.
 | [0002](0002-migracao-strangler-fig.md) | Migração/reescrita como capacidade de primeira classe (strangler-fig + caracterização) | Accepted | capacidade de migração | P-1, P-11, P-13 |
 | [0003](0003-build-multi-feature-workflow.md) | Build paralelo multi-feature num único `Workflow` (recursos compartilhados + teto de gasto por feature) | Accepted | capacidade de build paralelo | P-14, P-11, P-13, P-15 |
 | [0004](0004-ecossistema-growth-autonomo.md) | Ecossistema de growth autônomo (estratégia sem gate humano, execução sob os mesmos gates) | Proposed | capacidade de growth autônomo | P-1, P-9, P-10, P-11, P-12, P-13, P-14, P-15 |
+| [0005](0005-arquitetura-cognitiva.md) | Arquitetura cognitiva de 2ª ordem (memória nomeada + consolidação/esquecimento + retrieval indexado + painel adversarial + escalada por incerteza) | Accepted | capacidade de arquitetura cognitiva | P-8, P-9, P-10, P-11, P-13, P-14, P-15 |
 
 > Ao criar um ADR, adicione a linha aqui (o `docs-writer` fecha isso no fim da feature).

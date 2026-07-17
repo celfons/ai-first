@@ -14,6 +14,11 @@ assim que o roteamento **melhora sozinho com o uso real** em vez de ficar preso 
 > `finops-steward` emite — mesmo padrão de `docs/evolution.md` (o subagente é só-leitura de docs).
 > **Quem lê:** o `sdd-orchestrator` (está no "Contexto obrigatório" dele).
 
+> **Retenção (memória episódica — ver [`memory.md`](memory.md)):** a **tabela vigente** (§1) não expira
+> (é o estado atual). O **histórico append-only** abaixo dela obedece `memory_retention`: o
+> `knowledge-curator` destila padrões de roteamento recorrentes e **move** o histórico antigo para
+> `archive/AAAA-MM.md` (nunca apaga). O piso de segurança P-14 nunca é podado.
+
 ---
 
 ## 1 · Overrides de roteamento VIGENTES  ← o orchestrator aplica esta tabela
