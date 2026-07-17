@@ -125,6 +125,19 @@ Regras de fan-out (barreira só quando a etapa N precisa de **todos** os resulta
 `pipeline()`), roteamento por etapa (`model`/`effort` no `agent()`) e piso de segurança do
 `adversarial-reviewer` valem **igual** dentro do `Workflow`.
 
+### Painel adversarial · fan-out da verificação independente (ADR-0005)
+
+Quando `verification_mode: panel` (tier 🔴 ou `autonomy_level: autônomo`), a etapa de verificação vira um
+**fan-out**: em vez de um `adversarial-reviewer`, o driver dispara **N céticos concorrentes**
+(`adversarial_panel_size`), **cada um com uma lente distinta** (correção · invariante/segurança ·
+reprodução/runtime), com **barreira só na agregação** dos vereditos (`parallel()` → decide). Maioria refuta
+⇒ bloqueia; um `BLOQUEIA` já barra. Regras que **não** mudam no painel: **piso opus/alto por membro**
+(P-14 — a verificação é onde o custo-benefício não otimiza) e **isolamento** (cada membro é cego ao
+raciocínio dos outros; recebe o **diff-digest** como fato, §6, não a opinião alheia). É o mesmo motor da
+Escala 2, aplicado a **uma** feature de alto risco: gasta-se N× em verificação exatamente onde o gate
+humano some — a troca token↔corretude no ponto mais frágil do modo autônomo. Ver
+[`agents/adversarial-reviewer.md`](../agents/adversarial-reviewer.md).
+
 ### Escala 2 · N FEATURES num único `Workflow` (recursos compartilhados + teto por feature)
 
 O grafo acima é de **uma** feature. Quando `parallelism > 1`, o `/daily-build` (e o `/kickoff`)

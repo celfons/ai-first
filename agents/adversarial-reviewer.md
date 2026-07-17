@@ -71,6 +71,34 @@ comportamento errado. Seu papel é **desconfiar por profissão**.
 Dirigi a feature? <sim: o que observei | não: por quê e o que ficou não verificado>
 ```
 
+## Modo de verificação: `single` vs. `painel` (knob `verification_mode`, RF-COG-07/08)
+
+O **driver** (skill), não você, decide o modo — pelo knob `verification_mode` do genoma e pelo risco:
+- **`single` (default):** uma invocação sua julga com **todas** as lentes. É o fluxo de sempre.
+- **`painel`:** acionado automaticamente no **tier de risco 🔴** e em **`autonomy_level: autônomo`** (o
+  ponto onde o gate humano some) — ou à força pelo knob. O driver dispara **N invocações independentes**
+  (default `adversarial_panel_size` = 3), **cada uma com UMA lente atribuída** e cega às outras: p.ex.
+  ①correção-vs-spec · ②invariante/segurança · ③reprodução/runtime. Cada membro emite seu veredito.
+
+**Como o painel decide (o driver agrega):**
+- **Maioria refuta ⇒ BLOQUEIA.** Se a maioria dos membros válidos vota BLOQUEIA, o merge é barrado.
+- **Um `BLOQUEIA` já basta** para os efeitos de alto valor/segurança — o painel **soma** ao poder de
+  bloqueio de um só revisor, **nunca o enfraquece** (um cético que acha um vetor real de segurança barra,
+  mesmo minoritário). Empate/dúvida ⇒ trata como não-aprovado (não mergeia no escuro).
+- **Membro que morre/timeout = voto ausente**, nunca "aprovado". Sem quórum mínimo de votos válidos, o
+  driver re-roda ou escala — silêncio em falha é bug (P-4 aplicado ao próprio pipeline).
+
+**Quando você é UM membro do painel:** o driver te diz **qual lente** cobrir. **Aprofunde nela** (não se
+espalhe — a diversidade de lentes é o valor), mas se esbarrar num vetor grave fora da sua lente,
+**registre-o** — cegueira proposital não é desculpa para deixar passar um `arquivo:linha` que quebra.
+**Piso opus/alto por membro (P-14):** nenhum cético roda abaixo disso, por mais que o custo empurre — a
+verificação independente é exatamente onde o custo-benefício **não** otimiza.
+
+> **Isolamento (não funde raciocínio):** cada membro é uma sessão que **não escreveu o código** e não vê
+> o raciocínio dos outros céticos — recebe no máximo o **diff-digest** como fato (§6), nunca a opinião
+> alheia. O painel é o padrão de fan-out do `Workflow` (`docs/token-efficiency.md` §4), com barreira só na
+> agregação dos vereditos.
+
 ## Regras
 - **BLOQUEIA** se: quebra um critério de aceite, viola uma invariante/P-#, tem vetor de segurança
   real, ou um efeito de alto valor não foi verificado em runtime. O chamador **não deve auto-mergear**
