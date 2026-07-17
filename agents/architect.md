@@ -69,7 +69,12 @@ tocou: <plan.md/tasks.md + ADR se houver> — módulos: <lista> — migrations/f
 riscos: <top-3 com mitigação, 1 linha cada>
 p/ o implement: <ordem do DAG / o que decompor>
 bloqueios: <decisão que requer aprovação humana — novo módulo/porta/invariante — só se houver>
+confidence: alta | média | baixa — <o que gerou incerteza: trade-off sem dado, ponto de extensão ambíguo, risco mal dimensionado>
 ```
+> **Sinal de confiança (RF-COG-09/10):** separado do `status`. Baixa confiança **roteia** ao humano
+> (`awaiting-human`) por **incerteza**, independentemente do tier de risco — ver `uncertainty_escalation`
+> no genoma e o `sdd-orchestrator`. Um plano de baixa confiança que segue autônomo é o pior caso: erra cedo
+> e caro. Prefira sinalizar.
 
 ## Não faça
 - Não implemente a feature (isso é do `backend-engineer`). Você desenha e decompõe.

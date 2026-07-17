@@ -142,6 +142,13 @@ publicar sem verificação; significa publicar sem *humano no caminho*. O nível
   nível `autônomo`, os *required checks* automáticos são a **única** barreira antes de `main` — por isso
   não podem ser afrouxados junto com o gate humano.
 
+> **Corolário (ADR-0005) — escalada por RISCO OU INCERTEZA, o que for maior.** O gate humano não é só por
+> categoria de risco: uma etapa que retorna **baixa confiança** (`confidence`, emitido pelos subagentes
+> que implementam/decidem) escala ao humano (`awaiting-human`) **independentemente do tier** — rebaixa uma
+> 🟢 que o pipeline mal entendeu e não trava uma 🔴 trivial que ele entendeu bem. Governado pelo knob
+> `uncertainty_escalation` (default `on`). A confiança **roteia** a decisão; **não** remove nenhum gate
+> automático nem afrouxa o piso de verificação. Refina P-10, não o substitui.
+
 ### P-11 · Verificação independente (CI verde não basta)
 
 No fluxo autônomo, o mesmo cérebro escreve o código **e** os testes — então **CI verde é necessário,
@@ -154,6 +161,13 @@ encontrado **vira teste de regressão** (o corpus só cresce).
 
 - *Enforcement:* `adversarial-reviewer` **e** `security-reviewer` como etapas obrigatórias do
   `/daily-build` e do `/feature`; ambos os vereditos não-bloqueantes são condição do auto-merge.
+
+> **Corolário (ADR-0005) — verificação pode ser PAINEL.** Quando o risco/autonomia exige (tier 🔴,
+> `autonomy_level: autônomo`, ou knob `verification_mode: panel`), a verificação independente opera como
+> um **painel de N céticos com lentes distintas** (correção · invariante/segurança · reprodução) em vez de
+> um só. Maioria refuta ⇒ bloqueia; **um `BLOQUEIA` isolado já barra** (o painel *soma*, nunca enfraquece).
+> **Piso opus/alto por membro** (P-14) e **isolamento** (cada cético cego ao raciocínio dos outros)
+> permanecem. Fortalece P-11 no ponto onde o gate humano some; nunca o afrouxa.
 
 ### P-12 · Loop fechado com a realidade (medir, não só entregar)
 
