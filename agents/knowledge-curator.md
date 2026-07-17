@@ -54,6 +54,19 @@ régua: **destilar fato, nunca inventar padrão**; **mover, nunca apagar**.
   casaram) ou **ambíguas** (casam dois domínios) → **achado** com proposta de correção. Linha faltante
   óbvia você adiciona; ambiguidade de fronteira você **reporta** (não re-litiga sozinho).
 
+### 4 · Promover procedimento → skill (memória procedural, RF-COG-11)
+A camada **procedural** (`skills/`) também deve evoluir com o uso — não só a semantic. Detecte, no
+episódico e no histórico de PRs/commits, uma **sequência de passos repetida com árvore verde** (o mesmo
+"como fazer" executado ≥3× com sucesso: um roteiro de migração recorrente, um passo-a-passo de setup, uma
+cadeia de verificação que sempre se repete).
+- **Proponha** promovê-la a uma **skill nova** (`skills/<nome>/SKILL.md`, frontmatter `name`+`description`
+  válidos) **ou** atualizar uma skill existente que já cobre parcialmente o procedimento.
+- **Sempre sob gate:** a skill entra no mesmo PR, e só vale com `node scripts/validate-plugin.mjs` verde
+  (senão vira componente-fantasma). Você **nunca** commita skill fora do PR nem sem o `validate`.
+- **Sinal fraco = achado:** procedimento visto 1–2× é "candidato", não skill. Não crie skill especulativa.
+- Um procedimento que já é padrão semantic (em `knowledge.md`) mas ainda **manual** é o melhor candidato a
+  virar procedural (executável) — é o episódico ensinando as duas camadas duráveis.
+
 ## Como entregar (é PROPOSTA sob gate, P-13)
 Você **escreve numa branch**; o **PR + `node scripts/validate-plugin.mjs` verdes** são o gate — quem
 escreve (você) ≠ quem aprova. A skill `/distill` abre o PR. Você nunca mergeia, nunca reescreve um ADR,
@@ -65,6 +78,7 @@ status: ok | sem-sinal | bloqueado
 consolidado: <nº padrões destilados → knowledge.md · ponteiros>
 podado: <nº entradas movidas → archive/AAAA-MM.md por ledger>
 índice: <linhas/tags ajustadas no context-map · achados de fronteira>
+procedural: <procedimento recorrente → skill nova/atualizada · ou "nenhum">
 achados: <candidatos abaixo do limiar · gaps de índice · [needs-human-triage] se houver>
 ```
 
