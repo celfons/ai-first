@@ -1,6 +1,6 @@
 # ADR-0005: Arquitetura cognitiva de 2ª ordem (memória nomeada + higiene + verificação por painel)
 
-> Status: Proposed · Data: 2026-07-17
+> Status: Accepted · Data: 2026-07-17
 > Feature/Issue: capacidade de arquitetura cognitiva (`docs/sdd/features/003-arquitetura-cognitiva/`)
 > Princípios tocados: P-8, P-9, P-10, P-11, P-13, P-14, P-15 · Supersede: —
 

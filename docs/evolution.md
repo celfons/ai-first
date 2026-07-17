@@ -38,6 +38,20 @@ sem reconstruir o passado lendo dez lugares.
 
 ## Linha do tempo
 
+### 2026-07-17 · Arquitetura cognitiva de 2ª ordem (meta) — feature 003
+- **Sinal:** 🔧 processo (sem métrica de produto — é maturidade cognitiva do próprio método).
+- **Aprendizado:** o método já tinha uma **memória de fato** (knowledge/context-map/evolution/routing-
+  policy/rejections/market-scan/growth-playbook), mas sem nomear as camadas ninguém cuidava de **higiene**
+  (o episódico inchava) nem de **recuperação** (dependia da memória do orchestrator). Correção sem ferir o
+  isolamento: nomear as **4 camadas** (`memory.md`), dar **retenção + consolidação/poda** ao episódico
+  (`knowledge-curator` + `/distill`, esquece **movendo** para `archive/`, nunca apaga), promover o
+  `context-map` a **índice por tag** (determinístico — vetorial adiado), e tornar a verificação
+  **proporcional ao risco**: **painel** de N céticos onde o gate humano some, e **escalada por incerteza**
+  (confiança baixa sobe ao humano, independentemente do tier). Tudo opt-in por knob; "fato datado, não
+  raciocínio" preserva a troca token↔corretude.
+- **Links:** ADR-0005 · `docs/sdd/features/003-arquitetura-cognitiva/` · `docs/ai-first/memory.md` ·
+  `docs/token-efficiency.md` §7 · corolário P-10/P-11.
+
 ### 2026-07-14 · Política de eficiência de token do método (meta)
 - **Sinal:** 🔧 processo (sem métrica de produto — é economia de custo do próprio método).
 - **Aprendizado:** o custo alto por fatia vinha de **desperdício por descuido**, não do isolamento:

@@ -16,7 +16,10 @@ roteamento de modelo obrigatório, retorno enxuto, `Workflow`, **AIOps** — com
 com intenção sem enfraquecer o isolamento/revisão independente) e `docs/ai-first/routing-policy.md`
 (**memória auto-evolutiva do roteamento**: nasce vazia e se altera a cada rodada — o `finops-steward`
 grava o custo real aprendido, o `sdd-orchestrator` lê antes de rotear; é o loop de AIOps que faz o
-pipeline **melhorar sozinho com o uso**).
+pipeline **melhorar sozinho com o uso**) e `docs/ai-first/memory.md` (**arquitetura de memória**,
+ADR-0005: as 4 camadas — working/semantic/episodic/procedural — e sua **higiene**; o `knowledge-curator`
+via `/distill` consolida o episódico recorrente, poda o resto e mantém o índice de recuperação coerente —
+é o que impede a memória de inchar e faz o saber-fazer melhorar, não só acumular).
 
 > ⚠️ **Este é o `CLAUDE.md` do framework `ai-first` (esqueleto).** As seções marcadas `_(preencha)_`
 > são preenchidas **na gênese, pela skill primária [`/ai-first-init`](skills/ai-first-init/SKILL.md)**,
@@ -125,7 +128,15 @@ reserva de idempotência, laço da fila, chamada de LLM com timeout+validação+
   `/daily-build` (implementa + verificação independente + auto-merge em develop + promoção por risco).
   Auditorias que só levantam issues: `/daily-tech-scan` (código + drift), `/daily-ops-scan` (runtime).
   Loop de resultado: `/daily-outcome` (mede se as features moveram o ponteiro; roda junto o
-  **`finops-steward`** = custo/ROI + **AIOps**: realimenta o roteamento do `sdd-orchestrator`). Espace os crons pesados.
+  **`finops-steward`** = custo/ROI + **AIOps**: realimenta o roteamento do `sdd-orchestrator`).
+  Higiene de memória: `/distill` (o `knowledge-curator` consolida o episódico recorrente em
+  `knowledge.md`, poda para `archive/` e audita o índice — ADR-0005). Espace os crons pesados.
+- **Arquitetura cognitiva (ADR-0005):** a memória tem **4 camadas** nomeadas em
+  `docs/ai-first/memory.md` (working/semantic/episodic/procedural) com **higiene** (`/distill` consolida e
+  **esquece** movendo para `archive/`, nunca inchando). A verificação escala com o risco: `verification_mode:
+  panel` roda o `adversarial-reviewer` como **N céticos de lentes distintas** (piso opus/alto por membro), e
+  `uncertainty_escalation` escala ao humano por **baixa confiança** de uma etapa, **independentemente do
+  tier** de risco (risco OU incerteza, o maior). Knobs no genoma §8.
 - **Loop de growth autônomo (ADR-0004):** `/daily-growth` (o `growth-strategist` cria
   `growth_experiments_per_cycle` issues de experimento `growth:*` pela lente do funil AARRR, por ROI) →
   `/daily-build` implementa **atrás de flag, no canário** → `/growth-outcome` (o `growth-analyst` mede
