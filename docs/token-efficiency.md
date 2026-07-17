@@ -236,6 +236,33 @@ Toca corretude: não.
 
 ---
 
+## 7 · Higiene de memória — consolidar e esquecer (não só acumular)
+
+**O problema.** As alavancas 1–6 otimizam o gasto **por rodada**, mas a memória episódica do método
+(`evolution.md`, `rejections.md`, históricos de `routing-policy.md`/`growth-playbook.md`) só **cresce**.
+Ledger *append-only* que incha por meses vira um custo de contexto silencioso: quem o lê paga por N
+entradas onde 3 padrões destilados bastariam. Acumular sem esquecer **contradiz a §1** (contexto enxuto).
+
+**A distinção que a política assume.** Consolidar não é perder informação — é **promover** o recorrente do
+episódico (o que aconteceu) para o semantic (o padrão que se aprendeu), e **arquivar** o episódico
+consumido. É higiene, não amnésia: a poda **move** para `archive/AAAA-MM.md` (reversível via git), com
+ponteiro de volta. É a mesma lógica de "fato datado, não raciocínio" da §6, aplicada ao **tempo**.
+
+**A regra.** Numa cadência (`distill_cadence`, cron `/distill`), o `knowledge-curator`:
+- **Destila** ocorrências recorrentes (≥ limiar) num padrão/anti-padrão datado em `docs/knowledge.md` —
+  N entradas episódicas viram 1 linha semantic que os agentes leem no lugar.
+- **Poda** o episódico consumido/vencido (conforme `memory_retention`) para `archive/` datado — o ledger
+  ativo encolhe, o cache de quem o lê barateia.
+- **Sinal fraco = achado**, nunca padrão inventado (poluir o semantic é mais caro que não consolidar).
+
+Isolamento intacto: o curator compartilha **fato datado** (padrão), nunca raciocínio. Ver
+[`docs/ai-first/memory.md`](ai-first/memory.md) e ADR-0005.
+
+Ganho: composto ao longo dos meses (o custo de ler a memória para de crescer sem limite). Risco: baixo
+(poda reversível + gate PR/validate). Toca corretude: não.
+
+---
+
 ## Consciência de janela de cache (afinação do agendamento)
 
 O prompt cache (§1) tem TTL ~1h. Duas consequências operacionais:
