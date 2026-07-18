@@ -14,7 +14,11 @@ Leia antes de começar:
   variável** (P-15): pode ser 1, 3, 10… conforme o humano definiu na gênese ou ajustou depois.
 - **`parallelism`** — quantas features desenvolver **em paralelo** nesta rodada (default **1** =
   sequencial). Contextos/worktrees isolados na implementação; **o merge em `develop` é serializado**
-  (ver Fase 2). O mesmo dial usado pelo arranque `/kickoff`.
+  (ver Fase 2). O mesmo dial usado pelo arranque `/kickoff`. É a **capacidade de fan-out**.
+- **`wip_limit`** (ADR-0007) — teto de demandas **simultaneamente em andamento** (default `parallelism`).
+  Nunca desenvolva mais que `wip_limit` demandas ao mesmo tempo, **mesmo** que `parallelism` permita, e
+  **serialize demandas de footprint de arquivo sobreposto** (ver Fase 2). `wip_limit < parallelism`
+  reduz rebase/conflito quando as features tendem a colidir de superfície.
 - **`autonomy_level`** — `conservador` (humano aprova tudo) · `progressivo` (🟢 promove sozinha) ·
   `amplo` (🟢🟡 promovem sozinhas) · **`autônomo` (100% AI — sem gate humano: todos os tiers, inclusive
   🔴, auto-promovem)**. Default **conservador**.
@@ -68,8 +72,22 @@ como oráculo) → `security-reviewer` (gate de segurança) → `docs-writer`. *
   `backend-engineer` (só o contexto da slice → janela menor, menos alucinação), **árvore verde ao fim
   de cada slice** (parcial atrás de flag), e a **slice de integração** por último. Verifique cada slice
   e faça o `adversarial-reviewer` sobre o **agregado**.
-**Desenvolvimento paralelo (`parallelism` > 1):** desenvolva até `parallelism` features **ao mesmo
-tempo**, cada uma em **contexto isolado** (subagentes de implementação com `isolation: 'worktree'`, uma
+**Escalonamento por WIP + footprint de conflito (ADR-0007).** Antes de fanar out, leia o **footprint de
+escrita** que o `architect` declarou no `plan.md` de cada demanda (superfícies/dirs que ela modifica).
+Regra:
+- **Etapas de planejamento** (`feature-spec`, `architect`, `task-decomposer`, `bdd-author`) escrevem só
+  nos próprios docs isolados (`docs/sdd/features/NNN-*`) → **sempre em paralelo**, sem restrição de WIP.
+- **Escritores de implementação** (`backend-engineer`, `frontend-engineer`): desenvolva em paralelo
+  **até `wip_limit` demandas** cujos footprints sejam **disjuntos**. Duas demandas de footprint
+  **sobreposto SERIALIZAM** — a segunda espera a primeira mergear e **rebaseia** sobre o `develop`
+  avançado antes de começar (evita o conflito antes dele nascer, não só no merge).
+- **Dentro de uma demanda:** backend e frontend tocam superfícies distintas → **paralelos**; se a
+  `tasks.md` marcou dependência de contrato, respeite a ordem.
+- Se o footprint não foi declarado ou é ambíguo, **trate como sobreposto** (serialize — conservador).
+
+**Desenvolvimento paralelo (`parallelism` > 1, respeitando `wip_limit` + footprint):** desenvolva até
+`min(parallelism, wip_limit)` features de footprint disjunto **ao mesmo tempo**, cada uma em **contexto
+isolado** (subagentes de implementação com `isolation: 'worktree'`, uma
 branch `claude/<slug>` por feature a partir de `develop`). **Com opt-in de `Workflow`, faça-o num único
 Workflow** (Escala 2 acima): **bundle de recursos compartilhado derivado 1×** (contexto base + índice de
 repo + deps + market-scan, passados read-through) e **teto `budget_per_feature`** por sub-pipeline — a

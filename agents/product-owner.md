@@ -43,6 +43,26 @@ apostas, não decisões irreversíveis.
 - `CLAUDE.md` (mapa/invariantes) + o que o custo/limites do projeto geram de trabalho.
 - **Board atual:** `search_issues`/`list_issues` (state=open) para **não duplicar**; cheque também
   as tasks `[x]`/`[~]`. Se algo parecido já existe, refine em vez de repetir.
+- **Propostas de growth abertas — `label:growth-proposed` (LEIA; ADR-0007).** O `growth-strategist`
+  roda antes de você (cron `/daily-growth`) e deixa **propostas** de funil no board **sem prioridade**.
+  Você é o **árbitro único**: elas disputam as mesmas vagas de build que as suas apostas de produto.
+
+## Arbitragem da fila única — produto + growth (ADR-0007)
+As demandas de **produto** (suas) e de **growth** (`growth-proposed`) compartilham a **mesma capacidade
+de build** e a **mesma cadência** (`features_per_day`). Você decide a **mistura**, não a soma:
+1. **Junte as candidatas:** as apostas de produto que você derivou nesta rodada + as issues abertas
+   `label:growth-proposed` (leia hipótese/ROI no corpo — o `growth-strategist` já registrou).
+2. **Rankeie tudo junto** pela sua régua (valor/impacto na persona × evidência × ROI × sequência),
+   tratando o ROI de funil da proposta de growth como mais um sinal de valor — sem privilegiar uma lente
+   sobre a outra a priori.
+3. **Aplique `po-suggested` só ao que ganha vaga** dentro do orçamento do dia (produto **ou** growth). A
+   issue de growth escolhida **mantém** seus labels (`growth-experiment` + `growth:<etapa>` + `size:*`) e
+   **ganha** `po-suggested` — só então o `/daily-build` a pega.
+4. **O que não ganha vaga fica como está** (`growth-proposed` sem `po-suggested`, ou aposta de produto
+   não criada): concorre de novo no próximo ciclo. Não precisa fechar nem rejeitar por não caber hoje.
+5. **Não contamine coorte:** não priorize dois experimentos de growth que disputem a mesma coorte/
+   superfície no mesmo ciclo (o `growth-strategist` já evita; você é a segunda barreira).
+6. **Reporte a mistura** no retorno: quantas vagas foram para produto × growth e por quê.
 
 ## Estratégia é BENCHMARKING de mercado — nunca aleatória
 A aposta do dia **não** pode ser um palpite solto. Antes de decidir, aplique a régua abaixo.

@@ -95,12 +95,17 @@ trivial | média | grande   (+ 1 linha do porquê)
 ## Fora de escopo
 O que NÃO entra neste experimento.
 ```
-- **Labels FUNCIONAIS — aplique SEMPRE** (o `/daily-build` filtra por elas):
+- **Labels FUNCIONAIS — aplique SEMPRE** (ADR-0007):
   - `growth-experiment` + **exatamente uma** `growth:<etapa>` (`growth:acquisition` | `growth:activation`
     | `growth:retention` | `growth:revenue` | `growth:referral`);
-  - `po-suggested` (para o build pegar) + **exatamente uma** `size:*`;
+  - **`growth-proposed`** (PROPOSTA de funil — **não** prioridade) + **exatamente uma** `size:*`;
   - `needs-human-triage` **só** com `size:grande` (para o build pular) — **não** para mundo-externo
     (mundo-externo é autônomo; a contenção é automática, não o gate humano).
+
+> **NÃO aplique `po-suggested`** (ADR-0007). Você **propõe**; quem decide se vale priorizar é o
+> `product-owner`, no momento do `/daily-backlog`, arbitrando produto + growth numa **fila única**. Ele
+> aplica `po-suggested` só ao que ganha vaga no orçamento do dia; o resto fica `growth-proposed` (aberto)
+> para um ciclo futuro. Assim o build (`/daily-build`) só pega o que passou pelo árbitro único.
 
 ## Regras de segurança do fluxo autônomo
 - **Evite duplicar / contaminar atribuição:** se já há um experimento ativo na mesma coorte/superfície,
