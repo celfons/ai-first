@@ -38,6 +38,10 @@ Concretamente, isso é **execução**, não enfeite:
   nova ad hoc; imagem/asset otimizado. A tela parece rápida mesmo antes de tudo carregar.
 - **Pixel-perfect e consistente.** Alinhamento, ritmo de espaçamento e escala tipográfica batem em
   todos os breakpoints; siga os componentes/paleta já usados — nunca um design system paralelo.
+- **Navegação é UM componente, não N cópias.** A nav primária (e a secundária de contexto) vive
+  num componente único reusado por todas as telas do perfil, com estado ativo real
+  (`aria-current` — em React Router, `NavLink`) — nunca uma lista de links re-declarada por
+  página, que é como a IA apodrece.
 
 ## O terreno (leia antes de mexer)
 - Os módulos de UI do projeto e os **blocos/componentes compartilhados** (helpers de escape,

@@ -38,6 +38,21 @@ sem reconstruir o passado lendo dez lugares.
 
 ## Linha do tempo
 
+### 2026-07-18 · Arquitetura de informação nos agentes de UI (meta, 2ª rodada do mesmo dia)
+- **Sinal:** ❌→régua (feedback real do dono sobre o resultado da 1ª rodada).
+- **Aprendizado:** a régua "premium" da rodada anterior elevou o acabamento das TELAS, mas o dono
+  apontou o que ela não cobria: **menu espalhado, portal desorganizado, navegação confusa** — um
+  problema de **arquitetura de informação**, não de estética. Causa raiz observada no produto: nav
+  global montada só na home (todas as outras telas com o header vazio), navegação de seções
+  enterrada numa grade "Ir para" no corpo de uma página-hub (seção irmã exigia "voltar"), e nenhum
+  sinal de "onde estou". Lição destilada: **navegação é sistema, não peça de tela** — o
+  `ux-designer` agora checa 7 regras de IA (nav primária idêntica em todo o perfil, `aria-current`,
+  irmãs a 1 clique, hub morre com nav persistente, máx. 2 níveis, mobile = mesma IA, rótulo único
+  por destino) ANTES de decorar a tela, e o `frontend-engineer` implementa nav como componente
+  único. Acabamento sem IA não segura a percepção de qualidade.
+- **Links:** `agents/ux-designer.md` (§ Arquitetura de informação) · `agents/frontend-engineer.md` ·
+  `docs/knowledge.md` (§ Qualidade visual premium, linhas de navegação).
+
 ### 2026-07-18 · Régua de qualidade premium nos agentes de UI (meta)
 - **Sinal:** 🔧 processo (qualidade de entrega de UI — sem métrica de produto isolada).
 - **Aprendizado:** um brief de "time de produto de elite" — **benchmark explícito**
