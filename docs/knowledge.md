@@ -46,6 +46,35 @@ de redescobrir o jeito certo (ou repetir um erro já pago).
 | _(ex.: `SELECT` + `UPDATE` onde cabe atômico)_ | corrida sob concorrência | dado incoerente | operação atômica / lock otimista |
 | _(ex.: novo caminho que contorna o ponto de extensão)_ | lógica duplicada divergente | decadência/drift (P-14) | encaixar no ponto de extensão |
 
+## Qualidade visual premium (UI) — a régua do `ux-designer`/`frontend-engineer`
+
+> **Origem (episódico → semântico):** um brief de "time de produto de elite" — benchmark explícito
+> (Apple/Linear/Stripe/Vercel/Notion), justificativa por 5 lentes e entregáveis de design system
+> concretos — produziu resultado **muito acima da média** numa sessão real de redesenho. O aprendizado
+> virou régua durável nos dois agentes de UI (`agents/ux-designer.md`, `agents/frontend-engineer.md`).
+> Ver `docs/evolution.md`. Vale para **todo trabalho significativo de interface**.
+
+**Faça assim (padrões de UI):**
+
+| Padrão | Quando | Por que | Onde vive |
+|---|---|---|---|
+| **Justifique cada decisão por 5 lentes** (usabilidade · hierarquia · acessibilidade · performance · conversão) | tela/fluxo novo ou redesenho | força o "porquê", não só o "bonito" | brief do `ux-designer` (`ux.md`) |
+| **Design system primeiro: tokens, nunca valores mágicos** | qualquer CSS/estilo | ajuste cascateia; zero drift visual | camada de tokens/tema do projeto |
+| **Escala tipográfica + grid + cor como sistema** | layout novo | hierarquia consistente entre telas | tokens + docs de UI |
+| **Todos os estados, não só o caso feliz** (vazio→ativação, loading→skeleton, erro→acionável, sucesso) | toda seção | a UI real vive nos estados de borda | render + best-effort por seção |
+| **Todos os estados de interação** (hover · foco visível · ativo · desabilitado-com-motivo) | todo elemento interativo | acessibilidade + previsibilidade | componentes compartilhados |
+| **Movimento com propósito, 150–300ms, `prefers-reduced-motion`** | transições | comunica causa/efeito, não enfeita | tokens de duração/easing |
+
+**Não faça (anti-padrões de UI):**
+
+| Anti-padrão | Sintoma | Por que dói | O certo |
+|---|---|---|---|
+| Valor mágico numa tela (`#hex`/`px`/`ms` solto) | tema inconsistente, ajuste espalhado | vira dívida; nada cascateia | token semântico na camada de tema |
+| Entregar só repouso/caso cheio | sem foco visível, tela vazia morta, erro mudo | quebra a11y e ativação | cobrir hover/foco/ativo/desabilitado + vazio/loading/erro/sucesso |
+| "Premium = mais efeito" | animação ornamental, ruído visual | sobriedade é que lê como premium | menos efeito, mais clareza/consistência |
+| Design system paralelo por tela | componentes divergentes | drift visual, retrabalho | reusar/estender os padrões existentes |
+| Animar layout / ignorar reduced-motion | jank, enjoo, > 300ms | performance e acessibilidade | transform/opacity, 150–300ms, reduced-motion |
+
 ## Como este acervo cresce (retroalimentação)
 - **Gênese** (`/ai-first-init` dim. 7) — semeia os padrões/anti-padrões iniciais do projeto.
 - **Fim de cada feature** (`docs-writer`) — idioma novo introduzido vira **padrão**; bug caçado pelo
