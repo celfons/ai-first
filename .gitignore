@@ -8,3 +8,6 @@ Thumbs.db
 # Logs / temp
 *.log
 tmp/
+
+# Saída gerada pelo conversor (scripts/export-portable.mjs) — reprodutível, não versionada
+dist/
