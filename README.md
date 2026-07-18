@@ -19,7 +19,7 @@
 - [A vida em duas fases: gênese → organismo](#-a-vida-em-duas-fases-gênese--organismo)
 - [A ideia central: autonomia progressiva por risco](#-a-ideia-central-autonomia-progressiva-por-risco)
 - [Os sete pilares](#-os-sete-pilares)
-- [O fluxo ponta a ponta](#-o-fluxo-ponta-a-ponta)
+- [O fluxo ponta a ponta — a interação entre os agentes](#-o-fluxo-ponta-a-ponta--a-interação-entre-os-agentes)
 - [O ciclo SDD (por feature)](#-o-ciclo-sdd-por-feature)
 - [O roster de subagentes](#-o-roster-de-subagentes)
 - [Qual jornada usar? (mapa de uma olhada)](#-qual-jornada-usar-mapa-de-uma-olhada)
@@ -172,41 +172,65 @@ flowchart LR
 7. **Roster de subagentes + skills** — papéis especializados mapeados às fases, e skills que os
    orquestram (a gênese, uma feature, as rotinas). Empacotados como **plugin** (`agents/` + `skills/`).
 
-## 🔄 O fluxo ponta a ponta
+## 🔄 O fluxo ponta a ponta — a interação entre os agentes
+
+O diagrama abaixo é o **canvas de interação entre os agentes**, por raias (o GitHub o renderiza e ele é
+navegável). Reflete o **ADR-0007**: o `growth-strategist` **propõe**, o `product-owner` **arbitra a
+fila única** produto + growth (com contrapressão), o `architect` **declara o footprint** que decide
+paralelo × serial no build (WIP-limited), e os **dois gates** (`adversarial-reviewer` + `security-reviewer`)
+barram o auto-merge. *(Versão interativa do mesmo mapa: o canvas em Artifact — `docs/ai-first/`.)*
 
 ```mermaid
-flowchart TD
-  CRONA["⏰ /daily-backlog"] --> PO["🧭 product-owner<br/>mercado + resultado → N issues"]
-  PO --> BOARD[("📋 Board")]
-  CRONB["⏰ /daily-build · +1h"] --> PICK["pega até features_per_day"]
-  HUMAN["👤 /feature manual"] --> PICK
-  BOARD --> PICK
-  PICK --> ORCH["🗂 sdd-orchestrator"]
-  ORCH -->|"grande / arquitetural"| TRIAGE{{"🚧 needs-human-triage"}}
-  ORCH -->|"trivial / média"| SPEC
-
-  subgraph CHAIN["Ciclo SDD"]
-    SPEC["📐 feature-spec"] --> ARCH["🏗 architect · ADR"] --> IMPL["⚙️ backend / frontend"] --> TEST["🧪 tester"] --> ADV["🛡 adversarial-reviewer"] --> DOCS["📚 docs-writer"]
+flowchart LR
+  subgraph L1["1 · Propor — ⏰ /daily-growth"]
+    GS["growth-strategist<br/>diagnostica funil · ROI"]
+  end
+  subgraph L2["2 · Arbitrar — ⏰ /daily-backlog"]
+    PO["product-owner<br/>fila única + contrapressão<br/>ready_backlog_cap · proposal_ttl"]
+  end
+  subgraph L3["3 · Construir — ⏰ /daily-build"]
+    ORCH["sdd-orchestrator<br/>roteia modelo · esforço"] --> SPEC["feature-spec"]
+    SPEC --> ARCH["architect<br/>declara FOOTPRINT + ADR"]
+    ARCH --> DEC["task-decomposer<br/>(se grande)"] --> BDD["bdd-author<br/>cenários"]
+    BDD --> WIP{{"paralelo se footprint disjunto<br/>WIP ≤ wip_limit"}}
+    WIP --> BE["backend-engineer"]
+    WIP --> FE["frontend-engineer"]
+    BE --> TST["tester"]
+    FE --> TST
+  end
+  subgraph L4["4 · Verificar — gates (piso: modelo forte)"]
+    ADV["adversarial-reviewer<br/>pode BLOQUEAR"]
+    SEC["security-reviewer<br/>pode BLOQUEAR"]
+  end
+  subgraph L5["5 · Promover"]
+    MERGE["merge SERIALIZADO → develop"] --> TIER{{"tier × autonomy_level"}}
+    TIER -->|"🟢 / nível permite"| MAIN(["🏁 main"])
+    TIER -->|"🟡 / 🔴"| HUMANO["👤 revisão do dono"]
+    HUMANO -->|aprova| MAIN
+    MAIN --> REL["release-manager<br/>changelog · anúncio"]
   end
 
-  ADV -->|"bloqueia"| IMPL
-  DOCS --> PR["🔀 PR contra develop"]
-  PR -->|"CI + segurança + veredito ok"| MERGE(["✅ auto-merge em develop"])
-  MERGE --> TIER{{"tier × autonomy_level"}}
-  TIER -->|"🟢 se o nível permite"| PROD(["🏁 main"])
-  TIER -->|"🟡 / 🔴"| PROMO["🚀 PR develop → main"]
-  PROMO --> REVIEW{{"👤 revisão do dono"}}
-  REVIEW -->|"aprova"| PROD
-  REVIEW -->|"reprova"| REJECT["↩️ /reject-feature"]
-  REJECT -.-> BOARD
+  HUMANF["👤 /feature manual"] --> ORCH
+  GS -->|"growth-proposed (proposta)"| PO
+  PO -->|"po-suggested — só o que ganha vaga"| ORCH
+  TST --> ADV --> SEC --> MERGE
+  ADV -.bloqueia.-> BE
+  SEC -.bloqueia.-> BE
+  MAIN -.->|incidente| ROLL["🚑 /rollback"]
 
-  PROD -.->|"incidente"| ROLL["🚑 /rollback"]
-  CRONE["⏰ /daily-outcome"] --> OA["📈 outcome-analyst<br/>mede vs. métrica"]
-  OA -.-> BOARD
-  CRONC["⏰ /daily-tech-scan"] --> TA["🔎 tech-auditor · bugs + drift"]
-  CROND["⏰ /daily-ops-scan"] --> OI["🩺 ops-investigator · runtime"]
-  TA --> BOARD
-  OI --> BOARD
+  OUT["⏰ /daily-outcome<br/>outcome-analyst + finops"] -.realimenta a fila.-> PO
+  GRO["⏰ /growth-outcome<br/>growth-analyst"] -.escalar / iterar / matar.-> GS
+
+  classDef growth fill:#efeafc,stroke:#7c6cf0,color:#2b2140;
+  classDef arbiter fill:#fbf1de,stroke:#cf922a,color:#3a2c0e;
+  classDef build fill:#e5f5f7,stroke:#1f9fb0,color:#0e2f34;
+  classDef gate fill:#fbe9e2,stroke:#d85a34,color:#3d1a0e;
+  classDef promote fill:#e6f3ec,stroke:#3f9c68,color:#12341f;
+  class GS,GRO growth;
+  class PO,OUT arbiter;
+  class ORCH,SPEC,ARCH,DEC,BDD,WIP,BE,FE,TST,HUMANF build;
+  class ADV,SEC gate;
+  class MERGE,TIER,MAIN,HUMANO,REL,ROLL promote;
 ```
 
 ## 📐 O ciclo SDD (por feature)
