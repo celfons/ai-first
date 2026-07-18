@@ -97,7 +97,10 @@ reserva de idempotência, laço da fila, chamada de LLM com timeout+validação+
 - **Fluxo de git: `feature → develop → main`.** Branch `claude/<slug>` sai de `develop` e o PR é
   aberto **contra `develop`**. `main` (produção) só recebe promoção `develop → main` — **nunca** PR de
   feature direto. **A promoção é por tier de risco** (P-10): no nível `conservador` o humano aprova
-  tudo; em `progressivo`/`amplo`, 🟢/🟡 podem promover sozinhas e só as arriscadas sobem.
+  tudo; em `progressivo`/`amplo`, 🟢/🟡 podem promover sozinhas e só as arriscadas sobem. Este fluxo é
+  **imposto por construção** (não só convenção): ver `docs/governance/enforcement.md` (ADR-0006) — o
+  hook `SessionStart` carrega os fundamentos no turno 0, o `PreToolUse` guard barra push/commit direto
+  em main/develop, e a branch protection + `ai-first-guard.yml` recusam o merge fora do fluxo.
 - PR com `Closes #NNN`; `typecheck` + `lint` + `test` limpos (P-10); **gate de segurança
   (`security-reviewer`, opus/alto)** e **`adversarial-reviewer` não-bloqueante** obrigatórios para o
   auto-merge (P-11/P-13). O que chega a `main` passa pelo **`release-manager`** (changelog/anúncio).

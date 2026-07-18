@@ -1,0 +1,20 @@
+{
+  "//": "Hooks providos pelo plugin ai-first — enforcement determinístico do método. Ativos quando o plugin está instalado (carregamento nativo de hooks de plugin). Fallback version-independente: o /ai-first-init registra os mesmos scripts no .claude/settings.json do repo-alvo (ver docs/governance/enforcement.md). ${CLAUDE_PLUGIN_ROOT} resolve para a raiz do plugin instalado.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          { "type": "command", "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/session-start.sh" }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          { "type": "command", "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/pre-tool-guard.sh" }
+        ]
+      }
+    ]
+  }
+}

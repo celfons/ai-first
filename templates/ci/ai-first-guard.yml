@@ -1,0 +1,71 @@
+# ai-first · guarda de governança (server-side)
+#
+# TEMPLATE — o /ai-first:ai-first-init copia para `.github/workflows/` do repo que adota o método.
+# É a camada de FORÇA no servidor: torna a violação do fluxo impossível de MERGEAR (não só
+# desaconselhada). Marque os jobs abaixo como REQUIRED CHECKS na branch protection de `develop`
+# e `main` (ver docs/governance/enforcement.md) — sem isso, o workflow só avisa, não impede.
+name: ai-first · guard
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened, labeled, unlabeled]
+    branches: [develop, main]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  git-flow:
+    name: Disciplina de fluxo (feature → develop → main)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Valida base/head e rastreabilidade
+        env:
+          BASE: ${{ github.event.pull_request.base.ref }}
+          HEAD: ${{ github.event.pull_request.head.ref }}
+          BODY: ${{ github.event.pull_request.body }}
+          LABELS: ${{ join(github.event.pull_request.labels.*.name, ',') }}
+        run: |
+          set -euo pipefail
+          echo "PR $HEAD → $BASE  [labels: ${LABELS:-none}]"
+          fail() { echo "::error::$1"; exit 1; }
+
+          case "$BASE" in
+            main)
+              # Só a promoção develop → main chega em main.
+              [ "$HEAD" = "develop" ] || fail "Só \`develop\` promove para \`main\` (head=$HEAD). Feature vai para develop."
+              ;;
+            develop)
+              # Feature vem de uma branch claude/<slug>.
+              case "$HEAD" in
+                claude/*) : ;;
+                *) fail "PR contra develop deve vir de \`claude/<slug>\` (head=$HEAD)." ;;
+              esac
+              # Rastreabilidade: mudança de comportamento fecha uma issue.
+              if echo ",$LABELS," | grep -qiE ',(promotion|no-issue|docs),'; then
+                echo "Rastreabilidade dispensada por label."
+              elif echo "${BODY:-}" | grep -qiE 'Closes #[0-9]+'; then
+                echo "OK: PR referencia uma issue (Closes #)."
+              else
+                fail "PR de feature precisa de \`Closes #NNN\` (ou label docs/no-issue/promotion)."
+              fi
+              ;;
+            *) echo "Base $BASE fora do fluxo governado — ignorado." ;;
+          esac
+          echo "Fluxo de git OK."
+
+  fitness:
+    name: Fitness functions (invariantes executáveis)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Roda a suíte de fitness do repo (se existir)
+        run: |
+          set -euo pipefail
+          if [ -f scripts/ai-first-fitness.mjs ]; then
+            node scripts/ai-first-fitness.mjs
+          else
+            echo "Sem scripts/ai-first-fitness.mjs ainda — invariantes checadas pela suíte de testes do repo (ci.yml)."
+            echo "Próxima fatia do enforcement: materializar as fitness functions (ver docs/governance/enforcement.md)."
+          fi

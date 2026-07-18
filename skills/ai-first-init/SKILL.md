@@ -31,11 +31,25 @@ nunca sobrescreve o que você já tem sem confirmar).
    - `docs/context-map.md`, `docs/product/rejections.md`, `docs/knowledge.md` (padrões + anti-padrões),
      `docs/evolution.md` (linha do tempo de aprendizados — nasce vazia).
    - `docs/ai-first/project.md` (o **genoma** em branco — é o que você preenche na entrevista abaixo).
+   - `docs/engineering-principles.md` + os catálogos por disciplina (`product-`, `spec-`,
+     `operations-`, `delivery-principles.md`) — o piso de padrão-de-mercado que os agentes consultam.
+   - `docs/governance/enforcement.md` — o modelo de enforcement (o "como forçar", ADR-0006).
    - `.github/` → `pull_request_template.md`, `ISSUE_TEMPLATE.md`, `workflows/ci.yml`,
-     `workflows/ai-first-cron.yml`.
+     `workflows/ai-first-cron.yml`, e o **guard de governança** `workflows/ai-first-guard.yml`
+     (a partir de `templates/ci/ai-first-guard.yml` do plugin).
    - `CLAUDE.md` (índice-mãe esqueleto) — **na raiz do repo-alvo**.
    - **NÃO** copie `docs/sdd/features/001-exemplo-*` (é demonstração), nem `agents/`, `skills/`,
      `.claude-plugin/` (esses vivem no plugin, não no repo-alvo).
+4b. **Instale o COMPLIANCE KIT (enforcement — ADR-0006, ver `docs/governance/enforcement.md`):**
+   - Copie `hooks/session-start.sh` e `hooks/pre-tool-guard.sh` do plugin para `.ai-first/hooks/` do
+     repo-alvo e registre-os no `.claude/settings.json` do projeto (`SessionStart` + `PreToolUse`
+     matcher `Bash`, apontando para `$CLAUDE_PROJECT_DIR/.ai-first/hooks/…`) — o snippet exato está em
+     `docs/governance/enforcement.md §2`. Isso força os fundamentos e barra push/commit direto em
+     main/develop **por construção**, mesmo numa sessão que não instalou o plugin nativamente.
+   - **Instrua o humano** a ligar a **branch protection** de `develop`/`main` com os *required checks*
+     (`ci`, `ai-first · guard / git-flow`, `ai-first · guard / fitness`, `security-reviewer`,
+     `adversarial-reviewer`) — é o passo humano, uma vez, que transforma "avisa" em "impede". Sem ele,
+     o guard de CI só reporta. Ofereça o checklist de adoção do fim de `enforcement.md`.
 3. **Se um arquivo já existe** (ex.: o projeto já tem `CLAUDE.md`), **não sobrescreva** — mostre o
    diff/decisão ao humano e mescle sob confirmação.
 4. Confirme ao humano a lista do que foi criado antes de seguir para a entrevista.
