@@ -38,6 +38,22 @@ sem reconstruir o passado lendo dez lugares.
 
 ## Linha do tempo
 
+### 2026-07-18 · Régua de qualidade premium nos agentes de UI (meta)
+- **Sinal:** 🔧 processo (qualidade de entrega de UI — sem métrica de produto isolada).
+- **Aprendizado:** um brief de "time de produto de elite" — **benchmark explícito**
+  (Apple/Linear/Stripe/Vercel/Notion), **justificativa por 5 lentes** (usabilidade · hierarquia ·
+  acessibilidade · performance · conversão) e **entregáveis de design system concretos** (tokens de
+  cor, escala tipográfica, grid, biblioteca de componentes, guidelines de movimento 150–300ms, TODOS
+  os estados: hover/foco/ativo/desabilitado + vazio/loading/erro/sucesso) — produziu resultado **muito
+  acima da média** numa sessão real de redesenho. O ganho não era "mais efeito": era **sistema**
+  (tokens, não valores mágicos), **cobrir os estados de borda** e **sobriedade premium**. Destilado em
+  régua durável: elevei `ux-designer` (brief agora exige tokens + estados + movimento + as 5 lentes) e
+  `frontend-engineer` (execução pixel-perfect: tokens-não-mágicos, todos os estados, micro-interações
+  150–300ms com reduced-motion), e virou padrão/anti-padrão de UI em `knowledge.md`. Não afrouxa
+  nenhuma invariante de front (escape/PII/best-effort/split) — só sobe o teto de qualidade.
+- **Links:** `agents/ux-designer.md` · `agents/frontend-engineer.md` · `docs/knowledge.md`
+  (§ Qualidade visual premium).
+
 ### 2026-07-17 · Arquitetura cognitiva de 2ª ordem (meta) — feature 003
 - **Sinal:** 🔧 processo (sem métrica de produto — é maturidade cognitiva do próprio método).
 - **Aprendizado:** o método já tinha uma **memória de fato** (knowledge/context-map/evolution/routing-
