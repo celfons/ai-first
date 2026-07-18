@@ -136,6 +136,11 @@ reserva de idempotência, laço da fila, chamada de LLM com timeout+validação+
   decomposto em histórias-filhas via sub-issue), com o mesmo rigor de benchmarking/dedup/labels do
   `/daily-backlog`, mas **sem o teto `features_per_day`**. Só popula o board; não implementa.
 - **Starter a partir do board:** skill `/feature <número-da-issue>`.
+- **Levar o método para fora do Claude:** skill `/export-portable` (roda `scripts/export-portable.mjs`)
+  — empacota o roster + skills + contexto num formato **portável** (roles `AGENTS.md` + `.maestri/role.json`
+  para o "Discover Roles" do **Maestri**; runbooks das skills; `AGENTS.md` raiz), utilizável em outro
+  orquestrador ou num CLI de agente movido a GPT/outro LLM. Não migra código de produto (isso é o
+  `/migrate`) — migra o **próprio método**. A saída (`dist/`) é gerada, não versionada.
 - **Migração/reescrita (brownfield):** skill `/migrate <origem>` — traz uma solução JÁ implementada de
   outra base/stack. Em vez de inventar a spec, o `migration-analyst` **captura** o comportamento da
   origem como oráculo; o port é por **equivalência**, fatia a fatia (**strangler-fig, não big-bang**),
