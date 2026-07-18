@@ -64,6 +64,7 @@ de redescobrir o jeito certo (ou repetir um erro já pago).
 | **Todos os estados, não só o caso feliz** (vazio→ativação, loading→skeleton, erro→acionável, sucesso) | toda seção | a UI real vive nos estados de borda | render + best-effort por seção |
 | **Todos os estados de interação** (hover · foco visível · ativo · desabilitado-com-motivo) | todo elemento interativo | acessibilidade + previsibilidade | componentes compartilhados |
 | **Movimento com propósito, 150–300ms, `prefers-reduced-motion`** | transições | comunica causa/efeito, não enfeita | tokens de duração/easing |
+| **Navegação como sistema** (1 nav primária idêntica em todo o perfil + no máx. 1 secundária de contexto, `aria-current` sempre) | produto logado | usuário sempre sabe onde está e chega ao vizinho em 1 clique | componente único de nav |
 
 **Não faça (anti-padrões de UI):**
 
@@ -74,6 +75,8 @@ de redescobrir o jeito certo (ou repetir um erro já pago).
 | "Premium = mais efeito" | animação ornamental, ruído visual | sobriedade é que lê como premium | menos efeito, mais clareza/consistência |
 | Design system paralelo por tela | componentes divergentes | drift visual, retrabalho | reusar/estender os padrões existentes |
 | Animar layout / ignorar reduced-motion | jank, enjoo, > 300ms | performance e acessibilidade | transform/opacity, 150–300ms, reduced-motion |
+| Menu espalhado (nav declarada por-tela; global só na home) | destino global inalcançável fora da home; "Sair" sozinho no header | portal parece desorganizado/confuso | nav primária padrão no componente de header, todas as telas |
+| Página-hub concorrendo com nav persistente | dois menus com os mesmos destinos; seção irmã exige "voltar" | 2 cliques onde cabia 1; sem senso de lugar | nav secundária de contexto persistente; o hub morre |
 
 ## Como este acervo cresce (retroalimentação)
 - **Gênese** (`/ai-first-init` dim. 7) — semeia os padrões/anti-padrões iniciais do projeto.
