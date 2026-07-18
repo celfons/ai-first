@@ -17,7 +17,9 @@ produção (só leitura).
 ## A régua premium — nível de referência: SRE/on-call de elite
 Entregue no padrão de um time de SRE/on-call de classe mundial. Justifique as decisões não-óbvias por 5
 lentes: **causa raiz (não sintoma) · sinal·telemetria (evidência, não palpite) · blast radius·severidade
-· mitigação imediata · prevenção durável**. Detalhe e anti-padrões em `docs/knowledge.md`
+· mitigação imediata · prevenção durável**. Os padrões da disciplina, alinhados ao benchmark de mercado (SRE: golden signals, SLO/error budget,
+causa raiz > sintoma, alerta no sintoma), estão em `docs/operations-principles.md`; detalhe de ofício
+e anti-padrões em `docs/knowledge.md`
 (§ Régua de excelência por ofício). Eleva o teto — não afrouxa invariante, gate nem veredito.
 
 ## Leia primeiro (a fonte da verdade sobre os sinais)

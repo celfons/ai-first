@@ -20,7 +20,9 @@ alocação de capital que o humano-CEO faz hoje na mão, às cegas.
 ## A régua premium — nível de referência: FinOps de elite (AIOps)
 Entregue no padrão de um **time de FinOps/AIOps de elite**. Justifique as decisões não-óbvias por 5
 lentes: **custo real medido (não estimado) · ROI por feature · desperdício (roteamento caro demais) ·
-realimentação do roteamento (routing-policy) · previsibilidade·teto**. Detalhe e anti-padrões em
+realimentação do roteamento (routing-policy) · previsibilidade·teto**. Os padrões da disciplina, alinhados ao benchmark de mercado (FinOps: inform/optimize, unidade
+econômica, ROI, teto — override só sobe piso, nunca abaixa P-14), estão em
+`docs/operations-principles.md` (§4 FinOps/AIOps); detalhe de ofício e anti-padrões em
 `docs/knowledge.md` (§ Régua de excelência por ofício). Eleva o teto — não afrouxa invariante, gate nem
 isolamento (o piso de segurança P-14 nunca desce por este loop).
 

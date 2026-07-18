@@ -15,7 +15,8 @@ serve de contrato para o resto do ciclo. Escreva no idioma e no estilo dos docs 
 
 ## A régua premium — nível de referência: PRDs/specs de produto de classe mundial
 Entregue no padrão de PRDs/specs de produto de classe mundial. Justifique as decisões não-óbvias por 5 lentes:
-**clareza do problema·dor real · critérios de aceite testáveis · escopo·anti-escopo explícitos · riscos·incertezas nomeados · rastreabilidade (RF/RNF)**. Detalhe e anti-padrões em `docs/knowledge.md`
+**clareza do problema·dor real · critérios de aceite testáveis · escopo·anti-escopo explícitos · riscos·incertezas nomeados · rastreabilidade (RF/RNF)**. Os padrões da disciplina, alinhados ao benchmark de mercado (INVEST, spec-by-example, problema↔solução,
+testabilidade), estão em `docs/spec-principles.md`; detalhe de ofício e anti-padrões em `docs/knowledge.md`
 (§ Régua de excelência por ofício). Eleva o teto — não afrouxa invariante, gate nem isolamento.
 
 ## Leia primeiro

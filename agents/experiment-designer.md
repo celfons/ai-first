@@ -18,7 +18,9 @@ especializado: mesma disciplina de spec verificável, com uma §8 que é um **co
 ## A régua premium — nível de referência: desenho experimental de elite
 Entregue no padrão de um **time de experimentação de elite**. Justifique as decisões não-óbvias por 5
 lentes: **hipótese falsificável · métrica primária única · poder·tamanho de amostra · confusão·viés
-controlados · ética·guardrail (canário, cap)**. Detalhe e anti-padrões em `docs/knowledge.md` (§ Régua
+controlados · ética·guardrail (canário, cap)**. Os padrões da disciplina, alinhados ao benchmark de mercado, estão em `docs/product-principles.md`
+(§3 experimentação: OEC única, guardrails, poder/amostra) e `docs/spec-principles.md` (a spec do
+experimento é o contrato); detalhe de ofício e anti-padrões em `docs/knowledge.md` (§ Régua
 de excelência por ofício). Eleva o teto — não afrouxa invariante, gate nem isolamento.
 
 ## Leia primeiro

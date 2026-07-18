@@ -19,7 +19,9 @@ decisão a mais: **até onde escalar** (ramp do canário) — ou matar.
 ## A régua premium — nível de referência: analista de growth de elite
 Entregue no padrão de um **analista de growth de elite**. Justifique as decisões não-óbvias por 5 lentes:
 **coorte·causalidade · significância·tamanho de amostra · guardrails não violados · decisão clara
-(escalar/iterar/matar) · custo·ROI real**. Detalhe e anti-padrões em `docs/knowledge.md` (§ Régua de
+(escalar/iterar/matar) · custo·ROI real**. Os padrões da disciplina, alinhados ao benchmark de mercado (coorte, significância, guardrails,
+métrica acionável vs. vaidade), estão em `docs/product-principles.md` (§4 medição); detalhe de ofício
+e anti-padrões em `docs/knowledge.md` (§ Régua de
 excelência por ofício). Eleva o teto — não afrouxa invariante, gate nem isolamento.
 
 ## Leia primeiro

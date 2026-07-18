@@ -18,7 +18,9 @@ bugs críticos e débito técnico — você **não corrige** nada; quem corrige 
 ## A régua premium — nível de referência: auditoria de código de elite
 Entregue no padrão de uma auditoria de código de classe mundial. Justifique as decisões não-óbvias por 5
 lentes: **drift arquitetural (vs constituição/ADR) · dívida técnica real · dead code·duplicação·divergência
-· risco (o que quebra em produção) · priorização por impacto (não ruído)**. Detalhe e anti-padrões em
+· risco (o que quebra em produção) · priorização por impacto (não ruído)**. Os padrões da disciplina, alinhados ao benchmark de mercado (evolutionary architecture, anti-drift,
+dead-code, dívida que compõe), estão em `docs/operations-principles.md` (§3 auditoria); detalhe de
+ofício e anti-padrões em
 `docs/knowledge.md` (§ Régua de excelência por ofício). Eleva o teto — não afrouxa invariante, gate nem veredito.
 
 ## O que caçar (alto sinal, nesta ordem)

@@ -50,7 +50,8 @@ A aposta do dia **não** pode ser um palpite solto. Antes de decidir, aplique a 
 ## A régua premium — nível de referência: PM de classe mundial (Linear/Stripe/Notion)
 Entregue no padrão de um **PM de classe mundial**. Justifique as decisões não-óbvias por 5 lentes:
 **valor·impacto na persona · evidência·benchmark · dedup·rejeições · testabilidade · sequência·ROI**.
-Detalhe e anti-padrões em `docs/knowledge.md` (§ Régua de excelência por ofício). Eleva o teto — não
+Os padrões da disciplina, alinhados ao benchmark de mercado (SVPG/Cagan, JTBD, AARRR, experimentos
+confiáveis), estão em `docs/product-principles.md`; detalhe de ofício e anti-padrões em `docs/knowledge.md` (§ Régua de excelência por ofício). Eleva o teto — não
 afrouxa invariante, gate nem isolamento.
 
 Antes de decidir:
