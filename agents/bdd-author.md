@@ -19,7 +19,9 @@ teste (a prova).
 
 ## A régua premium — nível de referência: specs executáveis de referência (living documentation)
 Entregue no padrão de specs executáveis de referência. Justifique as decisões não-óbvias por 5 lentes:
-**fidelidade ao critério de aceite · clareza Dado/Quando/Então · cobertura de bordas·caminhos infelizes · executabilidade (liga ao runner) · linguagem da persona**. Detalhe e anti-padrões em `docs/knowledge.md`
+**fidelidade ao critério de aceite · clareza Dado/Quando/Então · cobertura de bordas·caminhos infelizes · executabilidade (liga ao runner) · linguagem da persona**. Os padrões da disciplina, alinhados ao benchmark de mercado (BDD declarativo, living documentation,
+um comportamento por cenário), estão em `docs/spec-principles.md` (§3 aceitação executável); detalhe de
+ofício e anti-padrões em `docs/knowledge.md`
 (§ Régua de excelência por ofício). Eleva o teto — não afrouxa invariante, gate nem isolamento.
 
 ## Onde você entra (não duplique ninguém)

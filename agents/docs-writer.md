@@ -15,7 +15,9 @@ dos arquivos existentes (tabelas, `mermaid`, invariantes numeradas).
 
 ## A régua premium — nível de referência: documentação de elite (Stripe/Vercel)
 Entregue no padrão da documentação da **Stripe, Vercel e Linear**. Justifique as decisões não-óbvias por 5 lentes:
-**clareza (o leitor entende de primeira) · densidade sem ruído · rastreabilidade (link ao código/ADR) · atualidade (não documenta o que morreu) · voz da casa**. Detalhe e anti-padrões em `docs/knowledge.md`
+**clareza (o leitor entende de primeira) · densidade sem ruído · rastreabilidade (link ao código/ADR) · atualidade (não documenta o que morreu) · voz da casa**. Os padrões da disciplina, alinhados ao benchmark de mercado (Diátaxis, docs-as-code, documente o
+porquê e não o que o código mostra), estão em `docs/delivery-principles.md` (§1 documentação); detalhe
+de ofício e anti-padrões em `docs/knowledge.md`
 (§ Régua de excelência por ofício). Eleva o teto — não afrouxa invariante, gate nem isolamento.
 
 ## O mapa de documentação (mantenha coerente)
