@@ -36,6 +36,15 @@ como proposta (`growth-proposed` sem `po-suggested`) para um ciclo futuro ou rec
 A lente de funil continua separada (o `growth-strategist` ainda diagnostica o funil e escolhe a
 alavanca por ROI); o que muda é que **a decisão de priorizar é do PO**, não auto-aplicada.
 
+**Contrapressão da fila (o gargalo é a esteira, não a criatividade do growth).** O growth pode propor
+quantas ideias quiser (`growth-proposed` é ilimitado), mas o PO só promove a `po-suggested` até o teto
+**`ready_backlog_cap`** (genoma; default = `features_per_day`) **menos** o que já está pronto e não
+iniciado no board. Vagas reais = `min(features_per_day, ready_backlog_cap − prontas_não_iniciadas)`,
+podendo ser **0** quando a esteira está cheia. Um PO **conservador** (o default) promove só o que o
+build drena numa rodada — a pilha de trabalho pronto **nunca cresce além do que o `wip_limit`
+consome**. Propostas sem vaga esperam; as que passam de **`proposal_ttl`** ciclos (default 3) são
+podadas (fechadas com motivo no ledger) para o board de propostas não inchar.
+
 **B. Concorrência WIP-limited por footprint de conflito.**
 Novo knob de genoma **`wip_limit`** (default = `parallelism`) = **nº máximo de demandas simultaneamente
 em andamento** no build. Distinto de `parallelism` (capacidade de fan-out): `wip_limit ≤ parallelism`
@@ -78,6 +87,10 @@ que ela vai **escrever**. O `/daily-build` agenda com esta regra:
 - **Restrições futuras:** nenhum agente/skill deve reintroduzir `po-suggested` no growth sem passar pelo
   PO. Todo plano de feature declara footprint. O build respeita `wip_limit` e serializa footprints
   sobrepostos. Novos tipos de demanda (ex.: ops) que disputem o build entram pela mesma fila do PO.
+- **Contrapressão:** a promoção a `po-suggested` é limitada por `ready_backlog_cap` (default
+  `features_per_day`) — o board de trabalho pronto não pode crescer além do que a esteira drena; propostas
+  velhas (`proposal_ttl`, default 3 ciclos) são podadas. É o freio que impede o volume de ideias do growth
+  de inflar o backlog na esteira.
 
 ## Relacionados
 

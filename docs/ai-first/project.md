@@ -79,6 +79,15 @@
   **footprints de arquivo disjuntos** (declarados pelo `architect` no `plan.md`) e **serializa as de
   footprint sobreposto**; o merge em `develop` é sempre serializado. Etapas de planejamento (spec/
   architect/decompose/bdd) escrevem só nos próprios docs → sempre paralelizáveis.
+- **`ready_backlog_cap`** (contrapressão da fila — teto de issues `po-suggested` **prontas e ainda não
+  iniciadas** que podem existir no board; ADR-0007): `[A DEFINIR]` (default **= `features_per_day`** =
+  PO conservador: só promove o que a esteira consome numa rodada). O growth pode **propor** à vontade
+  (`growth-proposed` é ilimitado), mas o PO só promove a `po-suggested` **até `ready_backlog_cap` menos
+  o que já está pronto e parado** — assim a pilha de trabalho pronto nunca cresce além do que o
+  `wip_limit`/`features_per_day` drenam. Suba este teto só se quiser um buffer maior de trabalho pronto.
+- **`proposal_ttl`** (validade de uma proposta `growth-proposed` não priorizada, antes de ser podada;
+  ADR-0007): `[A DEFINIR]` (default **= 3 ciclos**). O PO **fecha** (com motivo, para o ledger) as
+  propostas que não ganharam vaga por `proposal_ttl` ciclos — o board de propostas não incha indefinidamente.
 - **`initial_backlog`** (arranque: **quantas histórias/épicos criar de imediato** para começar o produto;
   a gênese pergunta na entrevista e encadeia o `/kickoff` com este número): `[A DEFINIR]` (default =
   `features_per_day`; `0` = não arrancar agora, esperar o cron).

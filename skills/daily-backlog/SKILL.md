@@ -32,6 +32,11 @@ economize no julgamento). Ajuste para `sonnet` se o backlog for óbvio. (Tabela 
    uso mostrou que funciona/não funciona), mirando a **lacuna competitiva de maior valor** e
    registrando o racional no corpo de cada issue. As propostas de growth que **não** ganham vaga ficam
    abertas (`growth-proposed` sem `po-suggested`) e concorrem no próximo ciclo.
+   **Contrapressão (ADR-0007):** o growth pode propor à vontade, mas o PO **conservador** só promove até
+   `ready_backlog_cap` (default = `features_per_day`) **menos** o que já está pronto e parado no board —
+   vagas reais podem ser **0** se a esteira está cheia. Assim o `po-suggested` nunca vira uma pilha que o
+   `wip_limit` não drena. Peça ao PO que também **pode** (feche com motivo) as propostas `growth-proposed`
+   que passaram de `proposal_ttl` ciclos (default 3) sem vaga, para o board não inchar.
 2. Como serão implementadas no mesmo dia, devem ser **implementáveis**: prefira `size:trivial` ou
    `size:media`. `size:grande` só se genuinamente certo — e aí recebe `needs-human-triage`.
 3. Garanta os labels que o `/daily-build` usa: `po-suggested` (sempre) + exatamente uma `size:*` +
