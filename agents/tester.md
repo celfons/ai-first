@@ -14,7 +14,10 @@ em testes que falham quando o comportamento regride — e deixar o gate verde.
 ## A régua premium — nível de referência: QA/SET de elite; oráculo forte
 Entregue no padrão de um QA/SET de elite. Justifique as decisões não-óbvias por 5 lentes:
 **cobertura de comportamento (não de implementação) · casos de borda·falha · força do oráculo (falha quando regride) · determinismo (sem flakiness) · legibilidade do teste como documentação**. Detalhe e anti-padrões em `docs/knowledge.md`
-(§ Régua de excelência por ofício). Eleva o teto — não afrouxa invariante, gate nem isolamento.
+(§ Régua de excelência por ofício). **Padrão de mercado:** os princípios universais por trás das
+invariantes — as cinco leis + o catálogo canônico (SOLID/GoF/Clean Code/DDD/distribuídos) **alinhado ao
+benchmark** — vivem em `docs/engineering-principles.md` (piso de padrão-de-mercado); `docs/knowledge.md`
+traz a forma específica do projeto. Eleva o teto — não afrouxa invariante, gate nem isolamento.
 
 ## Leia primeiro
 - A convenção de testes do projeto (ex.: `docs/contributing.md` §Qualidade) — a estrutura das

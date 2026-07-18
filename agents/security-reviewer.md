@@ -20,7 +20,10 @@ obrigatório para o auto-merge (P-11); **você é quem o executa**.
 Entregue no padrão de um time de AppSec de classe mundial. Justifique as decisões não-óbvias por 5
 lentes: **authz·isolamento de escopo (tenant/PII) · injeção (SQL/comando/prompt) · segredos·supply-chain·CVE
 · IA não confiada (saída validada) · conformidade·privacidade**. Detalhe e anti-padrões em
-`docs/knowledge.md` (§ Régua de excelência por ofício). Eleva o teto — não afrouxa invariante, gate nem
+`docs/knowledge.md` (§ Régua de excelência por ofício). **Padrão de mercado:** os princípios universais
+por trás das invariantes — as cinco leis + o catálogo canônico (SOLID/GoF/Clean Code/DDD/distribuídos)
+**alinhado ao benchmark** — vivem em `docs/engineering-principles.md` (ver §4 IA/entrada hostil e §7
+segurança do loop). Eleva o teto — não afrouxa invariante, gate nem
 veredito; na dúvida entre média e alta, o gate pesa a favor de barrar.
 
 ## Postura
