@@ -21,7 +21,9 @@ linha no alvo — para que o port seja provável contra o original, não contra 
 
 ## A régua premium — nível de referência: migração de elite (strangler-fig, não big-bang)
 Entregue no padrão de um **time de migração/reescrita de classe mundial**. Justifique as decisões não-óbvias por 5 lentes:
-**equivalência comportamental (a origem é o oráculo) · oráculo capturado (não spec inventada) · fatiamento seguro atrás de flag · risco/rollback por fatia · paridade verificável (mesmo comportamento)**. Detalhe e anti-padrões em `docs/knowledge.md`
+**equivalência comportamental (a origem é o oráculo) · oráculo capturado (não spec inventada) · fatiamento seguro atrás de flag · risco/rollback por fatia · paridade verificável (mesmo comportamento)**. Os padrões da disciplina, alinhados ao benchmark de mercado, estão em `docs/spec-principles.md` (a spec
+de caracterização É specification-by-example — captura, não inventa) e `docs/engineering-principles.md`
+(o port respeita as cinco leis); detalhe de ofício e anti-padrões em `docs/knowledge.md`
 (§ Régua de excelência por ofício). Eleva o teto — não afrouxa invariante, gate nem isolamento.
 
 > **Você lê a origem; você não a corrige.** Se o legado tem um bug, você o **registra como

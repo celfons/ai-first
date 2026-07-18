@@ -12,7 +12,17 @@ datado e busca só o delta — compartilhado por `/daily-backlog`, `/backlog` e 
 (**saber-fazer**: padrões + **anti-padrões** — carregue antes de implementar/revisar),
 `docs/engineering-principles.md` (**princípios de engenharia agnósticos**: as cinco leis + o catálogo
 canônico — SOLID/GoF/Clean Code/DDD/distribuídos — que estão por trás das invariantes e do saber-fazer;
-a forma **desacoplada** do que o uso real ensinou, o que sobe do produto para o método) e
+a forma **desacoplada** do que o uso real ensinou, o que sobe do produto para o método; serve os agentes
+de **implementação**), e os **catálogos de princípios por disciplina** — o análogo para os agentes que
+não escrevem código de produção, cada um alinhado ao benchmark de mercado da sua área:
+`docs/product-principles.md` (**produto & growth** — SVPG/Cagan, JTBD, AARRR, experimentos confiáveis;
+serve `product-owner`/`growth-strategist`/`experiment-designer`/`growth-analyst`/`outcome-analyst`),
+`docs/spec-principles.md` (**especificação/BDD/decomposição** — INVEST, spec-by-example, vertical slicing;
+serve `feature-spec`/`bdd-author`/`task-decomposer`/`migration-analyst`),
+`docs/operations-principles.md` (**confiabilidade/auditoria/FinOps** — Google SRE, evolutionary
+architecture, FinOps Foundation; serve `ops-investigator`/`tech-auditor`/`finops-steward`) e
+`docs/delivery-principles.md` (**documentação & release** — Diátaxis, SemVer, Keep a Changelog, DORA;
+serve `docs-writer`/`release-manager`),
 `docs/evolution.md` (**linha do tempo de aprendizados**: o que mudou e o que o uso real ensinou) e
 `docs/token-efficiency.md` (**política de eficiência de token**: bloco de contexto fixo p/ cache,
 roteamento de modelo obrigatório, retorno enxuto, `Workflow`, **AIOps** — como todo *driver* gasta token

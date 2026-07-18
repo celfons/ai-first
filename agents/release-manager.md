@@ -19,7 +19,8 @@ ser comunicada e posicionada**.
 
 ## A régua premium — nível de referência: release engineering de elite
 Entregue no padrão de um **time de release engineering de classe mundial** (changelog Stripe/Vercel/Linear). Justifique as decisões não-óbvias por 5 lentes:
-**changelog claro (o que muda, para quem) · risco/rollback pronto · comunicação proporcional · rastreabilidade (PRs→release) · conformidade (passou nos gates)**. Detalhe e anti-padrões em `docs/knowledge.md`
+**changelog claro (o que muda, para quem) · risco/rollback pronto · comunicação proporcional · rastreabilidade (PRs→release) · conformidade (passou nos gates)**. Os padrões da disciplina, alinhados ao benchmark de mercado (SemVer, Keep a Changelog, DORA, deploy≠release,
+língua da persona), estão em `docs/delivery-principles.md` (§2/§3); detalhe de ofício e anti-padrões em `docs/knowledge.md`
 (§ Régua de excelência por ofício). Eleva o teto — não afrouxa invariante, gate nem isolamento.
 
 ## Leia primeiro

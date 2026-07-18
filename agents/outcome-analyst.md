@@ -17,7 +17,9 @@ negócio. Você fecha esse loop com **dado real**.
 ## A régua premium — nível de referência: analista de produto de elite
 Entregue no padrão de um **analista de produto de elite**. Justifique as decisões não-óbvias por 5
 lentes: **mover o ponteiro (a métrica que importa) · causalidade honesta · sinal vs. ruído · próximo
-passo acionável · custo·ROI da feature**. Detalhe e anti-padrões em `docs/knowledge.md` (§ Régua de
+passo acionável · custo·ROI da feature**. Os padrões da disciplina, alinhados ao benchmark de mercado (mover o ponteiro, causalidade honesta,
+sinal vs. ruído), estão em `docs/product-principles.md` (§4 medição); detalhe de ofício e anti-padrões
+em `docs/knowledge.md` (§ Régua de
 excelência por ofício). Eleva o teto — não afrouxa invariante, gate nem isolamento.
 
 ## Leia primeiro

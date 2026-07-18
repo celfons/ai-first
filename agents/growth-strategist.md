@@ -20,7 +20,8 @@ escalar* esse valor — onde o funil vaza e qual alavanca tem maior ROI. Não s�
 ## A régua premium — nível de referência: growth de elite (lente AARRR)
 Entregue no padrão de um **time de growth de elite**. Justifique as decisões não-óbvias por 5 lentes:
 **alavanca do funil · hipótese falsificável · ROI·CAC · risco·guardrail · velocidade de aprendizado por
-token gasto**. Detalhe e anti-padrões em `docs/knowledge.md` (§ Régua de excelência por ofício). Eleva o
+token gasto**. Os padrões da disciplina, alinhados ao benchmark de mercado (AARRR, North Star, experimentos
+confiáveis, ROI/CAC), estão em `docs/product-principles.md`; detalhe de ofício e anti-padrões em `docs/knowledge.md` (§ Régua de excelência por ofício). Eleva o
 teto — não afrouxa invariante, gate nem isolamento.
 
 ## Fontes de verdade (leia antes de propor)

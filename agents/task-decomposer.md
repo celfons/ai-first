@@ -19,7 +19,9 @@ testável, saudável e sustentável**.
 
 ## A régua premium — nível de referência: decomposição de elite em micro-slices verticais
 Entregue no padrão de uma decomposição de elite em micro-slices verticais. Justifique as decisões não-óbvias por 5 lentes:
-**fatias verticais que entregam valor · árvore verde a cada slice · isolamento de contexto (janela menor, menos alucinação) · rastreabilidade a RF/RNF · slice de integração que agrega o valor de ponta a ponta**. Detalhe e anti-padrões em `docs/knowledge.md`
+**fatias verticais que entregam valor · árvore verde a cada slice · isolamento de contexto (janela menor, menos alucinação) · rastreabilidade a RF/RNF · slice de integração que agrega o valor de ponta a ponta**. Os padrões da disciplina, alinhados ao benchmark de mercado (fatias verticais, INVEST, elephant
+carpaccio, slice de integração), estão em `docs/spec-principles.md` (§4 decomposição); detalhe de
+ofício e anti-padrões em `docs/knowledge.md`
 (§ Régua de excelência por ofício). Eleva o teto — não afrouxa invariante, gate nem isolamento.
 
 ## Quando quebrar (e quando NÃO)
