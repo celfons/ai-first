@@ -54,6 +54,7 @@ Se comprimir tudo ao máximo, sobram cinco leis. Todo o resto é aplicação par
 |---|---|
 | Antes de todo efeito: **reserva → efeito → confirma**; rollback da reserva na falha | Compensating Transaction, Idempotency Key |
 | Reserva sem rollback é pior que nada: trava o retry legítimo e perde a falha transitória | At-least-once semantics |
+| Para atomicidade **entre o banco e um broker/mensagem**, prefira **Transactional Outbox** (grava efeito+evento na mesma transação, relay entrega depois) à reserva+rollback manual — menos propenso a erro | Transactional Outbox + Relay |
 | A trava de unicidade mora no **banco** (unique index/constraint), não no código | Invalid states unrepresentable (dados) |
 | "Ler-decidir-escrever" em passos separados é corrida (TOCTOU); colapse num **statement condicional único** | Optimistic Concurrency Control |
 | Toda escrita do mesmo efeito lógico pertence ao **mesmo bloco de rollback**, mesmo a "auxiliar" | Atomicidade / all-or-nothing |
@@ -85,7 +86,7 @@ Se comprimir tudo ao máximo, sobram cinco leis. Todo o resto é aplicação par
 
 | Regra | Princípio/pattern |
 |---|---|
-| **Uma flag, efeitos acoplados:** duas flags para efeitos ligados permitem combinação incoerente | Coesão de configuração |
+| Flags **granulares e independentes** (rollout gradual, testável) — mas a **combinação incoerente é rejeitada na borda** (fail-fast na config), nunca silenciosamente permitida | Flags granulares + Config validation |
 | Kill-switch global (env) + opt-in por linha (dado) são níveis independentes deliberados | Feature flag em camadas |
 | Segredo/dependência ausente **falha ruidoso** — nunca cai num default silencioso (ex.: shard 0) | Fail-fast, Fail-closed |
 | Silêncio em falha é bug: falha vai para DLQ/alerta visível, nunca `catch {}` que engole | Observability, no silent catch |
@@ -100,7 +101,7 @@ Se comprimir tudo ao máximo, sobram cinco leis. Todo o resto é aplicação par
 | Estender por **discriminador de tipo** reusando a máquina madura — mas reexaminar toda constraint desenhada *antes* da extensão | Open/Closed |
 | Contrato ambíguo vira **união discriminada** em vez de campo opcional que esconde o porquê | Invalid states unrepresentable |
 | Mudança de contrato entre **artefatos de deploy separados** escapa do compilador e do CI (roda pela rede) → o plano nomeia quem migra o consumidor | Consumer-Driven Contract Testing |
-| Consumidor **degrada graciosamente** para shape inesperado, em vez de exigir ordem de deploy | Tolerant Reader |
+| Consumidor **degrada graciosamente** para shape inesperado, em vez de exigir ordem de deploy — **mas registra/alerta** o shape divergente (tolerância silenciosa mascara bug/vetor: ver crítica moderna à Lei de Postel) | Tolerant Reader + observabilidade |
 | Enum declarado mas nunca gravado é **código morto** que dá falsa confiança | Clean Code: delete dead code |
 
 ## 7 · Segurança do loop autônomo — *Least Privilege + Hostile Input*
