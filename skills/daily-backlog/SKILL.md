@@ -1,6 +1,6 @@
 ---
 name: daily-backlog
-description: Rotina diária — PARTE 1 de 2 (criação das issues do dia). Skill standalone, feita para rodar como trigger agendado. Aciona o subagente `product-owner` para propor e CRIAR `features_per_day` issues NOVAS de evolução de negócio/produto no board do GitHub (a quantidade é o knob do genoma, default 1), sem duplicar — as que serão implementadas no mesmo dia. NÃO implementa nada — só cria as issues. O cron de desenvolvimento (`/daily-build`) roda ~1h depois.
+description: Rotina diária — PARTE 1 de 2 (priorização das issues do dia). Skill standalone, feita para rodar como trigger agendado, DEPOIS do `/daily-growth` (ADR-0007). Aciona o subagente `product-owner` para ARBITRAR uma FILA ÚNICA de `features_per_day` vagas, misturando issues NOVAS de evolução de negócio/produto que ele cria + as PROPOSTAS de growth abertas (`growth-proposed`), aplicando `po-suggested` só ao que ganha vaga — produto ou growth. É o árbitro único de prioridade. NÃO implementa nada. O cron de desenvolvimento (`/daily-build`) roda ~1h depois e pega só o que recebeu `po-suggested`.
 ---
 
 # /daily-backlog — cria as issues do dia (Parte 1/2)
@@ -22,12 +22,21 @@ economize no julgamento). Ajuste para `sonnet` se o backlog for óbvio. (Tabela 
 `sdd-orchestrator`.)
 
 ## O que fazer
-1. Invoque o subagente **`product-owner`** pedindo **`features_per_day`** issues novas de **evolução de
-   negócio/produto** (nunca trabalho técnico interno), sem duplicar o board (ele já checa
-   `search_issues` + `docs/sdd/tasks.md`). A escolha **não é aleatória**: ele faz **benchmarking de
+1. Invoque o subagente **`product-owner`** pedindo que **arbitre uma FILA ÚNICA de `features_per_day`
+   vagas** (ADR-0007), misturando: (a) issues novas de **evolução de negócio/produto** que ele deriva
+   (nunca trabalho técnico interno), e (b) as **propostas de growth abertas** (`label:growth-proposed`,
+   criadas pelo `/daily-growth` que rodou antes). Ele **rankeia as duas lentes juntas** por valor/ROI e
+   aplica **`po-suggested` só ao que ganha vaga** — produto **ou** growth. Sem duplicar o board (ele
+   checa `search_issues` + `docs/sdd/tasks.md`). A escolha **não é aleatória**: ele faz **benchmarking de
    mercado** (`WebSearch`) **e** considera o **sinal de resultado real** do `/daily-outcome` (o que o
    uso mostrou que funciona/não funciona), mirando a **lacuna competitiva de maior valor** e
-   registrando o racional no corpo de cada issue.
+   registrando o racional no corpo de cada issue. As propostas de growth que **não** ganham vaga ficam
+   abertas (`growth-proposed` sem `po-suggested`) e concorrem no próximo ciclo.
+   **Contrapressão (ADR-0007):** o growth pode propor à vontade, mas o PO **conservador** só promove até
+   `ready_backlog_cap` (default = `features_per_day`) **menos** o que já está pronto e parado no board —
+   vagas reais podem ser **0** se a esteira está cheia. Assim o `po-suggested` nunca vira uma pilha que o
+   `wip_limit` não drena. Peça ao PO que também **pode** (feche com motivo) as propostas `growth-proposed`
+   que passaram de `proposal_ttl` ciclos (default 3) sem vaga, para o board não inchar.
 2. Como serão implementadas no mesmo dia, devem ser **implementáveis**: prefira `size:trivial` ou
    `size:media`. `size:grande` só se genuinamente certo — e aí recebe `needs-human-triage`.
 3. Garanta os labels que o `/daily-build` usa: `po-suggested` (sempre) + exatamente uma `size:*` +

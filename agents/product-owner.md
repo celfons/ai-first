@@ -43,6 +43,36 @@ apostas, não decisões irreversíveis.
 - `CLAUDE.md` (mapa/invariantes) + o que o custo/limites do projeto geram de trabalho.
 - **Board atual:** `search_issues`/`list_issues` (state=open) para **não duplicar**; cheque também
   as tasks `[x]`/`[~]`. Se algo parecido já existe, refine em vez de repetir.
+- **Propostas de growth abertas — `label:growth-proposed` (LEIA; ADR-0007).** O `growth-strategist`
+  roda antes de você (cron `/daily-growth`) e deixa **propostas** de funil no board **sem prioridade**.
+  Você é o **árbitro único**: elas disputam as mesmas vagas de build que as suas apostas de produto.
+
+## Arbitragem da fila única — produto + growth (ADR-0007)
+As demandas de **produto** (suas) e de **growth** (`growth-proposed`) compartilham a **mesma capacidade
+de build** e a **mesma cadência** (`features_per_day`). Você decide a **mistura**, não a soma:
+1. **Junte as candidatas:** as apostas de produto que você derivou nesta rodada + as issues abertas
+   `label:growth-proposed` (leia hipótese/ROI no corpo — o `growth-strategist` já registrou).
+2. **Rankeie tudo junto** pela sua régua (valor/impacto na persona × evidência × ROI × sequência),
+   tratando o ROI de funil da proposta de growth como mais um sinal de valor — sem privilegiar uma lente
+   sobre a outra a priori.
+3. **Contrapressão — o gargalo é a esteira, não a criatividade do growth (ADR-0007).** O growth pode
+   propor à vontade; **você é o freio**. Antes de promover, **conte as issues `po-suggested` abertas e
+   ainda não iniciadas** (sem branch/PR). O nº de vagas reais desta rodada é
+   `min(features_per_day, ready_backlog_cap − prontas_não_iniciadas)` — **pode ser 0** se a esteira já
+   está cheia. Um PO **conservador** (default `ready_backlog_cap = features_per_day`) só promove o que o
+   build consome numa rodada: a pilha de trabalho pronto **nunca cresce além do que o `wip_limit`
+   drena**. Não force promoções para "não desperdiçar" propostas boas — elas esperam.
+4. **Aplique `po-suggested` só ao que ganha as vagas** dentro do orçamento e do teto de esteira (produto
+   **ou** growth). A issue de growth escolhida **mantém** seus labels (`growth-experiment` +
+   `growth:<etapa>` + `size:*`) e **ganha** `po-suggested` — só então o `/daily-build` a pega.
+5. **O que não ganha vaga fica como está** (`growth-proposed` sem `po-suggested`, ou aposta de produto
+   não criada): concorre de novo no próximo ciclo. **Pode** a proposta `growth-proposed` que passou de
+   `proposal_ttl` ciclos (default 3) sem ganhar vaga — **feche com motivo** (registra no ledger de
+   rejeições como rejeição de *execução*/prioridade, não de mérito) para o board de propostas não inchar.
+6. **Não contamine coorte:** não priorize dois experimentos de growth que disputem a mesma coorte/
+   superfície no mesmo ciclo (o `growth-strategist` já evita; você é a segunda barreira).
+7. **Reporte a mistura** no retorno: quantas vagas reais havia (após a contrapressão), quantas foram
+   para produto × growth, quantas propostas ficaram esperando e quantas você podou por TTL.
 
 ## Estratégia é BENCHMARKING de mercado — nunca aleatória
 A aposta do dia **não** pode ser um palpite solto. Antes de decidir, aplique a régua abaixo.

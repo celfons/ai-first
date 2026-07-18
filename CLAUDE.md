@@ -140,8 +140,10 @@ reserva de idempotência, laço da fila, chamada de LLM com timeout+validação+
   outra base/stack. Em vez de inventar a spec, o `migration-analyst` **captura** o comportamento da
   origem como oráculo; o port é por **equivalência**, fatia a fatia (**strangler-fig, não big-bang**),
   atrás de flag, mesmo fluxo `feature → develop → main`. Ver ADR-0002.
-- **Rotinas autônomas (crons):** `/daily-backlog` (cria `features_per_day` issues) → ~1h →
-  `/daily-build` (implementa + verificação independente + auto-merge em develop + promoção por risco).
+- **Rotinas autônomas (crons):** `/daily-growth` (propõe experimentos `growth-proposed`) → `/daily-backlog`
+  (o PO **arbitra a fila única** produto + growth e aplica `po-suggested` só ao que ganha vaga, ADR-0007) → ~1h →
+  `/daily-build` (implementa respeitando `wip_limit` + footprint de conflito + verificação independente +
+  auto-merge em develop + promoção por risco).
   Auditorias que só levantam issues: `/daily-tech-scan` (código + drift), `/daily-ops-scan` (runtime).
   Loop de resultado: `/daily-outcome` (mede se as features moveram o ponteiro; roda junto o
   **`finops-steward`** = custo/ROI + **AIOps**: realimenta o roteamento do `sdd-orchestrator`).
@@ -153,14 +155,17 @@ reserva de idempotência, laço da fila, chamada de LLM com timeout+validação+
   panel` roda o `adversarial-reviewer` como **N céticos de lentes distintas** (piso opus/alto por membro), e
   `uncertainty_escalation` escala ao humano por **baixa confiança** de uma etapa, **independentemente do
   tier** de risco (risco OU incerteza, o maior). Knobs no genoma §8.
-- **Loop de growth autônomo (ADR-0004):** `/daily-growth` (o `growth-strategist` cria
-  `growth_experiments_per_cycle` issues de experimento `growth:*` pela lente do funil AARRR, por ROI) →
-  `/daily-build` implementa **atrás de flag, no canário** → `/growth-outcome` (o `growth-analyst` mede
+- **Loop de growth autônomo (ADR-0004 + ADR-0007):** `/daily-growth` (o `growth-strategist` **propõe**
+  `growth_experiments_per_cycle` issues `growth-proposed` pela lente do funil AARRR, por ROI — **sem se
+  auto-priorizar**) → `/daily-backlog` (o `product-owner` **arbitra** produto + growth numa fila única e
+  promove a `po-suggested` só o que ganha vaga) → `/daily-build` implementa **atrás de flag, no canário**
+  → `/growth-outcome` (o `growth-analyst` mede
   por coorte e decide **escalar/iterar/matar**; o `finops-steward` fecha CAC/ROI e a queima de token). A
   memória auto-evolutiva é `docs/product/growth-playbook.md`. **Autonomia total inclui mundo-externo**
   (preço/canal/comunicação em massa), contida por freios automáticos — canário, `external_action_cap`,
   `guardrail_metrics`, kill e o gate de conformidade do `security-reviewer` (não relaxa).
 - **Cadência/paralelismo/autonomia/orçamento** são knobs do genoma (`features_per_day`, `parallelism`,
+  `wip_limit` — teto de WIP + serialização por footprint de conflito, ADR-0007;
   `autonomy_level` — incl. `autônomo` (sem gate humano), `daily_budget`, `budget_per_feature` — teto por
   feature no build paralelo, ADR-0003), ajustáveis a qualquer momento
   (P-15). Mesmo em `autônomo`, os gates automáticos (CI + `adversarial-reviewer` + segurança) e o
