@@ -1,14 +1,15 @@
 ---
 name: daily-growth
-description: Rotina de GROWTH — PARTE 1 de 2 (criação dos experimentos do ciclo). Skill standalone para trigger agendado. Aciona o subagente `growth-strategist` para propor e CRIAR `growth_experiments_per_cycle` issues NOVAS de experimento de crescimento (label `growth:*`) no board, pela lente do funil e por ROI, sem duplicar. Roda como Workflow sob teto de token — decide o grau de paralelismo pela sobra de orçamento. NÃO implementa nada — só cria as issues. O `/daily-build` roda ~1h depois e as desenvolve; o `/growth-outcome` mede depois.
+description: Rotina de GROWTH — PARTE 1 de 2 (criação das PROPOSTAS de experimento do ciclo). Skill standalone para trigger agendado, roda ANTES do `/daily-backlog` (ADR-0007). Aciona o subagente `growth-strategist` para propor e CRIAR `growth_experiments_per_cycle` issues NOVAS de experimento (label `growth-proposed`, NÃO `po-suggested`) no board, pela lente do funil e por ROI, sem duplicar. Roda como Workflow sob teto de token — decide o grau de paralelismo pela sobra de orçamento. NÃO implementa nem prioriza — só PROPÕE; o `product-owner` arbitra a fila única (produto + growth) no `/daily-backlog`; o `/daily-build` desenvolve o que ele promover; o `/growth-outcome` mede depois.
 ---
 
 # /daily-growth — cria os experimentos do ciclo (Parte 1/2)
 
 Skill **autônoma e standalone** (sessão fresca, sem contexto prévio). Sua única responsabilidade:
-**criar os experimentos de crescimento do ciclo** — as issues `growth:*` que o `/daily-build`
-implementa ~1h depois e o `/growth-outcome` mede quando maturarem. É a irmã de `/daily-backlog`, mas a
-lente é **funil/escala**, não valor de produto.
+**propor os experimentos de crescimento do ciclo** — as issues `growth-proposed` que o `product-owner`
+**arbitra** no `/daily-backlog` (roda logo depois), que o `/daily-build` implementa se promovidas e o
+`/growth-outcome` mede quando maturarem. É a irmã de `/daily-backlog`, mas a lente é **funil/escala**,
+não valor de produto — e **você propõe, o PO prioriza** (ADR-0007). Rode **antes** do backlog.
 
 ## Parâmetros (do genoma — `docs/ai-first/project.md §8`)
 - **`growth_experiments_per_cycle`** — quantas issues de experimento criar (default **1**). Cadência
@@ -39,8 +40,10 @@ alavancagem — não economize no julgamento). `sonnet` se a alavanca for óbvia
    a hipótese/ROI no corpo de cada issue.
 2. Cada experimento deve ser **implementável**: prefira `size:trivial`/`size:media`, atrás de flag +
    rollout %. `size:grande` só se genuíno (e aí `needs-human-triage`).
-3. Garanta os labels que o `/daily-build` usa: `growth-experiment` + exatamente uma `growth:<etapa>` +
-   `po-suggested` + exatamente uma `size:*`.
+3. Garanta os labels (ADR-0007): `growth-experiment` + exatamente uma `growth:<etapa>` +
+   **`growth-proposed`** + exatamente uma `size:*`. **NÃO aplique `po-suggested`** — o growth **propõe**;
+   quem prioriza é o `product-owner` no `/daily-backlog` (que roda depois), arbitrando produto + growth
+   numa fila única. O `/daily-build` só pega o que o PO promover a `po-suggested`.
 4. **Mundo-externo é autônomo** (preço/canal/comunicação em massa) — **não** aplique `needs-human-triage`
    por isso. Garanta apenas que a issue traz os **freios automáticos** no corpo: canário (`canary_pct`),
    `external_action_cap`, `guardrail_metrics` e critério de kill (o `experiment-designer` os formaliza).

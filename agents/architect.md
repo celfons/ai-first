@@ -60,7 +60,14 @@ use-o (ver a skill `skills/new-extension`).
 
 ## Entrega
 1. `docs/sdd/features/NNN-slug/plan.md` — todas as 8 seções do template. Cada decisão técnica
-   **rastreada ao RF** que serve. Alternativas descartadas em 1 linha cada.
+   **rastreada ao RF** que serve. Alternativas descartadas em 1 linha cada. **Declare o FOOTPRINT de
+   escrita** (ADR-0007): o conjunto de superfícies (diretórios/arquivos) que a implementação vai
+   **modificar** — é o que o `/daily-build` usa para decidir o que roda em paralelo (footprints
+   disjuntos) e o que serializa (footprints sobrepostos). Marque também, dentro da demanda, se
+   backend e frontend tocam superfícies distintas (paralelos) ou se um depende do contrato do outro
+   (a `tasks.md` os ordena). Seja específico (ex.: `src/api/orders/*`, `src/domain/order.ts`,
+   `web/checkout/*`) — footprint largo demais serializa à toa; estreito demais só cai para o merge
+   serializado (rede de segurança), nunca corrompe `develop`.
 2. `docs/sdd/features/NNN-slug/tasks.md` — checklist ordenado por dependência (migration antes de
    código; porta antes de adapter), cada task rastreada a RF/RNF e com "done:" verificável.
    Inclua sempre a task de teste/eval e a task de docs.
@@ -76,6 +83,7 @@ Ponteiros, não o plano inteiro (vive no `plan.md`/`tasks.md`):
 ```
 status: ok | needs-human-approval
 tocou: <plan.md/tasks.md + ADR se houver> — módulos: <lista> — migrations/flags/idempotência novas
+footprint: <superfícies de ESCRITA — dirs/arquivos> — backend×frontend: <disjunto | dependente>  (ADR-0007; o build usa p/ paralelizar×serializar)
 riscos: <top-3 com mitigação, 1 linha cada>
 p/ o implement: <ordem do DAG / o que decompor>
 bloqueios: <decisão que requer aprovação humana — novo módulo/porta/invariante — só se houver>

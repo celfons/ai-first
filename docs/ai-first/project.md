@@ -71,7 +71,23 @@
 - **`features_per_day`** (quantas o PO cria e o build implementa por rodada): `[A DEFINIR]` (default 1)
 - **`parallelism`** (quantas features o build desenvolve **em paralelo** por rodada — contextos/worktrees
   isolados; o merge em `develop` é serializado): `[A DEFINIR]` (default **1** = sequencial). Vale para o
-  `/daily-build` e para o arranque imediato `/kickoff`.
+  `/daily-build` e para o arranque imediato `/kickoff`. É a **capacidade de fan-out**.
+- **`wip_limit`** (teto de WIP — nº máximo de demandas **simultaneamente em andamento** no build,
+  estilo Kanban; ADR-0007): `[A DEFINIR]` (default **= `parallelism`**). Distinto de `parallelism`:
+  `wip_limit ≤ parallelism` permite **reduzir a rotatividade de merge** (menos rebase/conflito/janela
+  inflada) sem baixar a capacidade de fan-out. O `/daily-build` roda em paralelo demandas de
+  **footprints de arquivo disjuntos** (declarados pelo `architect` no `plan.md`) e **serializa as de
+  footprint sobreposto**; o merge em `develop` é sempre serializado. Etapas de planejamento (spec/
+  architect/decompose/bdd) escrevem só nos próprios docs → sempre paralelizáveis.
+- **`ready_backlog_cap`** (contrapressão da fila — teto de issues `po-suggested` **prontas e ainda não
+  iniciadas** que podem existir no board; ADR-0007): `[A DEFINIR]` (default **= `features_per_day`** =
+  PO conservador: só promove o que a esteira consome numa rodada). O growth pode **propor** à vontade
+  (`growth-proposed` é ilimitado), mas o PO só promove a `po-suggested` **até `ready_backlog_cap` menos
+  o que já está pronto e parado** — assim a pilha de trabalho pronto nunca cresce além do que o
+  `wip_limit`/`features_per_day` drenam. Suba este teto só se quiser um buffer maior de trabalho pronto.
+- **`proposal_ttl`** (validade de uma proposta `growth-proposed` não priorizada, antes de ser podada;
+  ADR-0007): `[A DEFINIR]` (default **= 3 ciclos**). O PO **fecha** (com motivo, para o ledger) as
+  propostas que não ganharam vaga por `proposal_ttl` ciclos — o board de propostas não incha indefinidamente.
 - **`initial_backlog`** (arranque: **quantas histórias/épicos criar de imediato** para começar o produto;
   a gênese pergunta na entrevista e encadeia o `/kickoff` com este número): `[A DEFINIR]` (default =
   `features_per_day`; `0` = não arrancar agora, esperar o cron).
@@ -129,10 +145,12 @@
   típico por experimento, P-14): `[A DEFINIR]` — governam o fan-out: `min(parallelism,
   floor(budget.remaining()/budget_per_experiment))`. Default `growth_budget_per_cycle` = `sem-teto`.
 
-- **Crons (cadência + fuso, espaçados):**
-  - `/daily-backlog`: `[A DEFINIR]`
-  - `/daily-build`: `[A DEFINIR]` (~1h após o backlog)
-  - `/daily-growth`: `[A DEFINIR]` (cria os experimentos do ciclo — irmã do backlog, lente de funil)
+- **Crons (cadência + fuso, espaçados) — ORDEM (ADR-0007): `daily-growth` → `daily-backlog` → `daily-build`:**
+  - `/daily-growth`: `[A DEFINIR]` (roda **ANTES** do backlog — cria as **propostas** de funil
+    `growth-proposed`, ainda **não priorizadas**, para o PO arbitrar; lente de funil)
+  - `/daily-backlog`: `[A DEFINIR]` (**momento do PO** — arbitra a **fila única** produto + propostas
+    `growth-proposed`, aplica `po-suggested` só ao que ganha vaga no orçamento do dia)
+  - `/daily-build`: `[A DEFINIR]` (~1h após o backlog — implementa respeitando `wip_limit` + footprint)
   - `/growth-outcome`: `[A DEFINIR]` (algumas vezes/semana — coorte matura em dias; espaçar do outcome)
   - `/daily-tech-scan`: `[A DEFINIR]` (opcional, espaçado)
   - `/daily-ops-scan`: `[A DEFINIR]` (opcional, espaçado)

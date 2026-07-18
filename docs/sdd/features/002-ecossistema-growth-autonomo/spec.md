@@ -41,7 +41,7 @@
 
 | ID | Requisito (testável, sem ambiguidade) |
 |---|---|
-| RF-GRW-01 | O sistema DEVE prover um subagente `growth-strategist` que lê o genoma (North Star, `growth_model`), `docs/evolution.md` e `docs/product/market-scan.md`, e cria issues de experimento com label `growth:<etapa>` (`acquisition\|activation\|retention\|revenue\|referral`) + `size:*` + `po-suggested`, deduplicando contra o board. |
+| RF-GRW-01 | O sistema DEVE prover um subagente `growth-strategist` que lê o genoma (North Star, `growth_model`), `docs/evolution.md` e `docs/product/market-scan.md`, e cria issues de experimento com label `growth:<etapa>` (`acquisition\|activation\|retention\|revenue\|referral`) + `size:*` + **`growth-proposed`** (proposta, **não** `po-suggested` — ADR-0007), deduplicando contra o board. A promoção a `po-suggested` é do `product-owner`, que arbitra a fila única produto + growth no `/daily-backlog`. |
 | RF-GRW-02 | O sistema DEVE prover um subagente `experiment-designer` que, para cada issue de experimento, produz uma spec cuja **§8** declara: métrica-alvo observável, `guardrail_metrics`, população/percentual de rollout inicial e critério de kill. |
 | RF-GRW-03 | O sistema DEVE prover um subagente `growth-analyst` que mede o experimento por coorte contra a métrica-alvo da §8, classifica em ✅ escalar / 〜 inconclusivo / ❌ matar, e é honesto sobre acesso (métrica não instrumentada = achado, nunca lift inventado). |
 | RF-GRW-04 | Quando um experimento sobe a métrica-alvo MAS piora uma `guardrail_metric`, o `growth-analyst` DEVE classificá-lo como **matar** (ganho local com dano global não escala). |
