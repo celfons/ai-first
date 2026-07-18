@@ -78,6 +78,30 @@ de redescobrir o jeito certo (ou repetir um erro já pago).
 | Menu espalhado (nav declarada por-tela; global só na home) | destino global inalcançável fora da home; "Sair" sozinho no header | portal parece desorganizado/confuso | nav primária padrão no componente de header, todas as telas |
 | Página-hub concorrendo com nav persistente | dois menus com os mesmos destinos; seção irmã exige "voltar" | 2 cliques onde cabia 1; sem senso de lugar | nav secundária de contexto persistente; o hub morre |
 
+## Régua de excelência por ofício — a régua premium de TODO o roster
+
+> **Origem (episódico → semântico):** a régua de "time de elite" que elevou os agentes de UI
+> (benchmark nomeado + justificativa por 5 lentes + sobriedade premium) provou-se **domínio-agnóstica
+> na forma** e foi estendida a **todo o roster** (`agents/*.md`). Ver `docs/evolution.md`
+> (2026-07-18, 3ª rodada). O padrão abaixo é o que cada agente aplica ao **seu** ofício.
+
+**Faça assim (padrões de excelência):**
+
+| Padrão | Quando | Por que | Onde vive |
+|---|---|---|---|
+| **Benchmark de referência nomeado** (o time/produto de elite do ofício) | todo trabalho significativo | dá um teto concreto de qualidade, não "o suficiente" | seção "A régua" de cada `agent.md` |
+| **Justifique a decisão por 5 lentes do domínio** (não só entregar o "pronto") | decisão não-óbvia | força o "porquê", expõe o trade-off cedo | o entregável do agente (spec/plan/brief/veredito) |
+| **Premium = sóbrio** (mais rigor/clareza/rastreabilidade, não mais volume) | sempre | qualidade lê como sistema, não como excesso | todos os agentes |
+| **Eleva o teto sem afrouxar o piso** (invariantes/gates/isolamento intactos) | sempre | ganho de qualidade não pode virar regressão de garantia | régua + constituição (P-*) |
+
+**Não faça (anti-padrões de excelência):**
+
+| Anti-padrão | Sintoma | Por que dói | O certo |
+|---|---|---|---|
+| Entregar "funciona" sem justificar | decisão sem "porquê"; trade-off escondido | ninguém consegue revisar/melhorar | as 5 lentes do ofício no entregável |
+| Confundir premium com volume/efeito | mais texto/telas/etapas, não mais valor | ruído mascara o essencial | sobriedade: a menor peça que atinge o teto |
+| Afrouxar invariante para "subir a régua" | gate pulado, isolamento quebrado | troca garantia durável por brilho pontual | régua eleva o teto; piso é inegociável |
+
 ## Como este acervo cresce (retroalimentação)
 - **Gênese** (`/ai-first-init` dim. 7) — semeia os padrões/anti-padrões iniciais do projeto.
 - **Fim de cada feature** (`docs-writer`) — idioma novo introduzido vira **padrão**; bug caçado pelo

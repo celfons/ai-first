@@ -38,6 +38,22 @@ sem reconstruir o passado lendo dez lugares.
 
 ## Linha do tempo
 
+### 2026-07-18 · Régua premium estendida a TODO o roster (meta, 3ª rodada)
+- **Sinal:** 🔧 processo (a régua de elite provou valor nos agentes de UI; faltava o resto da squad).
+- **Aprendizado:** a régua de "time de elite" que elevou `ux-designer`/`frontend-engineer` (benchmark
+  nomeado + justificativa por 5 lentes + sobriedade premium) é **domínio-agnóstica na forma**: o que
+  fez a UI subir — um **padrão de excelência nomeado** e um **conjunto de lentes que força o "porquê"**
+  em vez de só o "pronto" — vale para planejar, implementar, testar, revisar, priorizar e operar. Cada
+  agente ganhou sua régua com o benchmark real do seu ofício (staff engineers para o `architect`, red
+  team para o `adversarial-reviewer`, AppSec para o `security-reviewer`, PM de classe mundial para o
+  `product-owner`, SRE para o `ops-investigator`, FinOps/AIOps para o `finops-steward`, strangler-fig
+  para o `migration-analyst`, etc.) e 5 lentes do seu domínio. Premium continua sendo **sóbrio**: mais
+  rigor/clareza/rastreabilidade, não mais volume. **Não afrouxa nenhuma invariante** (isolamento,
+  revisão independente, gates opus/alto, best-effort, privacidade) — só sobe o teto. Virou padrão
+  durável em `knowledge.md` (§ Régua de excelência por ofício).
+- **Links:** `agents/*.md` (todos ganharam "A régua: … (nível de referência)") · `docs/knowledge.md`
+  (§ Régua de excelência por ofício).
+
 ### 2026-07-18 · Arquitetura de informação nos agentes de UI (meta, 2ª rodada do mesmo dia)
 - **Sinal:** ❌→régua (feedback real do dono sobre o resultado da 1ª rodada).
 - **Aprendizado:** a régua "premium" da rodada anterior elevou o acabamento das TELAS, mas o dono
