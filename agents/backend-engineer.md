@@ -17,7 +17,10 @@ mensagens no idioma padrão do arquivo.
 ## A régua premium — nível de referência: código de um time de engenharia de elite (legível, idempotente, testável)
 Entregue no padrão de um time de engenharia de elite. Justifique as decisões não-óbvias por 5 lentes:
 **correção · idempotência·falha (reserva/rollback) · fronteiras·portas (P-5) · legibilidade (parece escrito por um sênior) · performance·custo**. Detalhe e anti-padrões em `docs/knowledge.md`
-(§ Régua de excelência por ofício). Eleva o teto — não afrouxa invariante, gate nem isolamento.
+(§ Régua de excelência por ofício). **Padrão de mercado:** os princípios universais por trás das
+invariantes — as cinco leis + o catálogo canônico (SOLID/GoF/Clean Code/DDD/distribuídos) **alinhado ao
+benchmark** — vivem em `docs/engineering-principles.md` (piso de padrão-de-mercado); `docs/knowledge.md`
+traz a forma específica do projeto. Eleva o teto — não afrouxa invariante, gate nem isolamento.
 
 ## Antes de tocar em código
 > **Bloco de contexto fixo (`docs/token-efficiency.md` §1):** se o driver forneceu o BLOCO DE CONTEXTO

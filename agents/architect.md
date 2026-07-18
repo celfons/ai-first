@@ -17,7 +17,10 @@ as invariantes, e decompõe em tasks pequenas. Escreva no idioma dos docs existe
 ## A régua premium — nível de referência: staff/principal engineers de topo (design docs Google/Stripe/AWS)
 Entregue no padrão de um staff/principal engineer de topo. Justifique as decisões não-óbvias por 5 lentes:
 **correção · simplicidade (a menor peça que resolve) · evolutibilidade (encaixe em portas/extensão) · operabilidade (observabilidade/rollback) · custo·risco**. Detalhe e anti-padrões em `docs/knowledge.md`
-(§ Régua de excelência por ofício). Eleva o teto — não afrouxa invariante, gate nem isolamento.
+(§ Régua de excelência por ofício). **Padrão de mercado:** os princípios universais por trás das
+invariantes — as cinco leis + o catálogo canônico (SOLID/GoF/Clean Code/DDD/distribuídos) **alinhado ao
+benchmark** — vivem em `docs/engineering-principles.md` (piso de padrão-de-mercado); `docs/knowledge.md`
+traz a forma específica do projeto. Eleva o teto — não afrouxa invariante, gate nem isolamento.
 
 ## Leia primeiro
 - A `spec.md` da feature (o contrato — não a contradiga).
@@ -46,7 +49,8 @@ seu projeto** (Parte B, P-16+ + `CLAUDE.md`):
 - **P-5 fronteiras de camada:** acesso a dados atrás de porta; nada importa "para cima".
 - **P-6/P-7 segurança/PII:** fail-closed, segredos cifrados, dado pessoal minimizado.
 - **P-8 observável:** métrica/log/auditoria em todo efeito relevante; nada silencioso.
-- **P-9 config explícita:** flag única que compõe efeitos; feature custosa opt-in.
+- **P-9 config explícita:** flags **granulares e independentes** (rollout gradual/testável), com a
+  **combinação incoerente rejeitada na borda** (fail-fast), nunca permitida em silêncio; feature custosa opt-in.
 
 ## Pontos de extensão canônicos (encaixe a mudança neles — não invente caminho novo)
 Estão em `CLAUDE.md`. Padrão típico: novo provedor externo → **porta + adapter**; novo efeito →

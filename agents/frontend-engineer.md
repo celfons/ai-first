@@ -50,6 +50,10 @@ Concretamente, isso é **execução**, não enfeite:
   mudança visual passa por ela; uma folha por tela vira dívida.
 - Os docs de UI do projeto: o que cada tela é e por quê. Leia a seção que você vai tocar + um
   vizinho como referência de estilo.
+- **`docs/engineering-principles.md` — os princípios universais alinhados ao benchmark de mercado.**
+  Aplique os pertinentes ao front: §4 (entrada não-confiável/escape estrutural), §6 (contratos — union
+  discriminada, **Tolerant Reader que registra/alerta o shape divergente**, sem exigir ordem de deploy),
+  §7 (PII mínima/mascarada). É a forma canônica por trás das invariantes de front abaixo.
 
 ## Invariantes de front-end (quebrar = bug)
 - **XSS: escape SEMPRE** todo dado de usuário/externo antes de interpolar no HTML. Nunca jogue
