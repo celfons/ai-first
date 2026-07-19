@@ -88,6 +88,14 @@
 - **`proposal_ttl`** (validade de uma proposta `growth-proposed` não priorizada, antes de ser podada;
   ADR-0007): `[A DEFINIR]` (default **= 3 ciclos**). O PO **fecha** (com motivo, para o ledger) as
   propostas que não ganharam vaga por `proposal_ttl` ciclos — o board de propostas não incha indefinidamente.
+- **`fast_path`** (cerimônia escalada ao risco — ADR-0008): `[on | off]` (default **on**). Quando `on`,
+  uma demanda **de baixo risco** pula as fases de **autoria** (spec/plan/ADR/decomposição/BDD) e vai
+  direto a implementação → `tester` (com regressão) → gates. **Elegibilidade (TODAS):** `size:trivial`
+  **e** risco 🟢 (só texto/UI/cópia/leitura; **não** toca dinheiro/PII/idempotência/efeito/invariante/
+  proatividade/dependência nova) **e** sem `[NEEDS CLARIFICATION]`/confiança alta **e** sem comportamento
+  normativo novo. Qualquer dúvida → pipeline completo (conservador). **Os gates NUNCA são pulados:** CI +
+  `adversarial-reviewer` (single) + `security-reviewer` permanecem (P-11). `off` = todo trabalho passa
+  pela cadeia completa. Quem classifica e marca `fast-path` é o `sdd-orchestrator`.
 - **`initial_backlog`** (arranque: **quantas histórias/épicos criar de imediato** para começar o produto;
   a gênese pergunta na entrevista e encadeia o `/kickoff` com este número): `[A DEFINIR]` (default =
   `features_per_day`; `0` = não arrancar agora, esperar o cron).

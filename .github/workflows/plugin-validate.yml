@@ -12,7 +12,10 @@ on:
       - ".claude-plugin/**"
       - "agents/**"
       - "skills/**"
+      - "docs/**"
+      - "CLAUDE.md"
       - "scripts/validate-plugin.mjs"
+      - "scripts/check-coherence.mjs"
       - ".github/workflows/plugin-validate.yml"
   merge_group:
 
@@ -38,3 +41,8 @@ jobs:
       # Gate: estrutural sempre + autoritativo se o CLI estiver presente.
       - name: Validar plugin (manifesto + componentes)
         run: node scripts/validate-plugin.mjs
+
+      # Gate de COERÊNCIA cruzada dos docs (ADR-0008 / Insight #3): pega drift — ADR fora do índice,
+      # referência a agente/skill inexistente, knob crítico ausente do genoma.
+      - name: Checar coerência dos docs
+        run: node scripts/check-coherence.mjs

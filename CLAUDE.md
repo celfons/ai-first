@@ -171,6 +171,7 @@ reserva de idempotência, laço da fila, chamada de LLM com timeout+validação+
   `guardrail_metrics`, kill e o gate de conformidade do `security-reviewer` (não relaxa).
 - **Cadência/paralelismo/autonomia/orçamento** são knobs do genoma (`features_per_day`, `parallelism`,
   `wip_limit` — teto de WIP + serialização por footprint de conflito, ADR-0007;
+  `fast_path` — cerimônia escalada ao risco: baixo risco pula a autoria, os gates permanecem, ADR-0008;
   `autonomy_level` — incl. `autônomo` (sem gate humano), `daily_budget`, `budget_per_feature` — teto por
   feature no build paralelo, ADR-0003), ajustáveis a qualquer momento
   (P-15). Mesmo em `autônomo`, os gates automáticos (CI + `adversarial-reviewer` + segurança) e o
