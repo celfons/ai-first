@@ -1,6 +1,6 @@
 # ADR-0009: Grafo de agentes como forma de orquestração de primeira classe + política de loop com terminação e orçamento
 
-> Status: Proposed · Data: 2026-07-19
+> Status: Accepted · Data: 2026-07-19
 > Feature/Issue: método (orquestração explícita) · Princípios tocados: P-3 (idempotência/terminação), P-11/P-13 (isolamento e verificação independente), P-14 (orçamento/custo), P-15 (knobs) · Supersede: —
 
 ## Contexto

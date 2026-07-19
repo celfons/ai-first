@@ -54,6 +54,6 @@ trade-off. Nesses casos, o `plan.md` da feature já basta.
 | [0006](0006-arquitetura-de-enforcement.md) | Enforcement em camadas (guia + força + loop): hooks de sessão, guard de git, gate no servidor, fitness functions | Accepted | governança do método | P-10, P-11, P-13, P-14, P-15 |
 | [0007](0007-priorizacao-unificada-e-concorrencia-wip.md) | Priorização unificada (growth propõe, PO arbitra) + concorrência WIP-limited por footprint de conflito | Accepted | método (fila única + WIP) | P-10, P-11, P-13, P-14, P-15 |
 | [0008](0008-cerimonia-escalada-ao-risco-fast-path.md) | Cerimônia escalada ao risco — fast-path para baixo risco (gates preservados) | Accepted | método (profundidade do processo) | P-10, P-11, P-13, P-14, P-15 |
-| [0009](0009-grafo-de-agentes-e-politica-de-loop.md) | Grafo de agentes como orquestração de primeira classe + política de loop (terminação + teto de orçamento) | Proposed | método (orquestração explícita) | P-3, P-11, P-13, P-14, P-15 |
+| [0009](0009-grafo-de-agentes-e-politica-de-loop.md) | Grafo de agentes como orquestração de primeira classe + política de loop (terminação + teto de orçamento) | Accepted | método (orquestração explícita) | P-3, P-11, P-13, P-14, P-15 |
 
 > Ao criar um ADR, adicione a linha aqui (o `docs-writer` fecha isso no fim da feature).
