@@ -113,6 +113,13 @@
   É o teto que o `Workflow` multi-feature aplica por sub-pipeline (`docs/token-efficiency.md` §4 Escala
   2): a feature que **estoura o seu teto PARA** (marca `awaiting-human`/`needs-human-triage`, PR parcial
   atrás de flag), as vizinhas seguem — um runaway não queima o orçamento das outras nem derruba o lote.
+- **`max_rerun_attempts`** (terminação de loop iterativo, ADR-0009 · P-3/P-14): `[A DEFINIR]` (default
+  **2**). Teto de re-runs de um mesmo passo dentro de uma fatia (implement→verificação→re-implement quando
+  o `adversarial-reviewer`/CI bloqueia). Atingido o teto **sem** verde, o loop **PARA** e escala
+  (`awaiting-human`/`needs-human-triage`) em vez de queimar orçamento "até parecer bom". É o critério de
+  terminação explícito que a política de loop exige — todo loop iterativo termina por **sucesso
+  verificável, teto de re-run OU teto de orçamento** (`budget_per_feature`/`daily_budget`), o que vier
+  primeiro; a escalada por incerteza (`uncertainty_escalation`) tem precedência sobre "ainda há orçamento".
 - **Modelo fixado** (P-14 — upgrade é decisão explícita com re-baseline de evals): `[A DEFINIR]`
 
 ### Arquitetura cognitiva (ADR-0005 — knobs de memória e verificação)

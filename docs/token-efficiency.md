@@ -138,6 +138,25 @@ Escala 2, aplicado a **uma** feature de alto risco: gasta-se N× em verificaçã
 humano some — a troca token↔corretude no ponto mais frágil do modo autônomo. Ver
 [`agents/adversarial-reviewer.md`](../agents/adversarial-reviewer.md).
 
+### Política de loop · terminação explícita + teto (ADR-0009)
+
+O grafo acima tem **loops iterativos** embutidos: quando o `adversarial-reviewer`/CI bloqueia, o passo
+volta ao implement (`backend`/`frontend`) e roda de novo. Loop sem freio é o caminho do runaway de token
+e da não-terminação ("re-roda até o reviewer aprovar" quando o reviewer nunca aprova). A política, então,
+é **inegociável**: todo loop iterativo termina por **uma** de três condições, a que vier primeiro —
+
+- **Sucesso verificável** — CI verde **e** os gates passam (`adversarial-reviewer` + `security-reviewer`).
+- **Teto de re-run** — `max_rerun_attempts` do genoma (default **2**) re-runs do mesmo passo sem verde ⇒
+  **PARA** e escala (`awaiting-human`/`needs-human-triage`), deixa o PR parcial atrás de flag.
+- **Teto de orçamento** — `budget_per_feature` (loop de uma feature) ou `daily_budget`/`budget.total`
+  (loop da rodada). Estourou ⇒ **PARA** aquela feature; as vizinhas seguem (§4 Escala 2).
+
+A **escalada por incerteza** (`uncertainty_escalation`, ADR-0005) tem **precedência sobre "ainda há
+orçamento"**: baixa confiança escala ao humano mesmo com re-runs/token sobrando (risco OU incerteza, o
+maior). Os **loops de cadência** (crons `/daily-*` + `/distill`, §5 AIOps) são um tipo distinto — cada
+firing é orçado e a terminação é o fim do ciclo; é o loop que faz o método **aprender com o uso**, não um
+risco de runaway. O piso opus/alto do fan-out de verificação (§4 painel) **não** muda dentro de nenhum loop.
+
 ### Escala 2 · N FEATURES num único `Workflow` (recursos compartilhados + teto por feature)
 
 O grafo acima é de **uma** feature. Quando `parallelism > 1`, o `/daily-build` (e o `/kickoff`)
