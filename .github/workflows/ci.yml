@@ -53,8 +53,9 @@ jobs:
             # Descomente na gênese se há comportamento de IA/agente (evals determinísticos):
             # npm run eval --if-present
           else
-            echo "→ Sem package.json: repo do método/plugin. Gate = validação do plugin."
+            echo "→ Sem package.json: repo do método/plugin. Gate = validação do plugin + coerência."
             node scripts/validate-plugin.mjs
+            node scripts/check-coherence.mjs
           fi
 
   # Gate de segurança (P-13 — separação de papéis e cadeia de suprimentos fechada).

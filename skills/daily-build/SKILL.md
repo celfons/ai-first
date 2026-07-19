@@ -47,7 +47,17 @@ Para **cada** issue selecionada, rode o **fluxo `/feature`** em **modo autônomo
 `sdd-orchestrator` (fixo opus/alto — roteia o resto) → `feature-spec` → `architect` →
 **`task-decomposer` (se grande/complexa)** → **`bdd-author` (cenários de aceitação, se `bdd_style ≠ off`)**
 → `backend-engineer` → `tester` (liga os cenários ao runner) → `adversarial-reviewer` (usa os cenários
-como oráculo) → `security-reviewer` (gate de segurança) → `docs-writer`. **Invoque cada subagente com o modelo (`haiku`/`sonnet`/`opus`/`fable`) e o esforço
+como oráculo) → `security-reviewer` (gate de segurança) → `docs-writer`.
+
+> **Fast-path de baixo risco (ADR-0008 — só se `fast_path: on`).** Se o `sdd-orchestrator` classificou a
+> demanda como elegível (marca `fast-path`: `size:trivial` **e** risco 🟢 — só texto/UI/leitura, sem
+> dinheiro/PII/idempotência/efeito/invariante/dependência nova — **e** confiança alta, sem comportamento
+> novo), **colapse as fases de autoria**: pule `feature-spec`, `architect`/ADR, `task-decomposer` e
+> `bdd-author`. O fluxo vira `backend`/`frontend-engineer` → `tester` (**com teste de regressão**) → os
+> gates. **Os gates (Fases 3, 3½ e 5) NÃO mudam:** CI + `adversarial-reviewer` (single) +
+> `security-reviewer` continuam obrigatórios. Qualquer dúvida na classificação → cadeia completa.
+
+**Invoque cada subagente com o modelo (`haiku`/`sonnet`/`opus`/`fable`) e o esforço
 (`baixo`/`médio`/`alto`/`extra`) que o orchestrator roteou** (ele também aplica a tag `model:*`/
 `effort:*` na issue).
 
