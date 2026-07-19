@@ -61,12 +61,26 @@ Só leia o que o pedido exige; não abra a base inteira.
 | `security-reviewer` | VERIFY (segurança) | gate AppSec do diff (authz/escopo, injeção, segredo/PII, dependência/CVE); pode bloquear — **fixo opus/alto (P-14)** |
 | `docs-writer` | DOCS | atualiza `docs/*`, `CLAUDE.md`, spec final |
 
-## 1) Classifique o tamanho (calibra tudo)
-- **Trivial** (bug óbvio, cópia, 1 arquivo, sem novo efeito/dado/proatividade): pule o SDD →
-  `backend-engineer` → `tester`.
+## 1) Classifique TAMANHO **e** RISCO (calibra tudo — ADR-0008)
+Tamanho e risco são eixos **distintos**: um patch trivial em código de pagamento é trivial no tamanho
+e 🔴 no risco. Classifique os dois.
 - **Média** (novo handler/rota/campo/regra; toca invariantes conhecidas): cadeia completa.
 - **Grande / risco arquitetural** (novo módulo, nova porta, mudança de invariante, nova proatividade):
   cadeia completa com **gate humano** após `feature-spec` e após `architect`.
+
+### Fast-path de baixo risco (só se `fast_path: on` no genoma § 8)
+Marque a issue com `fast-path` e **colapse as fases de AUTORIA** (`feature-spec`, `architect`/ADR,
+`task-decomposer`, `bdd-author`) → plano = `backend`/`frontend-engineer` → `tester` (**com teste de
+regressão**) → gates. **Elegível só se TODAS valem:**
+- `size:trivial`, **e**
+- risco **🟢** — só texto/UI/cópia/leitura; **não** toca dinheiro, PII, idempotência/efeito colateral,
+  invariante (P-#), proatividade, **nem** adiciona dependência nova; **e**
+- **sem** `[NEEDS CLARIFICATION]` e **confiança alta** (senão escala — `uncertainty_escalation`); **e**
+- **sem** comportamento normativo novo (nenhum RF/critério de aceite novo — aí não é fast-path).
+
+**Qualquer dúvida → pipeline completo** (conservador). **Os GATES nunca são pulados:** o fast-path
+mantém CI + `adversarial-reviewer` (**single**, piso opus/alto) + `security-reviewer` (obrigatório). Ele
+reduz a **autoria**, nunca a **verificação**.
 
 **Precisa DECOMPOR? (decisão explícita)** Inclua a etapa `task-decomposer` (após `architect`, antes do
 implement) quando a feature **toca muitos módulos**, tem **muitas tasks**, mistura migration+lógica+
