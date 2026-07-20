@@ -10,7 +10,7 @@ três pilares, evolutionary architecture/Ford, FinOps Foundation).
 
 ---
 
-## O núcleo — as cinco leis
+## O núcleo — as seis leis
 
 1. **Decida por sinal, nunca por palpite.** Todo achado aponta a telemetria (log/métrica/trace) que o
    sustenta. *(observabilidade)*
@@ -21,6 +21,10 @@ três pilares, evolutionary architecture/Ford, FinOps Foundation).
    *(evolutionary architecture)*
 5. **Custo é restrição de primeira classe:** unidade econômica, teto, ROI — o barato que se provou caro
    sobe. *(FinOps)*
+6. **Trust-calibration:** todo veredito/relatório **cita a evidência** que o sustenta e **sinaliza a
+   confiança** (alta/baixa) — número sem rastro é opinião, e opinião não é gate. Baixa confiança **escala**
+   (não vira certeza silenciosa). *(evidence signals / calibração — serve o `evaluator`, o
+   `outcome-analyst` e o `finops-steward`; par da "honestidade de acesso")*
 
 ---
 

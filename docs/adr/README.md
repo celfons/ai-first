@@ -56,5 +56,6 @@ trade-off. Nesses casos, o `plan.md` da feature já basta.
 | [0008](0008-cerimonia-escalada-ao-risco-fast-path.md) | Cerimônia escalada ao risco — fast-path para baixo risco (gates preservados) | Accepted | método (profundidade do processo) | P-10, P-11, P-13, P-14, P-15 |
 | [0009](0009-grafo-de-agentes-e-politica-de-loop.md) | Grafo de agentes como orquestração de primeira classe + política de loop (terminação + teto de orçamento) | Accepted | método (orquestração explícita) | P-3, P-11, P-13, P-14, P-15 |
 | [0010](0010-sub-workflows-contratados.md) | Sub-workflows contratados como unidade de composição, reuso e avaliação (segrega organiza + habilita eval; não isola recurso) | Accepted | método (composição de orquestração) | P-11, P-13, P-14, P-15 |
+| [0011](0011-camada-de-avaliacao-rubricas.md) | Camada de avaliação — rubricas pass/fail contra contratos de sub-workflow + eval-gate no upgrade de modelo | Accepted | método (avaliação de qualidade) | P-11, P-13, P-14, P-15 |
 
 > Ao criar um ADR, adicione a linha aqui (o `docs-writer` fecha isso no fim da feature).

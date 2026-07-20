@@ -121,6 +121,14 @@
   verificável, teto de re-run OU teto de orçamento** (`budget_per_feature`/`daily_budget`), o que vier
   primeiro; a escalada por incerteza (`uncertainty_escalation`) tem precedência sobre "ainda há orçamento".
 - **Modelo fixado** (P-14 — upgrade é decisão explícita com re-baseline de evals): `[A DEFINIR]`
+- **`eval_gate`** (gate de qualidade no upgrade de modelo, ADR-0011 · P-14): `[A DEFINIR]` (default
+  **on**). Com `on`, trocar o **Modelo fixado** exige passar pelo `/eval`: o `evaluator` roda o
+  conjunto-ouro no modelo novo e compara ao baseline datado (`docs/ai-first/eval-rubrics.md`). **Score
+  abaixo do piso OU regressão em critério de invariante/segurança ⇒ o upgrade NÃO passa** (`awaiting-human`).
+  Upgrade vira decisão **com evidência**, não fé. Nunca desliga o piso de segurança.
+- **`eval_cadence`** (cadência do cron `/eval` — régua de qualidade dos subgrafos): `[A DEFINIR]`
+  (default **quinzenal**, espaçado dos demais crons pesados; avaliar gasta token, piso opus/alto). Roda a
+  rubrica pass/fail contra os contratos de sub-workflow (ADR-0010) com conjunto-ouro semeado.
 
 ### Arquitetura cognitiva (ADR-0005 — knobs de memória e verificação)
 > Ver [`docs/ai-first/memory.md`](memory.md). Todos ajustáveis a qualquer momento (P-15); defaults conservadores.

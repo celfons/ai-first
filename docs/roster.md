@@ -49,6 +49,7 @@ custo-benefício empurre para baixo.
 | `outcome-analyst` | (resultado) | mede se a feature entregou a métrica de sucesso (§8) com uso real |
 | `growth-analyst` | (resultado · GROWTH) | irmão do outcome pela lente de **coorte/funil**: mede o experimento (§8) sem ferir as `guardrail_metrics` e decide **escalar (subir %) / iterar / matar**; grava o que pagou no `growth-playbook.md`. Nunca sobe % sozinho |
 | `finops-steward` | (economia · AIOps/FinOps) | mede o **custo** do pipeline (tokens/etapa, custo por feature mergeada, re-run do modelo barato, cache-hit) + runtime/cloud; cruza com o `outcome-analyst` (ROI) e **realimenta o roteamento** do `sdd-orchestrator`. Só mede/sugere |
+| `evaluator` | (avaliação · quality-rubrics) | mede o **pipeline** (não uma feature): roda **rubricas pass/fail** contra a saída **contratada** de um sub-workflow (ADR-0010) sobre um **conjunto-ouro**, emite scorecard (por critério + regressões vs. baseline) e é o **gate do upgrade de modelo** (re-baseline obrigatório, ADR-0011). Só mede; piso opus/alto; isolado. Roda na cadência `/eval` |
 | `knowledge-curator` | (memória · higiene) | jardineiro da memória (ADR-0005): **destila** o episódico recorrente em padrões/anti-padrões (`knowledge.md`), **poda** para `archive/` datado, audita o índice `context-map.md` e propõe **procedimento → skill**. Roda na cadência `/distill`, sob gate PR+validate. Só escreve docs/skills de memória |
 
 ## Diagrama de fluxo e interação
@@ -209,6 +210,11 @@ migration-analyst (CARACTERIZAÇÃO) → characterization.md (RF observáveis) +
   par de crescimento do `routing-policy.md`: o `growth-analyst`/`finops-steward` gravam qual **alavanca ×
   canal** moveu a North Star a que **CAC**; o `growth-strategist` lê antes de propor o próximo experimento
   (dobra no que pagou, evita o que falhou). É como a estratégia de **escala** melhora sozinha com o uso.
+- **Rubricas de eval** ([`docs/ai-first/eval-rubrics.md`](ai-first/eval-rubrics.md), ADR-0011) — o par de
+  **qualidade** do `routing-policy.md` (que é o par de custo): o `evaluator` (skill `/eval`) grava as
+  rubricas pass/fail, o conjunto-ouro e o **baseline de score por modelo** (datado); lê o baseline antes de
+  julgar e o atualiza quando um upgrade de modelo passa. É o que torna o **re-baseline de evals** do
+  upgrade de modelo executável — a régua contra a qual o modelo novo prova que não regrediu.
 - **Arquitetura de memória** ([`docs/ai-first/memory.md`](ai-first/memory.md), ADR-0005) — o mapa das **4
   camadas** (working/semantic/episodic/procedural) e sua **higiene**: o `knowledge-curator` (cron
   `/distill`) consolida o episódico recorrente em `knowledge.md`, poda o resto e mantém o índice de
@@ -287,6 +293,15 @@ em padrões datados em `knowledge.md`, **poda** o consumido para `archive/AAAA-M
 o índice `context-map.md` e propõe **procedimento → skill**. Entrega numa branch sob **gate PR + validate**
 (quem escreve ≠ quem aprova, P-13). Ledger jovem/vazio = `sem-sinal` (maturação, não erro). Ver ADR-0005 e
 `docs/ai-first/memory.md`.
+
+### Cron 7 · /eval — régua de qualidade do pipeline (mede, não corrige) + gate de upgrade de modelo
+
+O `evaluator` roda numa cadência (`eval_cadence`, default quinzenal): executa as **rubricas pass/fail**
+contra os **contratos de sub-workflow** (ADR-0010) sobre o **conjunto-ouro** e compara ao **baseline
+datado** (`docs/ai-first/eval-rubrics.md`), apontando regressões por critério. Fora da cadência, é o
+**gate do upgrade de modelo**: trocar o `Modelo fixado` exige re-baseline aprovado (`eval_gate: on`) —
+score abaixo do piso ou regressão em critério de invariante/segurança **barra** o upgrade
+(`awaiting-human`). Só mede; a correção é feature nova pelo fluxo normal. Ver ADR-0011.
 
 ### Espaçamento dos crons
 
