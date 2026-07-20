@@ -157,6 +157,26 @@ maior). Os **loops de cadência** (crons `/daily-*` + `/distill`, §5 AIOps) sã
 firing é orçado e a terminação é o fim do ciclo; é o loop que faz o método **aprender com o uso**, não um
 risco de runaway. O piso opus/alto do fan-out de verificação (§4 painel) **não** muda dentro de nenhum loop.
 
+### Composição · sub-workflows contratados (ADR-0010)
+
+O grafo não precisa viver **monolítico dentro de cada driver**. As subcadeias reusáveis viram
+**sub-workflows contratados** — `workflow('nome', args)` com **schema de entrada e de saída** — que os
+drivers **compõem** em vez de recopiar. A fronteira canônica é **`build-one-feature`** (esta Escala 1
+inteira): `/feature`, `/daily-build`, `/kickoff` e `/migrate` a chamam; o painel adversarial (ADR-0005),
+o experimento de growth (ADR-0004) e o port de migração (ADR-0002) são as outras. Esqueleto de referência:
+[`templates/workflows/build-one-feature.mjs`](../templates/workflows/build-one-feature.mjs).
+
+Três verdades que a composição assume (senão vira bug de expectativa):
+- **Segregar ORGANIZA e habilita eval; NÃO isola recurso.** O `workflow()` aninhado **compartilha** com o
+  pai o teto de concorrência, o contador de agentes, o abort e o **orçamento de token** (`budget.spent()`
+  é pool único). Logo, `budget_per_feature` (§4 Escala 2) e a política de loop (`max_rerun_attempts`,
+  ADR-0009) continuam **guardas explícitas na borda** — segregar não contém um runaway sozinho.
+- **Aninhamento é de 1 nível** — `workflow()` dentro de um filho lança erro. Composição é `pai → filho`,
+  nunca `pai → filho → neto` (o painel roda como `parallel()` de `agent()` dentro do filho, não aninhado).
+- **Isolamento intacto (P-11/P-13)** — o sub-workflow orquestra sessões independentes; compartilha
+  **contrato/fato**, nunca raciocínio. O maior retorno é que um subgrafo contratado é a **unidade de
+  eval**: o "re-baseline de evals" do upgrade de modelo passa a ter contra o quê rodar.
+
 ### Escala 2 · N FEATURES num único `Workflow` (recursos compartilhados + teto por feature)
 
 O grafo acima é de **uma** feature. Quando `parallelism > 1`, o `/daily-build` (e o `/kickoff`)
