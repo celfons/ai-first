@@ -38,6 +38,25 @@ sem reconstruir o passado lendo dez lugares.
 
 ## Linha do tempo
 
+### 2026-07-21 · Bordas que o caminho feliz esconde (meta) — pós-refactor do painel
+- **Sinal:** 🔧 processo (uma solução construída pelo método precisou de 3 refactors de correção; as
+  três dores eram a **mesma classe** de omissão).
+- **Aprendizado:** o pipeline construiu com excelência o **caminho feliz da vitrine** e não interrogou
+  **as bordas**. Três dores reais, um só fio: (1) **painel interno feio** — a régua premium foi aplicada
+  à landing mas a tela logada ficou sem camada de tokens/dark mode (rascunho funcional); (2) **"gerar
+  relatório" habilitado sem a conta conectada à Meta** → artefato que abre quebrado (ação sem
+  pré-condição, sem barreira no servidor); (3) **lista de clientes sem paginação/busca** — "cheio" foi
+  lido como "a lista com itens", não "cheio = MUITOS". Correção **sem gate novo**: cada dor virou uma
+  **linha de anti-padrão** (que o `adversarial-reviewer` já lê como checklist de caça) + 3 passos de
+  agente afiados. Novos anti-padrões em `knowledge.md`: "ação habilitada sem pré-condição satisfeita"
+  (geral), "polir só a vitrine / tela logada rascunho" e "coleção sem paginação/busca" (UI). O
+  `ux-designer`/`frontend-engineer` redefinem "cheio = em escala" e "pré-condição de ação = desabilitado
+  com motivo + backend fail-closed"; o `adversarial-reviewer` ganhou a lente 6 (bordas de UX/escala); o
+  `feature-spec`/`bdd-author` passam a exigir o **cenário negativo de pré-condição** e o de **escala**.
+- **Links:** `docs/knowledge.md` (§ anti-padrões geral + UI) · `agents/ux-designer.md` ·
+  `agents/frontend-engineer.md` · `agents/adversarial-reviewer.md` (lente 6) · `agents/feature-spec.md` ·
+  `agents/bdd-author.md` · origem: `celfons/relatorio` PRs #102/#109 (painel + bloqueio Meta + paginação).
+
 ### 2026-07-18 · Régua premium estendida a TODO o roster (meta, 3ª rodada)
 - **Sinal:** 🔧 processo (a régua de elite provou valor nos agentes de UI; faltava o resto da squad).
 - **Aprendizado:** a régua de "time de elite" que elevou `ux-designer`/`frontend-engineer` (benchmark

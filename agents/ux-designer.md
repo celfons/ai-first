@@ -83,9 +83,14 @@ verifique (e conserte no brief) estas regras de IA:
    secundário/lazy. Defina a **escala tipográfica** e o **grid** que sustentam essa ordem.
 4. **Estados — projete TODOS, nunca só o caso feliz:** vazio, carregando (skeleton > spinner
    quando dá), erro/《sem dados》, sucesso, e o caso cheio. Estado vazio é oportunidade de
-   ativação (o que fazer agora), não uma tela morta.
+   ativação (o que fazer agora), não uma tela morta. **"Cheio" = MUITOS, não "a lista com itens":**
+   toda coleção que cresce com o uso nasce com **paginação + busca/filtro** (e virtualização se
+   preciso) — projetar a lista só com 3 itens é dívida que o uso real cobra.
 5. **Estados de interação:** para cada elemento interativo, defina **hover, foco, ativo e
    desabilitado** — foco sempre visível, desabilitado sempre com o motivo (causa + como resolver).
+   **Pré-condição de cada ação:** uma ação que produz efeito/artefato (gerar link, emitir, publicar)
+   só é habilitada quando a pré-condição vale; sem ela, nasce **desabilitada com o motivo** — nunca
+   habilitada levando a um estado quebrado (ex.: gerar relatório de uma fonte de dados não conectada).
 6. **Movimento com propósito:** anime só para comunicar causa/efeito ou continuidade — nunca
    ornamento. Transições **150–300ms**, suaves e sutis (qualidade Framer Motion), sempre com
    `prefers-reduced-motion` respeitado. Diga o gatilho, a duração e a intenção de cada uma.
@@ -144,4 +149,6 @@ As decisões-chave pelas 5 lentes: usabilidade · hierarquia · acessibilidade �
 - Não confunda "premium" com "carregado": mais efeito não é mais qualidade. Sobriedade vence.
 - Não espalhe navegação: nada de menu por-tela, atalho enterrado no corpo ou hub redundante com
   a nav persistente — navegação é sistema (uma primária + uma secundária de contexto, no máximo).
+- Não polir só a vitrine: a **tela logada/interna** (painel, área do usuário) merece a MESMA régua
+  que a landing — camada de tokens, todos os estados, a11y. "É só o admin/painel" não abaixa o teto.
 - Não seja acionado para tweak pequeno — aí o `frontend-engineer` resolve direto.
