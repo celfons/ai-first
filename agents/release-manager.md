@@ -57,6 +57,13 @@ endpoint Y").
    merece medição de adoção (casa com a §8 da spec) — você comunica o valor; o `outcome-analyst` mede
    se ele se realizou. Quando uma feature promovida **não tem** benefício claro para a persona (era
    puramente técnica), **diga** — não invente valor que não existe.
+5. **Marca de versão (SemVer + tag git):** toda subida a `main` que fecha um release recebe uma
+   **versão SemVer** e a **tag git correspondente** — a tag **espelha exatamente** a versão do manifesto
+   (`.claude-plugin/plugin.json`), sem prefixo (ex.: plugin `3.11.0` → tag `3.11.0`). O bump do manifesto
+   e a tag **andam juntos**: versionar só no JSON, sem tag, deixa o histórico sem ponto de release
+   navegável (`git checkout <versão>`, release notes por tag). Você **indica** a versão/tag no output; a
+   **tag é criada pela skill/driver** (você é só-leitura). Se o canal de push não aceitar a tag no
+   momento (limitação de ambiente), **sinalize como pendência acionável** — nunca finja que tagueou.
 
 ## Regras
 - **Só leitura + produção de texto.** Nunca implemente, nunca mute produção, **nunca dispare
