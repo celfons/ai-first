@@ -64,6 +64,7 @@ de redescobrir o jeito certo (ou repetir um erro já pago).
 | **Escala tipográfica + grid + cor como sistema** | layout novo | hierarquia consistente entre telas | tokens + docs de UI |
 | **Todos os estados, não só o caso feliz** (vazio→ativação, loading→skeleton, erro→acionável, sucesso, **cheio = MUITOS → paginação/busca**) | toda seção/coleção | a UI real vive nos estados de borda **e em escala** | render + best-effort por seção |
 | **Todos os estados de interação** (hover · foco visível · ativo · **desabilitado-com-motivo quando a pré-condição falta**) | todo elemento interativo | acessibilidade + previsibilidade; ação que levaria a estado quebrado nasce bloqueada e explicada | componentes compartilhados |
+| **Lista/tabela = paginação + filtro por padrão** (busca por campo natural c/ debounce + paginação com contagem; params `q`/`page`/`pageSize` no servidor; estado vazio de busca ≠ "sem itens") | toda coleção que cresce com o uso | acha o item + não trava/entulha em escala | data layer (server filtra/pagina) + componente de lista |
 | **Movimento com propósito, 150–300ms, `prefers-reduced-motion`** | transições | comunica causa/efeito, não enfeita | tokens de duração/easing |
 | **Navegação como sistema** (1 nav primária idêntica em todo o perfil + no máx. 1 secundária de contexto, `aria-current` sempre) | produto logado | usuário sempre sabe onde está e chega ao vizinho em 1 clique | componente único de nav |
 

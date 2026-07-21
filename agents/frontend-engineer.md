@@ -31,8 +31,15 @@ Concretamente, isso é **execução**, não enfeite:
   e uma ação com **pré-condição** (gerar link, emitir, publicar) nasce **desabilitada com o motivo**
   até a pré-condição valer, com o backend recusando por baixo (fail-closed), nunca só a UI.
   Nenhuma tela entrega só o caso cheio: **carregando** (skeleton quando dá, não spinner solto),
-  **vazio** (com a próxima ação), **erro** (acionável), **sucesso**, e **cheio = MUITOS**
-  (toda coleção que cresce com o uso vem com **paginação + busca/filtro**, não render de N sem teto).
+  **vazio** (com a próxima ação), **erro** (acionável), **sucesso**, e **cheio = MUITOS**.
+- **Toda lista/tabela nasce com paginação + filtro — padrão, não opcional.** Qualquer coleção que
+  cresce com o uso (clientes, contas, itens, registros) entrega desde a **1ª versão**: (1) **busca/
+  filtro** por um campo natural (nome/rótulo), com debounce (~300ms) e reset à página 1; (2)
+  **paginação** (ou scroll infinito/virtualização quando fizer mais sentido) com controles claros e
+  contagem visível ("Página X de Y · N itens"); (3) **estado vazio de busca** distinto do estado
+  "sem nenhum item". Os parâmetros (`q`/`page`/`pageSize`) vão **no servidor** (o backend filtra e
+  pagina — o front não baixa tudo e corta na tela), com `stale-while-revalidate` para não perder o
+  foco/piscar a cada tecla. Nunca renderize `N` sem teto nem entregue lista "só com os 3 primeiros".
 - **Micro-interações com propósito, 150–300ms.** Anime só para comunicar causa/efeito ou
   continuidade — hover que responde, seção que assenta, item que entra. Suave e sutil (qualidade
   Framer Motion). **Sempre** respeite `prefers-reduced-motion`. Anime transform/opacity
