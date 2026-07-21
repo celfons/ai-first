@@ -45,6 +45,7 @@ de redescobrir o jeito certo (ou repetir um erro já pago).
 | _(ex.: usar saída de LLM sem validar schema)_ | crash/《lixo》 quando o modelo alucina | IA confiada cegamente | validar + fallback determinístico (P-4) |
 | _(ex.: `SELECT` + `UPDATE` onde cabe atômico)_ | corrida sob concorrência | dado incoerente | operação atômica / lock otimista |
 | _(ex.: novo caminho que contorna o ponto de extensão)_ | lógica duplicada divergente | decadência/drift (P-14) | encaixar no ponto de extensão |
+| **Ação habilitada sem a pré-condição satisfeita** | gerar link/relatório/efeito que aponta para um estado vazio/quebrado (ex.: emitir relatório de conta sem fonte de dados conectada) | o usuário chega num artefato inútil e culpa o produto; parece bug de dados | **barreira no servidor (fail-closed)** que recusa a ação sem a pré-condição **+** UI que desabilita **com o motivo** (causa + como resolver) — nunca só um dos dois |
 
 ## Qualidade visual premium (UI) — a régua do `ux-designer`/`frontend-engineer`
 
@@ -61,8 +62,9 @@ de redescobrir o jeito certo (ou repetir um erro já pago).
 | **Justifique cada decisão por 5 lentes** (usabilidade · hierarquia · acessibilidade · performance · conversão) | tela/fluxo novo ou redesenho | força o "porquê", não só o "bonito" | brief do `ux-designer` (`ux.md`) |
 | **Design system primeiro: tokens, nunca valores mágicos** | qualquer CSS/estilo | ajuste cascateia; zero drift visual | camada de tokens/tema do projeto |
 | **Escala tipográfica + grid + cor como sistema** | layout novo | hierarquia consistente entre telas | tokens + docs de UI |
-| **Todos os estados, não só o caso feliz** (vazio→ativação, loading→skeleton, erro→acionável, sucesso) | toda seção | a UI real vive nos estados de borda | render + best-effort por seção |
-| **Todos os estados de interação** (hover · foco visível · ativo · desabilitado-com-motivo) | todo elemento interativo | acessibilidade + previsibilidade | componentes compartilhados |
+| **Todos os estados, não só o caso feliz** (vazio→ativação, loading→skeleton, erro→acionável, sucesso, **cheio = MUITOS → paginação/busca**) | toda seção/coleção | a UI real vive nos estados de borda **e em escala** | render + best-effort por seção |
+| **Todos os estados de interação** (hover · foco visível · ativo · **desabilitado-com-motivo quando a pré-condição falta**) | todo elemento interativo | acessibilidade + previsibilidade; ação que levaria a estado quebrado nasce bloqueada e explicada | componentes compartilhados |
+| **Lista/tabela = paginação + filtro por padrão** (busca por campo natural c/ debounce + paginação com contagem; params `q`/`page`/`pageSize` no servidor; estado vazio de busca ≠ "sem itens") | toda coleção que cresce com o uso | acha o item + não trava/entulha em escala | data layer (server filtra/pagina) + componente de lista |
 | **Movimento com propósito, 150–300ms, `prefers-reduced-motion`** | transições | comunica causa/efeito, não enfeita | tokens de duração/easing |
 | **Navegação como sistema** (1 nav primária idêntica em todo o perfil + no máx. 1 secundária de contexto, `aria-current` sempre) | produto logado | usuário sempre sabe onde está e chega ao vizinho em 1 clique | componente único de nav |
 
@@ -77,6 +79,8 @@ de redescobrir o jeito certo (ou repetir um erro já pago).
 | Animar layout / ignorar reduced-motion | jank, enjoo, > 300ms | performance e acessibilidade | transform/opacity, 150–300ms, reduced-motion |
 | Menu espalhado (nav declarada por-tela; global só na home) | destino global inalcançável fora da home; "Sair" sozinho no header | portal parece desorganizado/confuso | nav primária padrão no componente de header, todas as telas |
 | Página-hub concorrendo com nav persistente | dois menus com os mesmos destinos; seção irmã exige "voltar" | 2 cliques onde cabia 1; sem senso de lugar | nav secundária de contexto persistente; o hub morre |
+| **Polir só a vitrine; deixar a tela logada como rascunho** | landing/marketing premium, mas o painel autenticado sem camada de tokens (cai em `#hardcoded`), sem dark mode, sem chrome | a régua vale onde o cliente CONVERTE, mas quebra onde ele USA todo dia | a MESMA régua (tokens → estados → a11y) em **toda** tela; a **camada de tokens é o 1º passo** de qualquer tela, não um detalhe da landing |
+| **Coleção sem paginação/busca** ("cheio = a lista com itens") | lista que cresce sem limite; sem filtro para achar um item; render de N sem teto | trava/entulha com o uso real; o usuário não acha o que precisa | **projete "cheio = MUITOS"**: paginação + busca/filtro (e virtualização se preciso) **desde a 1ª versão** de toda coleção que cresce com o uso |
 
 ## Régua de excelência por ofício — a régua premium de TODO o roster
 

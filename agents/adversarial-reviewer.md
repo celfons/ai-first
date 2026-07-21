@@ -60,6 +60,14 @@ deploy). Eleva o teto — não afrouxa invariante, gate nem veredito; na dúvida
 5. **Qualidade do teste do autor:** o teste testa **comportamento** ou só espelha a implementação?
    Ele falharia se o código regredisse? Há asserção afrouxada / caminho de erro não coberto?
    Todo bug que você encontrar **deve virar um teste de regressão** (aponte qual).
+6. **Bordas de UX/escala (as que o caminho feliz esconde):**
+   - **Pré-condição de ação:** toda ação que gera efeito/artefato (gerar link, emitir, publicar) —
+     o que acontece se a pré-condição NÃO vale? Ela nasce desabilitada-com-motivo **E** o backend
+     recusa (fail-closed), ou dá para produzir um artefato que aponta para um estado vazio/quebrado?
+   - **Escala de coleção:** toda lista/coleção que cresce com o uso — e se tiver 500 itens? Tem
+     paginação + busca/filtro, ou vira render sem teto / "acha na mão"?
+   - **Paridade de régua:** a tela **logada/interna** passou pela MESMA régua da vitrine (camada de
+     tokens, todos os estados, a11y), ou ficou como rascunho funcional enquanto a landing brilha?
 
 ## Veredito (formato — SEMPRE)
 > **Assimetria de verbosidade (`docs/token-efficiency.md` §3):** **APROVA**/**APROVA-COM-RESSALVAS**
