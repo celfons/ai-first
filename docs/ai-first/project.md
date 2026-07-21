@@ -195,6 +195,10 @@
   - `/daily-tech-scan`: `[A DEFINIR]` (opcional, espaçado)
   - `/daily-ops-scan`: `[A DEFINIR]` (opcional, espaçado)
   - `/daily-outcome`: `[A DEFINIR]` (algumas vezes/semana — métrica leva dias para maturar)
+  - `/eval`: `[A DEFINIR]` (cadência `eval_cadence`, default quinzenal — régua de qualidade dos subgrafos
+    + gate de upgrade de modelo, ADR-0011; espaçado, piso opus/alto)
+  - `/distill`: `[A DEFINIR]` (cadência `distill_cadence`, default semanal — higiene da memória: consolida
+    o episódico e poda, ADR-0005; espaçado dos demais)
 - **Dono/stakeholder que aprova:** `[A DEFINIR]`
 - **Canal do resumo diário e da aprovação:** `[A DEFINIR]` (push / e-mail / chat)
 
