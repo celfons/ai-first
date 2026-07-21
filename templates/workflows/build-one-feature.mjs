@@ -18,6 +18,9 @@
 //     · contextClearPolicy — higiene de contexto working (ADR-0012 §8): 'seam' (default) limpa o rabo
 //                           variável nas costuras (fim de slice/feature, entre re-runs → passa só o
 //                           veredito) preservando o prefixo fixo cacheado; 'off' arrasta tudo (caro).
+//     · verificationParallelism — validação em dois tiers (ADR-0013): 'staged' (default) roda o tester
+//                           barato PRIMEIRO (fail-fast) e, se verde, painel ‖ security em paralelo (diff
+//                           congelado); 'flat' roda tester ‖ tier opus (mais wall-clock, mais token).
 //   Saída (FEATURE_RESULT_SCHEMA): veredito estruturado que o pai trata como FATO validado, não texto.
 //
 // LIMITES QUE O DESENHO ASSUME (ADR-0010):
@@ -54,7 +57,7 @@ const FEATURE_RESULT_SCHEMA = {
 }
 
 const { issue, fixedContext, routing = {}, budgetPerFeature = null, maxRerunAttempts = 2,
-        contextClearPolicy = 'seam' } = args ?? {}
+        contextClearPolicy = 'seam', verificationParallelism = 'staged' } = args ?? {}
 // Helper: prefixa SEMPRE o bloco de contexto fixo (idêntico, primeiro) para cache de prompt (§1).
 // A limpeza de contexto working (ADR-0012 §8) PRESERVA este prefixo byte-a-byte — nunca o descarta.
 const withContext = (role, body) => `${fixedContext ?? ''}\n\n## Papel: ${role}\n${body}`
@@ -77,35 +80,64 @@ phase('Plan')
 const plan = await agent(withContext('architect', `Com base na spec, escreva plan.md + tasks.md (+ADR se durável). Leia o índice de ADRs antes de decidir algo durável.`),
   { phase: 'Plan', ...route('architect', { model: 'opus', effort: 'high' }) })
 
-// 3 · IMPLEMENT (+ bdd-author e ux-designer podem correr em paralelo — dependem só da spec/plan, §4)
+// 3 · IMPLEMENT — TIER 1 da validação (ADR-0013): o track CONTÍNUO barato (typecheck/lint/testes
+// rápidos) corre ‖ ao implement. É read-only E determinístico → seguro no alvo em MOVIMENTO (re-run é
+// barato); dá feedback vivo antes da fase de verify. bdd-author/ux-designer também correm ‖ (dependem
+// só da spec/plan, §4). NÃO ponha aqui o gate de JULGAMENTO (opus) — esse exige diff congelado (Tier 2).
 phase('Implement')
 const [impl] = await parallel([
   () => agent(withContext('backend-engineer', `Implemente as slices do tasks.md. Árvore verde a cada slice.`),
     { phase: 'Implement', ...route('backend-engineer', { model: 'sonnet', effort: 'high' }) }),
   () => agent(withContext('bdd-author', `Converta os critérios de aceite em cenários executáveis (oráculo).`),
     { phase: 'Implement', ...route('bdd-author', { model: 'sonnet', effort: 'medium' }) }),
+  // Track contínuo determinístico — barato, sem julgamento. Bash de typecheck/lint, não um agente opus.
+  () => agent(withContext('tester', `TRACK CONTÍNUO (Tier 1): rode typecheck + lint + testes rápidos e reporte quebras cedo. Sem julgamento de mérito — só o sinal determinístico.`),
+    { phase: 'Implement', ...route('track', { model: 'haiku', effort: 'low' }) }),
 ])
 
-// 4 · VERIFY — loop com terminação explícita (ADR-0009): sucesso, teto de re-run OU teto de orçamento.
+// 4 · VERIFY — TIER 2 (ADR-0013): gate de JULGAMENTO sobre o DIFF CONGELADO (nunca alvo em movimento —
+// verificar código que ainda muda queima o piso opus à toa). Loop com terminação explícita (ADR-0009):
+// sucesso, teto de re-run OU teto de orçamento.
+//   verificationParallelism: 'staged' (default) — tester barato PRIMEIRO (fail-fast: reprovou → re-implementa
+//     sem pagar opus); verde → painel ‖ security em paralelo (ambos opus, ambos obrigatórios: paralelo é grátis).
+//   'flat' — tester ‖ tier opus tudo junto: ganha wall-clock, MAS paga opus mesmo quando o tester reprovaria.
 phase('Verify')
+// [CONGELA O DIFF]: a partir daqui o input é estável — pré-condição do Tier 2.
+const opusGate = (diffDigest) => parallel([
+  // Painel adversarial (ADR-0005): N céticos de lentes distintas, piso opus/alto POR MEMBRO (P-14).
+  ...['correção', 'invariante/segurança', 'reprodução/runtime'].map(lens => () =>
+    agent(withContext('adversarial-reviewer', `Tente QUEBRAR a mudança pela lente "${lens}". Diff: ${diffDigest}. Conclua sozinho.`),
+      { phase: 'Verify', model: 'opus', effort: 'high' })),
+  // Security ‖ painel — gate mandatório independente; sequenciar não ganharia nada (ADR-0013).
+  () => agent(withContext('security-reviewer', `Gate de segurança do diff: threat model, authz/escopo, injeção, segredo/PII, CVE. Diff: ${diffDigest}.`),
+    { phase: 'Verify', model: 'opus', effort: 'high' }),
+])
 let attempt = 0
 let verdict = null
 while (attempt < maxRerunAttempts) {
   attempt++
-  const tested = await agent(withContext('tester', `Ligue os cenários ao runner + testes/evals. Gate verde?`),
-    { phase: 'Verify', ...route('tester', { model: 'sonnet', effort: 'medium' }) })
-
-  // Piso opus/alto POR MEMBRO na verificação independente (P-14) — não desce por custo-benefício.
-  // Painel adversarial (ADR-0005): N céticos de lentes distintas, barreira só na agregação.
-  const panel = await parallel(['correção', 'invariante/segurança', 'reprodução/runtime'].map(lens => () =>
-    agent(withContext('adversarial-reviewer', `Tente QUEBRAR a mudança pela lente "${lens}". Receba o diff-digest como fato; conclua o veredito sozinho.`),
-      { phase: 'Verify', model: 'opus', effort: 'high' })))
-  const security = await agent(withContext('security-reviewer', `Gate de segurança do diff: threat model, authz/escopo, injeção, segredo/PII, CVE.`),
-    { phase: 'Verify', model: 'opus', effort: 'high' })
-
-  const results = [tested, ...panel, security]
+  let results
+  if (verificationParallelism === 'flat') {
+    // urgência > custo: tester concorre com o tier opus (paga opus mesmo em reprovação barata).
+    const [tested, ...opus] = await parallel([
+      () => agent(withContext('tester', `Ligue os cenários ao runner + testes/evals. Gate verde?`),
+        { phase: 'Verify', ...route('tester', { model: 'sonnet', effort: 'medium' }) }),
+      () => opusGate('diff congelado'),
+    ])
+    results = [tested, ...(opus[0] ?? [])]
+  } else {
+    // staged (default): fail-fast onde protege token, paralelo onde é grátis.
+    const tested = await agent(withContext('tester', `Ligue os cenários ao runner + testes/evals. Gate verde?`),
+      { phase: 'Verify', ...route('tester', { model: 'sonnet', effort: 'medium' }) })
+    if (/BLOQUEIA|bloqueado|blocked/i.test(String(tested))) {
+      results = [tested]                                 // tester reprovou → NEM chama o tier opus (fail-fast)
+    } else {
+      const opus = await opusGate('diff congelado')      // verde → painel ‖ security concorrentes
+      results = [tested, ...opus]
+    }
+  }
   const blocked = results.some(r => /BLOQUEIA|bloqueado|blocked/i.test(String(r)))
-  if (!blocked) { verdict = { tested, panel, security }; break }        // sucesso verificável → sai do loop
+  if (!blocked) { verdict = { results }; break }         // sucesso verificável → sai do loop
   if (overBudget()) return { status: 'budget-exceeded', issue: String(issue), touched: [String(issue)], reason: `teto por feature atingido no re-run ${attempt}` }
 
   // COSTURA DE RE-RUN (ADR-0012 §8): o re-implement recebe o VEREDITO destilado (fato curto), NÃO o
