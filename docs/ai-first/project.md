@@ -129,6 +129,15 @@
 - **`eval_cadence`** (cadência do cron `/eval` — régua de qualidade dos subgrafos): `[A DEFINIR]`
   (default **quinzenal**, espaçado dos demais crons pesados; avaliar gasta token, piso opus/alto). Roda a
   rubrica pass/fail contra os contratos de sub-workflow (ADR-0010) com conjunto-ouro semeado.
+- **`context_clear_policy`** (higiene de contexto working, ADR-0012 · P-14): `[A DEFINIR]`
+  (`seam | dynamic | off`, default **seam**). Com `seam`, o driver limpa o **rabo variável** do contexto
+  (retornos antigos, ruído de tool-calls) nas **costuras** — fim de slice, fim de feature e **entre
+  re-runs de verificação** (passa o veredito, não a tentativa falha) — **preservando byte-a-byte o bloco
+  de contexto fixo cacheado** (`token-efficiency.md` §1/§8). `dynamic` adiciona um gatilho por limiar,
+  **sempre gated à próxima costura**; `off` desliga. Limpar ≠ fundir contexto: isolamento/verificação
+  (P-11/P-13) intactos.
+- **`context_clear_threshold`** (limiar do modo `dynamic` — % da janela antes de limpar na próxima
+  costura): `[A DEFINIR]` (default **70%**). Só vale quando `context_clear_policy: dynamic`.
 
 ### Arquitetura cognitiva (ADR-0005 — knobs de memória e verificação)
 > Ver [`docs/ai-first/memory.md`](memory.md). Todos ajustáveis a qualquer momento (P-15); defaults conservadores.

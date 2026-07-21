@@ -6,7 +6,7 @@
 //
 // ─────────────────────────────────────────────────────────────────────────────────────────────────
 // CONTRATO
-//   Entrada (args):  { issue, fixedContext, routing, budgetPerFeature, maxRerunAttempts }
+//   Entrada (args):  { issue, fixedContext, routing, budgetPerFeature, maxRerunAttempts, contextClearPolicy }
 //     · issue             — nº/refs da issue-alvo (requisito)
 //     · fixedContext      — BLOCO DE CONTEXTO FIXO já montado pelo pai (§1): CLAUDE.md + constitution +
 //                           linha(s) do context-map. Passado read-through; o filho NÃO relê (cache §1).
@@ -15,6 +15,9 @@
 //                           compartilhado (o aninhamento NÃO isola orçamento — ADR-0010 §3), então o
 //                           teto é checado aqui, no código, antes de escalar profundidade.
 //     · maxRerunAttempts  — teto de re-run do loop de verificação (ADR-0009). Terminação explícita.
+//     · contextClearPolicy — higiene de contexto working (ADR-0012 §8): 'seam' (default) limpa o rabo
+//                           variável nas costuras (fim de slice/feature, entre re-runs → passa só o
+//                           veredito) preservando o prefixo fixo cacheado; 'off' arrasta tudo (caro).
 //   Saída (FEATURE_RESULT_SCHEMA): veredito estruturado que o pai trata como FATO validado, não texto.
 //
 // LIMITES QUE O DESENHO ASSUME (ADR-0010):
@@ -50,12 +53,18 @@ const FEATURE_RESULT_SCHEMA = {
   },
 }
 
-const { issue, fixedContext, routing = {}, budgetPerFeature = null, maxRerunAttempts = 2 } = args ?? {}
+const { issue, fixedContext, routing = {}, budgetPerFeature = null, maxRerunAttempts = 2,
+        contextClearPolicy = 'seam' } = args ?? {}
 // Helper: prefixa SEMPRE o bloco de contexto fixo (idêntico, primeiro) para cache de prompt (§1).
+// A limpeza de contexto working (ADR-0012 §8) PRESERVA este prefixo byte-a-byte — nunca o descarta.
 const withContext = (role, body) => `${fixedContext ?? ''}\n\n## Papel: ${role}\n${body}`
 const route = (etapa, fallback) => routing[etapa] ?? fallback
 // GUARDA DE BORDA de orçamento — o aninhamento não isola o pool (ADR-0010 §3).
 const overBudget = () => budgetPerFeature != null && budget.spent() >= budgetPerFeature
+// Destila o veredito bloqueante num FATO curto — é o que atravessa a costura de re-run (ADR-0012):
+// o re-implement recebe ISTO, não o contexto inteiro da tentativa falha (menos token + menos ancoragem).
+const blockingDigest = (results) => results.filter(r => /BLOQUEIA|bloqueado|blocked/i.test(String(r)))
+  .map(r => String(r).slice(0, 600)).join('\n---\n') || 'verificação bloqueou (sem detalhe estruturado)'
 
 // 1 · SPECIFY
 phase('Specify')
@@ -94,11 +103,18 @@ while (attempt < maxRerunAttempts) {
   const security = await agent(withContext('security-reviewer', `Gate de segurança do diff: threat model, authz/escopo, injeção, segredo/PII, CVE.`),
     { phase: 'Verify', model: 'opus', effort: 'high' })
 
-  const blocked = [tested, ...panel, security].some(r => /BLOQUEIA|bloqueado|blocked/i.test(String(r)))
+  const results = [tested, ...panel, security]
+  const blocked = results.some(r => /BLOQUEIA|bloqueado|blocked/i.test(String(r)))
   if (!blocked) { verdict = { tested, panel, security }; break }        // sucesso verificável → sai do loop
   if (overBudget()) return { status: 'budget-exceeded', issue: String(issue), touched: [String(issue)], reason: `teto por feature atingido no re-run ${attempt}` }
-  // senão: re-implementa e tenta de novo (até maxRerunAttempts)
-  await agent(withContext('backend-engineer', `A verificação bloqueou. Corrija o mínimo apontado e mantenha a árvore verde.`),
+
+  // COSTURA DE RE-RUN (ADR-0012 §8): o re-implement recebe o VEREDITO destilado (fato curto), NÃO o
+  // contexto da tentativa falha. `withContext` mantém o prefixo fixo cacheado; o rabo variável do
+  // attempt anterior (panel/tested/security completos) é DESCARTADO — não entra no próximo prompt.
+  const fix = contextClearPolicy === 'off'
+    ? `A verificação bloqueou:\n${results.join('\n')}`                  // sem limpeza: arrasta tudo (caro)
+    : blockingDigest(results)                                          // seam/dynamic: só o veredito
+  await agent(withContext('backend-engineer', `A verificação bloqueou. Corrija o MÍNIMO apontado e mantenha a árvore verde.\n\n## Veredito a corrigir\n${fix}`),
     { phase: 'Implement', ...route('backend-engineer', { model: 'sonnet', effort: 'high' }) })
 }
 if (!verdict) {

@@ -315,6 +315,40 @@ Ganho: composto ao longo dos meses (o custo de ler a memória para de crescer se
 
 ---
 
+## 8 · Higiene de contexto working — limpeza por costura (não reset)
+
+**O problema.** As alavancas 1–7 otimizam o gasto por várias frentes, mas nenhuma trata do **rabo
+variável que cresce dentro de uma sessão longa**: a thread do *driver* que acumula o retorno de cada
+etapa ao longo de uma feature, e — pior — o contexto da tentativa que **falhou** e foi re-implementada no
+loop de verificação (ADR-0009). O acúmulo infla toda invocação seguinte (custo que **compõe**, mesmo com
+os retornos enxutos do §3) e, no re-run, arrasta raciocínio morto que **ancora** o modelo na abordagem
+errada.
+
+**O anti-padrão a evitar.** "Limpar geral entre toda etapa" é **pior que não limpar**: evicta o prompt
+cache do §1 (o prefixo fixo quente, ~1h TTL → paga a releitura) e arrisca cortar estado vivo. A limpeza
+tem de ser **cirúrgica**.
+
+**A regra (ADR-0012).** Limpa-se o **rabo variável** (retornos antigos, ruído de tool-calls resolvidos);
+**preserva-se byte-a-byte o BLOCO DE CONTEXTO FIXO** (§1) para não perder o cache. É seguro porque o
+hand-off já é durável (§3): os retornos são ponteiros (commit/spec/PR) e o contrato "p/ o próximo"
+re-passa o estado vivo mínimo como **fato**, não como histórico. **Costuras de limpeza** (default `seam`):
+- **Fim de slice** — depois que o `docs-writer` fecha a fatia (§1 já troca o bloco fixo aqui).
+- **Fim de feature** — antes da próxima no build paralelo (cada uma já é sub-pipeline isolado, §4/ADR-0010).
+- **Entre re-runs de verificação** — o re-implement recebe **o veredito** (o que corrigir), **não** o
+  contexto da tentativa falha. Ganho duplo: token **+** menos ancoragem no caminho errado.
+
+**Limiar dinâmico gated.** Com `context_clear_policy: dynamic`, ao cruzar `context_clear_threshold` (% da
+janela) a limpeza **espera a próxima costura** (hand-off durável) em vez de disparar mid-slice — escape
+valve para features gigantes, nunca faca cega. Default `seam`; `off` desliga.
+
+Camada certa: isto é higiene da memória **working** (ADR-0005) — distinta do `/distill` (§7), que cuida
+da **episódica**. Mesma lei ("consolidar/esquecer, não inchar"), camada diferente.
+
+Ganho: médio e **composto** por feature; alto no re-run. Risco: baixo **se** cirúrgica (default `seam`);
+limpeza mal-feita perde eficiência. Toca corretude: não (isolamento/verificação intactos — limpar ≠ fundir).
+
+---
+
 ## Consciência de janela de cache (afinação do agendamento)
 
 O prompt cache (§1) tem TTL ~1h. Duas consequências operacionais:
@@ -341,6 +375,9 @@ O prompt cache (§1) tem TTL ~1h. Duas consequências operacionais:
 5. **Reaproveita as derivações caras** (§6) que já existem como artefato datado — market-scan,
    diff-digest, índice de repo — em vez de re-derivá-las; agrupa as slices de uma feature na janela de
    cache (~1h).
+6. **Limpa o contexto working na costura** (§8): no fim de slice/feature e **entre re-runs de
+   verificação** (passa o veredito, não a tentativa falha), **preservando o prefixo fixo cacheado**.
+   `context_clear_policy: seam` (default) | `dynamic` (gated à costura) | `off`.
 
 Itens 1–3 são puro ganho, sem trade-off. Item 4 é estrutural e opt-in. A telemetria da alavanca **5**
 (AIOps) é medida **fora da fatia** pelo `finops-steward`, numa cadência, e realimenta o roteamento —
