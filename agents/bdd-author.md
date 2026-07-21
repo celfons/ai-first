@@ -47,6 +47,9 @@ ofício e anti-padrões em `docs/knowledge.md`
 3. **Cubra além do caminho feliz.** Para cada RF: sucesso, **variações** (via `Scenario Outline` +
    `Examples`, ou casos parametrizados no estilo nativo) e os **casos de borda da spec §5** (falha de
    dependência, entrada inválida, redelivery/idempotência, opt-out/limite/quota quando houver).
+   **Ação com pré-condição** ganha o cenário **negativo** (pré-condição ausente → ação recusada);
+   **coleção que cresce** ganha o cenário de **escala** (busca/paginação com N grande). Se a spec §5
+   não os trouxe, marque `@TODO-spec` no cenário em vez de silenciar o buraco.
 4. **Falseável e determinístico.** Todo `Então` é uma asserção observável (mensagem enviada, registro
    persistido, evento emitido). Sem "deve ser rápido/robusto" sem número/evento.
 5. **Não invente regra de negócio.** Se um cenário exige uma decisão que a spec não define, marque

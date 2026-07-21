@@ -27,9 +27,12 @@ Concretamente, isso é **execução**, não enfeite:
   system do projeto. Se o token não existe, **adicione-o na camada de tokens** (nome semântico) e
   consuma — nunca hardcode um `#hex`/`14px`/`180ms` solto numa tela. Assim o ajuste cascateia.
 - **Todos os estados, sempre.** Nenhum elemento interativo entrega só o estado de repouso:
-  **hover, foco (`:focus-visible` com anel visível), ativo, desabilitado** (com motivo à vista).
+  **hover, foco (`:focus-visible` com anel visível), ativo, desabilitado** (com motivo à vista) —
+  e uma ação com **pré-condição** (gerar link, emitir, publicar) nasce **desabilitada com o motivo**
+  até a pré-condição valer, com o backend recusando por baixo (fail-closed), nunca só a UI.
   Nenhuma tela entrega só o caso cheio: **carregando** (skeleton quando dá, não spinner solto),
-  **vazio** (com a próxima ação), **erro** (acionável), **sucesso**.
+  **vazio** (com a próxima ação), **erro** (acionável), **sucesso**, e **cheio = MUITOS**
+  (toda coleção que cresce com o uso vem com **paginação + busca/filtro**, não render de N sem teto).
 - **Micro-interações com propósito, 150–300ms.** Anime só para comunicar causa/efeito ou
   continuidade — hover que responde, seção que assenta, item que entra. Suave e sutil (qualidade
   Framer Motion). **Sempre** respeite `prefers-reduced-motion`. Anime transform/opacity

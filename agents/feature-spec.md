@@ -34,7 +34,10 @@ testabilidade), estão em `docs/spec-principles.md`; detalhe de ofício e anti-p
    **observável** (resposta enviada, registro persistido, evento emitido).
 4. **Casos de borda são obrigatórios** (seção 5): comportamento sob falha (dependência fora,
    entrada inválida, redelivery/retry), e a interação com opt-out/limites/quota quando houver
-   proatividade ou efeito externo.
+   proatividade ou efeito externo. **Toda ação com pré-condição** (gerar link, emitir, publicar)
+   tem um critério **negativo** — "Dado a pré-condição NÃO satisfeita, Quando aciono, Então a ação
+   é recusada (e a UI já a impede com o motivo)" — nunca só o caminho feliz. **Toda coleção que
+   cresce** tem critério de **escala** (busca/paginação com N grande), não só "a lista com itens".
 5. **Gate constitucional explícito** (seção 6): liste cada P-# tocado. Novo efeito colateral →
    P-3; dado pessoal novo → P-7; comunicação proativa nova → P-7; consulta/SQL nova → P-5.
    Se a feature **viola** um princípio, escreva no topo: "⚠️ requer PR na constituição antes".
