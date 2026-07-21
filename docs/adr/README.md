@@ -58,5 +58,6 @@ trade-off. Nesses casos, o `plan.md` da feature já basta.
 | [0010](0010-sub-workflows-contratados.md) | Sub-workflows contratados como unidade de composição, reuso e avaliação (segrega organiza + habilita eval; não isola recurso) | Accepted | método (composição de orquestração) | P-11, P-13, P-14, P-15 |
 | [0011](0011-camada-de-avaliacao-rubricas.md) | Camada de avaliação — rubricas pass/fail contra contratos de sub-workflow + eval-gate no upgrade de modelo | Accepted | método (avaliação de qualidade) | P-11, P-13, P-14, P-15 |
 | [0012](0012-higiene-de-contexto-working.md) | Higiene de contexto working — limpeza por costura de slice/feature + entre re-runs (preserva o prefixo cacheado) | Accepted | método (economia de token) | P-11, P-13, P-14, P-15 |
+| [0013](0013-validacao-em-dois-tiers-staged-fail-fast.md) | Validação em dois tiers — track contínuo barato ‖ gate de julgamento sobre diff congelado (staged fail-fast) | Accepted | método (paralelismo de verificação) | P-11, P-13, P-14, P-15 |
 
 > Ao criar um ADR, adicione a linha aqui (o `docs-writer` fecha isso no fim da feature).

@@ -138,6 +138,14 @@
   (P-11/P-13) intactos.
 - **`context_clear_threshold`** (limiar do modo `dynamic` — % da janela antes de limpar na próxima
   costura): `[A DEFINIR]` (default **70%**). Só vale quando `context_clear_policy: dynamic`.
+- **`verification_parallelism`** (paralelismo do gate de verificação, ADR-0013 · P-14): `[A DEFINIR]`
+  (`staged | flat`, default **staged**). Com `staged`, o gate de julgamento roda sobre o **diff congelado**
+  em dois passos: o `tester` barato **primeiro** (fail-fast — reprovou, re-implementa **sem pagar o piso
+  opus**) e, se verde, **`adversarial-reviewer` ‖ `security-reviewer` em paralelo** (ambos opus e
+  obrigatórios → sequenciar não ganharia nada). É **Pareto sobre o sequencial** (melhor em custo e tempo).
+  `flat` roda o `tester` concorrente ao tier opus — ganha mais wall-clock **pagando opus mesmo em
+  reprovação barata**; só com `daily_budget` folgado. O **track contínuo barato** (typecheck/lint) roda
+  ‖ ao implement em ambos. Piso opus/alto e isolamento (P-11/P-13/P-14) nunca relaxam.
 
 ### Arquitetura cognitiva (ADR-0005 — knobs de memória e verificação)
 > Ver [`docs/ai-first/memory.md`](memory.md). Todos ajustáveis a qualquer momento (P-15); defaults conservadores.
