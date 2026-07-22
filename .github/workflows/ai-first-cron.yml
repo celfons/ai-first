@@ -18,11 +18,19 @@ on:
         required: true
         default: "/ai-first:daily-backlog"
   schedule:
-    - cron: "0 11 * * 1-5"   # ~08:00 BRT · /daily-backlog  (cria a issue do dia)
+    # Os 9 loops do organismo. ORDEM do ciclo diário (ADR-0007): growth → backlog → build.
+    # Horários em UTC, espaçados para não competirem pela concorrência serializada abaixo.
+    # A fonte de verdade das cadências é o genoma §8 (docs/ai-first/project.md) — a gênese
+    # (/ai-first-init) ajusta estes horários ao fuso/ritmo do projeto.
+    - cron: "0 10 * * 1-5"   # ~07:00 BRT · /daily-growth   (propõe experimentos ANTES do backlog — ADR-0007)
+    - cron: "0 11 * * 1-5"   # ~08:00 BRT · /daily-backlog  (o PO arbitra a fila e cria a issue do dia)
     - cron: "0 12 * * 1-5"   # ~09:00 BRT · /daily-build     (~1h depois: implementa + verifica + promove por risco)
     - cron: "0 17 * * 1-5"   # ~14:00 BRT · /daily-tech-scan (saúde do código + drift)
     - cron: "0 22 * * 1-5"   # ~19:00 BRT · /daily-ops-scan  (saúde de runtime)
-    - cron: "0 13 * * 1"     # seg ~10:00 BRT · /daily-outcome (mede resultado real)
+    - cron: "0 13 * * 1"     # seg ~10:00 BRT · /daily-outcome  (mede resultado real das features)
+    - cron: "0 13 * * 2,4"   # ter/qui ~10:00 BRT · /growth-outcome (mede experimentos por coorte — matura em dias)
+    - cron: "0 14 * * 0"     # dom ~11:00 BRT · /distill      (higiene de memória — semanal, ADR-0005)
+    - cron: "0 15 1,15 * *"  # dias 1 e 15 ~12:00 BRT · /eval  (régua de qualidade + gate de upgrade — quinzenal, ADR-0011)
 
 # Uma rodada por vez evita o build pisar no backlog/promoção da rodada anterior.
 concurrency:
@@ -45,12 +53,16 @@ jobs:
       - id: pick
         run: |
           case "${{ github.event.schedule }}" in
-            "0 11 * * 1-5") echo "skill=/ai-first:daily-backlog"   >> "$GITHUB_OUTPUT" ;;
-            "0 12 * * 1-5") echo "skill=/ai-first:daily-build"     >> "$GITHUB_OUTPUT" ;;
-            "0 17 * * 1-5") echo "skill=/ai-first:daily-tech-scan" >> "$GITHUB_OUTPUT" ;;
-            "0 22 * * 1-5") echo "skill=/ai-first:daily-ops-scan"  >> "$GITHUB_OUTPUT" ;;
-            "0 13 * * 1")   echo "skill=/ai-first:daily-outcome"   >> "$GITHUB_OUTPUT" ;;
-            *)              echo "skill=${{ github.event.inputs.skill }}" >> "$GITHUB_OUTPUT" ;;
+            "0 10 * * 1-5")  echo "skill=/ai-first:daily-growth"    >> "$GITHUB_OUTPUT" ;;
+            "0 11 * * 1-5")  echo "skill=/ai-first:daily-backlog"   >> "$GITHUB_OUTPUT" ;;
+            "0 12 * * 1-5")  echo "skill=/ai-first:daily-build"     >> "$GITHUB_OUTPUT" ;;
+            "0 17 * * 1-5")  echo "skill=/ai-first:daily-tech-scan" >> "$GITHUB_OUTPUT" ;;
+            "0 22 * * 1-5")  echo "skill=/ai-first:daily-ops-scan"  >> "$GITHUB_OUTPUT" ;;
+            "0 13 * * 1")    echo "skill=/ai-first:daily-outcome"   >> "$GITHUB_OUTPUT" ;;
+            "0 13 * * 2,4")  echo "skill=/ai-first:growth-outcome"  >> "$GITHUB_OUTPUT" ;;
+            "0 14 * * 0")    echo "skill=/ai-first:distill"         >> "$GITHUB_OUTPUT" ;;
+            "0 15 1,15 * *") echo "skill=/ai-first:eval"           >> "$GITHUB_OUTPUT" ;;
+            *)               echo "skill=${{ github.event.inputs.skill }}" >> "$GITHUB_OUTPUT" ;;
           esac
 
       - uses: anthropics/claude-code-action@v1

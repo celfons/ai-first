@@ -68,12 +68,14 @@
 ## 8 · Git e autonomia (os knobs ajustáveis — P-15)
 - **Branches:** trabalho `claude/<slug>` · integração `develop` · produção `main`
 - **`ci` + gate de segurança + `adversarial-reviewer` como required checks:** `[sim/não]`
-- **`features_per_day`** (quantas o PO cria e o build implementa por rodada): `[A DEFINIR]` (default 1)
+- **`features_per_day`** (quantas o PO cria e o build implementa por rodada): `2` (default 1; **pré-posto
+  em 2** para vazão inicial produtiva — latente até a gênese armar o organismo, ajustável a qualquer momento P-15)
 - **`parallelism`** (quantas features o build desenvolve **em paralelo** por rodada — contextos/worktrees
-  isolados; o merge em `develop` é serializado): `[A DEFINIR]` (default **1** = sequencial). Vale para o
+  isolados; o merge em `develop` é serializado): `2` (default **1** = sequencial; **pré-posto em 2** — fan-out
+  modesto e seguro, já que o merge é serializado por footprint disjunto). Vale para o
   `/daily-build` e para o arranque imediato `/kickoff`. É a **capacidade de fan-out**.
 - **`wip_limit`** (teto de WIP — nº máximo de demandas **simultaneamente em andamento** no build,
-  estilo Kanban; ADR-0007): `[A DEFINIR]` (default **= `parallelism`**). Distinto de `parallelism`:
+  estilo Kanban; ADR-0007): `2` (default **= `parallelism`**; casado com `parallelism: 2`). Distinto de `parallelism`:
   `wip_limit ≤ parallelism` permite **reduzir a rotatividade de merge** (menos rebase/conflito/janela
   inflada) sem baixar a capacidade de fan-out. O `/daily-build` roda em paralelo demandas de
   **footprints de arquivo disjuntos** (declarados pelo `architect` no `plan.md`) e **serializa as de
@@ -104,6 +106,20 @@
   humano** — todos os tiers (inclusive 🔴) promovem sozinhos; o produto é construído e publicado sem
   ação manual. Opt-in explícito e reversível; os gates automáticos (CI + `adversarial-reviewer` +
   segurança + orçamento) **permanecem**. Só a aprovação humana da promoção sai.
+
+  > **Ladder de progressão (produtividade × segurança — P-15).** Suba os knobs COM base em histórico verde,
+  > nunca por otimismo:
+  > 1. **Início (esta postura):** `features_per_day`/`parallelism`/`wip_limit` = **2**, `autonomy_level:
+  >    conservador`. Vazão produtiva com gate humano em tudo.
+  > 2. **Após ~1–2 semanas de promoções sem `/rollback`:** `autonomy_level` → **`progressivo`** (🟢/🟡
+  >    promovem sozinhas; 🔴 seguem no gate humano).
+  > 3. **Com `parallelism > 1` de fato exercitado e o motor `Workflow` (opt-in) validado:** suba
+  >    `parallelism`/`features_per_day` conforme o `daily_budget`.
+  > 4. **`amplo`/`autônomo` só com o loop `/daily-outcome` + `/eval` maduros** dando evidência de qualidade.
+  >
+  > Os **dados que sustentam cada degrau** vêm do `finops-steward` (via `/daily-outcome`) e do
+  > `routing-policy.md`. Em **qualquer** degrau, os gates automáticos (CI + `adversarial-reviewer` +
+  > `security-reviewer` + orçamento) e o `/rollback` permanecem — a esteira fica mais rápida, nunca mais frouxa.
 - **`daily_budget`** (teto de gasto/esforço do loop, P-14): `[A DEFINIR]` — **default quando não
   definido: `sem-teto`** (o loop respeita só `features_per_day`/`parallelism`; nenhuma parada por
   orçamento). Defina um número (tokens/moeda/features) para impor um teto rígido — ao atingi-lo, o

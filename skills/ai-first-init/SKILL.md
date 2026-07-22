@@ -37,6 +37,10 @@ nunca sobrescreve o que você já tem sem confirmar).
    - `.github/` → `pull_request_template.md`, `ISSUE_TEMPLATE.md`, `workflows/ci.yml`,
      `workflows/ai-first-cron.yml`, e o **guard de governança** `workflows/ai-first-guard.yml`
      (a partir de `templates/ci/ai-first-guard.yml` do plugin).
+   - `.claude/workflows/build-one-feature.mjs` (a partir de `templates/workflows/build-one-feature.mjs`
+     do plugin) — o **sub-workflow contratado** (ADR-0010) que os drivers `/feature`, `/daily-build`,
+     `/kickoff` e `/migrate` compõem via `workflow('build-one-feature', args)`. Instalar aqui é o que
+     faz o named workflow **resolver** no repo-alvo (o fitness F5 verifica a presença quando armado).
    - `CLAUDE.md` (índice-mãe esqueleto) — **na raiz do repo-alvo**.
    - **NÃO** copie `docs/sdd/features/001-exemplo-*` (é demonstração), nem `agents/`, `skills/`,
      `.claude-plugin/` (esses vivem no plugin, não no repo-alvo).
