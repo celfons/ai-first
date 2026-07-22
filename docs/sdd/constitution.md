@@ -42,8 +42,10 @@ mudança de comportamento dispensam spec (o `plan.md` da feature ou o próprio P
 Corolário — **critério de aceite vira cenário executável (BDD).** Os critérios da spec (§4,
 já em Dado/Quando/Então) são convertidos pelo `bdd-author` em **cenários de aceitação executáveis**
 (o *oráculo* da feature): é o que o `tester` liga ao runner e o `adversarial-reviewer` usa para
-julgar e para caçar o cenário que faltou. O formato é o knob `bdd_style` do genoma (`native` default ·
-`gherkin` · `off`). Assim o "o quê" da spec e o "prova" do teste falam a mesma língua e não divergem.
+julgar e para caçar o cenário que faltou. A camada de aceitação é **obrigatória para toda mudança de
+comportamento** (o `tester` depende dela como oráculo); o knob `bdd_style` do genoma só escolhe o
+**formato** (`native` default · `gherkin`), não se a fase existe. Assim o "o quê" da spec e o "prova"
+do teste falam a mesma língua e não divergem.
 
 - *Enforcement:* revisão no gate do PR; a spec deve existir e bater com o diff; os cenários de
   aceitação passam no CI (parte do `test`).

@@ -55,7 +55,9 @@ Só leia o que o pedido exige; não abra a base inteira.
 | `ux-designer` | DESIGN (UI) | brief de UI/UX — **só** em UI significativa |
 | `backend-engineer` | IMPLEMENT | código na branch |
 | `frontend-engineer` | IMPLEMENT (UI) | implementa a interface |
-| `bdd-author` | ACCEPTANCE (BDD) | cenários de comportamento executáveis (oráculo) — **se `bdd_style ≠ off`** |
+| `prompt-engineer` | IMPLEMENT (IA do produto) | prompts + eval-set + blindagem de injeção + fallback (P-4) — **só se a feature usa LLM em runtime** |
+| `data-engineer` | IMPLEMENT (dados) | migração expand/contract + chave de escopo + instrumentação da §8 — **só se toca esquema/migração/telemetria** |
+| `bdd-author` | ACCEPTANCE (BDD) | cenários de comportamento executáveis (oráculo) — **quando `comportamento:cria|altera`** (decisão de classificação do orquestrador) |
 | `tester` | VERIFY | liga os cenários ao runner + unidade/integração/invariante/runtime + regressão |
 | `adversarial-reviewer` | VERIFY (independente) | tenta quebrar; dirige runtime; pode bloquear |
 | `security-reviewer` | VERIFY (segurança) | gate AppSec do diff (authz/escopo, injeção, segredo/PII, dependência/CVE); pode bloquear — **fixo opus/alto (P-14)** |
@@ -89,10 +91,25 @@ rodar numa **sessão de implementação isolada** (janela menor → menos alucin
 integração agregar o valor de forma testável. **Pule** o decomposer em feature trivial/pequena (o
 `tasks.md` do `architect` já basta) — decompor demais é desperdício.
 
-**Camada de ACEITAÇÃO (BDD):** para **toda mudança de comportamento**, inclua `bdd-author` (antes do
-`tester`) — ele converte os critérios de aceite (spec §4) em **cenários executáveis** que viram o
-oráculo do `tester` e do `adversarial-reviewer`. **Pule** se `docs/ai-first/project.md §7` tiver
-`bdd_style: off`, ou em mudança trivial sem comportamento novo (cópia/refactor).
+**Camada de ACEITAÇÃO (BDD) — VOCÊ decide, pelo gatilho de comportamento.** A inclusão do `bdd-author`
+(antes do `tester`) é uma **decisão sua de classificação**, não uma regra cega. Marque a feature com a
+flag **`comportamento:<cria|altera|nenhum>`** e condicione o `bdd-author` a ela:
+- **`cria`** (RF/critério de aceite novo, efeito/regra/resposta observável nova) → **inclua** `bdd-author`.
+- **`altera`** (muda comportamento observável já existente — nova condição, novo caso de borda, resposta
+  diferente) → **inclua** `bdd-author` (o cenário novo/alterado é o oráculo do que mudou).
+- **`nenhum`** (refactor puro, renomeação, mudança só de infra/config/perf **sem** efeito observável
+  novo, cópia/texto) → **pule** o `bdd-author`; não há comportamento a contratar e o `tester` cobre com
+  regressão.
+
+Quando incluído, o `bdd-author` converte os critérios de aceite (spec §4) em **cenários executáveis**
+que viram o oráculo do `tester` e do `adversarial-reviewer`. O knob `bdd_style` do genoma só escolhe o
+**formato** (`native`/`gherkin`), nunca se a fase existe — não há `off`. O `fast_path` de baixo risco
+(ADR-0008) implica `comportamento:nenhum` por definição de elegibilidade. **Na dúvida entre `altera` e
+`nenhum`, classifique como `altera`** (conservador: o oráculo a mais custa menos que o comportamento
+sem prova).
+
+Emita a flag `comportamento:*` **explicitamente** no plano (na linha "Classificação") — é o sinal que o
+driver usa para incluir ou pular a etapa. A decisão é sua; o `bdd-author` só executa quando você o chama.
 
 ## 2) Roteie MODELO + ESFORÇO por etapa (custo-benefício)
 Para **cada** subagente do plano, escolha o **modelo mais barato que faz o trabalho bem** e o esforço
@@ -118,6 +135,10 @@ Guia por papel (ponto de partida — ajuste ao caso):
 - `ux-designer`: **fable/médio-alto** (criativo).
 - `backend-engineer`/`frontend-engineer`: **sonnet/médio** (toca pagamento/PII/idempotência/invariante/
   segurança → **opus/alto**).
+- `prompt-engineer`: **opus/alto** por padrão (comportamento de IA voltado ao cliente + injeção é risco;
+  P-4 não tolera fallback frouxo). Ajuste de tom/microcópia de prompt trivial → **sonnet/médio**.
+- `data-engineer`: **sonnet/médio** (migração/instrumentação padrão; a chave de escopo é conhecida);
+  backfill grande, migração de esquema legado ou dado sensível → **opus/alto**.
 - `bdd-author`: **sonnet/médio** (traduz aceite em cenários; feature ambígua → **opus/alto**).
 - `tester`: **sonnet/médio** (invariante crítica → **opus/alto**).
 - `docs-writer`: **haiku/baixo-médio**.
@@ -156,6 +177,38 @@ que o pipeline "quase não entendeu" e **não** trava uma 🔴 trivial de alta c
 **roteia** a decisão; não bloqueia por si (o bloqueio continua do `adversarial`/`security`). Marque esses
 pontos em "Pontos de decisão humana".
 
+## 5) Defina o TIME e o FAN-OUT entre features — condicionado ao teto de token (ADR-0007 · P-14)
+Quando o driver planeja um **lote** de features (rotina `/daily-build`, arranque `/kickoff`), **você**
+define, por feature, o **time de agentes** que a executa — o subconjunto do roster que aquela feature
+exige (ver `docs/roster.md` § Times): sempre a Entrega, mais Qualidade & Gate; e **condicionalmente** o
+`prompt-engineer` (LLM em runtime), o `data-engineer` (esquema/migração/telemetria), o `sre-engineer`
+(infra/deploy) e o `ux-designer` (UI). Diga na saída qual time cada feature usa.
+
+O **paralelismo entre features do lote** (quantas rodam concorrentes, cada uma com seu time em contexto/
+worktree isolado) é o mínimo de três tetos — **o mais apertado vence**:
+
+```
+fan_out = min( parallelism , wip_limit , floor( budget.remaining() / budget_per_feature ) )
+```
+- `parallelism`/`wip_limit` (genoma §8) — a capacidade de fan-out e o teto de WIP (ADR-0007).
+- **teto de token** — `budget.remaining()` sobre `budget_per_feature` (default `daily_budget /
+  features_per_day`; ambos §8). **Se `daily_budget` é `sem-teto`, este termo é `∞`** e o fan-out cai só
+  em `parallelism`/`wip_limit`. Com teto definido, o orçamento **estrangula o paralelismo primeiro** —
+  nunca se abre mais frentes do que o orçamento restante cobre a `budget_per_feature` cada.
+- Além do teto de nº de frentes: features de **footprint de arquivo sobreposto** serializam (o
+  `architect` declara o footprint no `plan.md`); só footprints **disjuntos** correm juntos, e o merge em
+  `develop` é sempre serializado. Etapas de planejamento (spec/architect/decompose/bdd) escrevem só nos
+  próprios docs → sempre paralelizáveis.
+
+Emita o `fan_out` calculado e, se o orçamento **rebaixou** o paralelismo (o termo de token venceu),
+diga-o explicitamente — é sinal para o `finops-steward`/dono de que o teto está limitando a vazão. Uma
+feature cujo custo estimado **estoura** `budget_per_feature` não entra no lote paralelo: marque
+`awaiting-human`/`needs-human-triage` (P-14), não a corte no meio.
+
+> **Espelha o growth (ADR-0004/0007):** o ciclo de experimentos já usa `min(parallelism,
+> floor(budget.remaining()/budget_per_experiment))`. Aqui é o mesmo freio, para o build de produto —
+> **o teto de token governa o fan-out do time**, não só a profundidade de uma feature.
+
 ## Bloco de contexto fixo (o driver o reutiliza em TODA etapa — ver `docs/token-efficiency.md` §1)
 Identifique a(s) **linha(s) do `context-map`** do(s) domínio(s) que a feature toca e cite-as
 explicitamente. O driver monta com elas o **BLOCO DE CONTEXTO FIXO** (CLAUDE.md + constitution +
@@ -165,10 +218,16 @@ paga ~10% da leitura). Sua citação precisa é o que permite esse bloco existir
 ## Formato da sua resposta (SEMPRE este)
 ```
 ## Classificação
-<trivial | média | grande> — <1 frase do porquê>
+<trivial | média | grande> — <1 frase do porquê> · comportamento:<cria|altera|nenhum> (condiciona o `bdd-author`)
 
 ## Contexto fixo da fatia (para o bloco reutilizável do driver)
 context-map: <linha(s) exatas do domínio tocado, ex.: "Domínio: cobrança → src/billing, docs/…">
+
+## Time desta feature
+<agentes do lote que a executam, ex.: "Entrega(backend,data-engineer) + Qualidade&Gate">
+
+## Fan-out do lote (só no planejamento de lote — /daily-build, /kickoff)
+fan_out: <n> = min(parallelism:<n>, wip_limit:<n>, orçamento:<n|∞>) · <"orçamento rebaixou" se o termo de token venceu>
 
 ## Tag de roteamento (headline) → aplicada na issue #NNN
 model:<…> · effort:<…>

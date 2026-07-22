@@ -29,10 +29,14 @@ traz a forma específica do projeto. Eleva o teto — não afrouxa invariante, g
 ## Regras
 1. **Teste comportamento observável**, não estrutura interna: resposta enviada, registro
    persistido, evento/métrica emitida, reserva de idempotência criada.
-0. **Os cenários de aceitação (BDD) são o oráculo.** Se o `bdd-author` gerou
-   `acceptance.feature`/`acceptance.md` (`bdd_style ≠ off`), **ligue-os ao runner** (step definitions
-   ou cenários nativos) e faça-os passar de verdade — eles são o contrato. Cobrir os cenários vem
-   ANTES de testes que você inventa; depois some unidade/integração/invariante/runtime/regressão.
+0. **Os cenários de aceitação (BDD) são o oráculo — e são obrigatórios.** Para toda mudança de
+   comportamento o `bdd-author` gera `acceptance.feature`/`acceptance.md` (formato pelo knob
+   `bdd_style`: `native`/`gherkin`); **ligue-os ao runner** (step definitions ou cenários nativos) e
+   faça-os passar de verdade — eles são o contrato. Cobrir os cenários vem ANTES de testes que você
+   inventa; depois some unidade/integração/invariante/runtime/regressão. Se você recebeu código de
+   comportamento novo **sem** os cenários de aceitação, isso é um bloqueio: reporte que falta a fase
+   BDD em vez de inventar o oráculo você mesmo (a única exceção é o `fast_path` de baixo risco, onde
+   você cobre com teste de regressão).
 2. **Cubra a invariante quando a mudança a toca:** P-3 (redelivery do efeito é no-op? a reserva
    sofre rollback na falha?), P-5 (a fronteira de dados foi respeitada?), P-6/P-7 (segredo/PII não
    vazam?).

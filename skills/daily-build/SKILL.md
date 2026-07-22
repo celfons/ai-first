@@ -45,8 +45,11 @@ sinal de que o `/daily-backlog` pode ter falhado ou o board está seco. **Avise*
 Para **cada** issue selecionada, rode o **fluxo `/feature`** em **modo autônomo** (branch
 `claude/<slug>` a partir de `develop`; uma issue = uma branch = um `Closes #NNN`):
 `sdd-orchestrator` (fixo opus/alto — roteia o resto) → `feature-spec` → `architect` →
-**`task-decomposer` (se grande/complexa)** → **`bdd-author` (cenários de aceitação, se `bdd_style ≠ off`)**
-→ `backend-engineer` → `tester` (liga os cenários ao runner) → `adversarial-reviewer` (usa os cenários
+**`task-decomposer` (se grande/complexa)** → **`bdd-author` (cenários de aceitação — SÓ se o
+`sdd-orchestrator` classificou `comportamento:cria|altera`; pule em `comportamento:nenhum`; formato
+pelo `bdd_style`)** → `backend-engineer` (+ `prompt-engineer` se usa LLM em
+runtime, + `data-engineer` se toca esquema/telemetria) → `tester` (liga os cenários ao runner) →
+`adversarial-reviewer` (usa os cenários
 como oráculo) → `security-reviewer` (gate de segurança) → `docs-writer`.
 
 > **Fast-path de baixo risco (ADR-0008 — só se `fast_path: on`).** Se o `sdd-orchestrator` classificou a
@@ -104,8 +107,13 @@ arquivo) e **agrupar para ninguém ficar na mesma parede ao mesmo tempo**. Regra
   `tasks.md` marcou dependência de contrato, respeite a ordem.
 - Se o footprint não foi declarado ou é ambíguo, **trate como sobreposto** (serialize — conservador).
 
-**Desenvolvimento paralelo (`parallelism` > 1, respeitando `wip_limit` + footprint):** desenvolva até
-`min(parallelism, wip_limit)` features de footprint disjunto **ao mesmo tempo**, cada uma em **contexto
+**Desenvolvimento paralelo (fan-out do lote — definido pelo `sdd-orchestrator`, gated pelo teto de
+token):** o `sdd-orchestrator` calcula o fan-out do lote como
+`min(parallelism, wip_limit, floor(budget.remaining()/budget_per_feature))` (§5 do agente) e define, por
+feature, **o time de agentes** que a executa. Desenvolva até esse `fan_out` features de footprint
+disjunto **ao mesmo tempo** — **o teto de token estrangula o paralelismo primeiro**: com `daily_budget`
+definido, nunca se abre mais frentes do que o orçamento restante cobre a `budget_per_feature` cada
+(com `sem-teto`, o fan-out cai só em `parallelism`/`wip_limit`). Cada frente roda em **contexto
 isolado** (subagentes de implementação com `isolation: 'worktree'`, uma
 branch `claude/<slug>` por feature a partir de `develop`). **Com opt-in de `Workflow`, faça-o num único
 Workflow** (Escala 2 acima): **bundle de recursos compartilhado derivado 1×** (contexto base + índice de

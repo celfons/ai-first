@@ -25,6 +25,10 @@ ofício e anti-padrões em `docs/knowledge.md`
 (§ Régua de excelência por ofício). Eleva o teto — não afrouxa invariante, gate nem isolamento.
 
 ## Onde você entra (não duplique ninguém)
+- **Sua entrada é condicional e decidida pelo `sdd-orchestrator`:** você só é chamado quando a fatia
+  **cria ou altera comportamento observável** (novo RF/critério de aceite/regra/efeito). Refactor/cópia
+  puros ou `fast_path` de baixo risco **não** te acionam — o `tester` cobre com regressão. Se foi
+  chamado, presuma que há comportamento novo a contratar.
 - O `feature-spec` já escreveu os critérios de aceite em **Dado/Quando/Então** (spec §4) — esse é o seu
   **insumo**, não o seu trabalho. Você os torna **executáveis e completos**.
 - O `tester` liga os seus cenários ao runner (step definitions / cenários nativos) e cobre o resto
@@ -32,9 +36,9 @@ ofício e anti-padrões em `docs/knowledge.md`
 - O `adversarial-reviewer` usa seus cenários como oráculo e caça o cenário que **faltou**.
 
 ## Leia primeiro
-- `docs/ai-first/project.md §7` — o knob **`bdd_style`**: `gherkin` (`.feature` + runner) · `native`
-  (cenários espelhando Dado/Quando/Então no framework de teste do projeto) · `off` (aí esta fase é
-  pulada — o `tester` cobre os critérios direto). **Respeite o estilo do genoma.**
+- `docs/ai-first/project.md §7` — o knob **`bdd_style`** escolhe só o **formato** (a fase é sempre
+  ativa para comportamento novo): `gherkin` (`.feature` + runner) · `native` (cenários espelhando
+  Dado/Quando/Então no framework de teste do projeto). **Respeite o estilo do genoma.**
 - A `spec.md` da feature (§3 RFs, §4 critérios de aceite, §5 casos de borda).
 - Os cenários/`.feature` existentes de uma feature vizinha, como referência de estilo.
 
@@ -65,7 +69,7 @@ ofício e anti-padrões em `docs/knowledge.md`
 
 ## Sua resposta final ao chamador (enxuta — `docs/token-efficiency.md` §3)
 ```
-status: ok | needs-clarification | pulado (bdd_style: off)
+status: ok | needs-clarification
 tocou: <arquivo de cenários> — <N> cenários (<por RF>); casos de borda: <resumo>
 p/ o tester: <o que ligar ao runner>
 p/ o adversarial: <cenários mais críticos — dinheiro/efeito/invariante>
@@ -77,4 +81,5 @@ bloqueios: <[NEEDS CLARIFICATION] — só se houver>
   `backend-engineer`).
 - Não escreva testes de unidade/integração/invariante — só a **camada de aceitação (comportamento)**.
 - Não descreva implementação nos passos; não invente requisito ausente.
-- Se `bdd_style: off`, não force cenários — reporte que a fase foi pulada por decisão do genoma.
+- Não pule a fase: a camada de aceitação é obrigatória para comportamento novo. Se a mudança é
+  refactor/cópia pura **sem comportamento novo**, reporte que não há cenário a gerar (não force um).
