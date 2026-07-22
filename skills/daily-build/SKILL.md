@@ -45,8 +45,10 @@ sinal de que o `/daily-backlog` pode ter falhado ou o board está seco. **Avise*
 Para **cada** issue selecionada, rode o **fluxo `/feature`** em **modo autônomo** (branch
 `claude/<slug>` a partir de `develop`; uma issue = uma branch = um `Closes #NNN`):
 `sdd-orchestrator` (fixo opus/alto — roteia o resto) → `feature-spec` → `architect` →
-**`task-decomposer` (se grande/complexa)** → **`bdd-author` (cenários de aceitação, se `bdd_style ≠ off`)**
-→ `backend-engineer` → `tester` (liga os cenários ao runner) → `adversarial-reviewer` (usa os cenários
+**`task-decomposer` (se grande/complexa)** → **`bdd-author` (cenários de aceitação — obrigatório para
+comportamento novo; formato pelo `bdd_style`)** → `backend-engineer` (+ `prompt-engineer` se usa LLM em
+runtime, + `data-engineer` se toca esquema/telemetria) → `tester` (liga os cenários ao runner) →
+`adversarial-reviewer` (usa os cenários
 como oráculo) → `security-reviewer` (gate de segurança) → `docs-writer`.
 
 > **Fast-path de baixo risco (ADR-0008 — só se `fast_path: on`).** Se o `sdd-orchestrator` classificou a

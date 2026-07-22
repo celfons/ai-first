@@ -109,11 +109,18 @@ reserva de idempotência, laço da fila, chamada de LLM com timeout+validação+
 - **Feature grande é decomposta** (`task-decomposer`) em **micro-slices** implementadas em contexto
   isolado (menos alucinação, janela menor), com a **árvore verde a cada slice** e uma **slice de
   integração** que agrega o valor da feature de ponta a ponta. Feature pequena não é decomposta.
-- **Aceitação em BDD:** o `bdd-author` converte os critérios de aceite da spec (Dado/Quando/Então) em
-  **cenários executáveis** (o oráculo) — formato pelo knob `bdd_style` do genoma (`native`/`gherkin`/
-  `off`). O `tester` os liga ao runner; o `adversarial-reviewer` os usa e caça o que faltou.
+- **Aceitação em BDD (obrigatória):** o `bdd-author` converte os critérios de aceite da spec
+  (Dado/Quando/Então) em **cenários executáveis** (o oráculo) para **toda mudança de comportamento** — o
+  knob `bdd_style` do genoma só escolhe o **formato** (`native`/`gherkin`), não se a fase existe (não há
+  `off`). O `tester` **depende** deles; o `adversarial-reviewer` os usa e caça o que faltou. Única
+  exceção: `fast_path` de baixo risco (cobre com regressão).
 - **Subagentes de desenvolvimento** (`agents/`, ver `docs/roster.md`): roster
-  mapeado ao ciclo SDD. Delegue a feature nova ao `sdd-orchestrator` para manter o contexto enxuto.
+  mapeado ao ciclo SDD, agrupado em **times** (Descoberta & Produto · Entrega · Qualidade & Gate ·
+  Plataforma & Confiabilidade · Resultado & Economia · Memória — ver `docs/roster.md` § Times). Na
+  fase IMPLEMENT, além de `backend`/`frontend-engineer`, o `prompt-engineer` é dono da **camada de IA
+  do produto** (prompts/eval/injeção/fallback P-4), o `data-engineer` do **dado** (migração
+  expand/contract + escopo + instrumentação) e o `sre-engineer` da **plataforma** (IaC/deploy/flags/
+  SLO/`rollback`). Delegue a feature nova ao `sdd-orchestrator` para manter o contexto enxuto.
 - **Modelo + esforço são roteados por etapa** (custo-benefício) pelo `sdd-orchestrator`
   (`haiku`/`sonnet`/`opus`/`fable` × `baixo`/`médio`/`alto`/`extra`); ele aplica a tag `model:*`/
   `effort:*` na issue e é o **único subagente de modelo fixo (opus/alto)**. Invariante/segurança e o

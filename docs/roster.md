@@ -31,6 +31,7 @@ custo-benefício empurre para baixo.
 | `growth-strategist` | (backlog · GROWTH) | irmão do PO pela lente de **funil/escala**: escolhe a alavanca (AARRR) por **ROI**, lê o `growth-playbook.md` (o que pagou) e **cria issues de experimento** (`growth:*`) via `/daily-growth`. Mundo-externo é autônomo, contido por freios |
 | `tech-auditor` | (saúde do código) | varre bugs críticos + débito técnico e **cria issues** (não corrige) |
 | `ops-investigator` | (saúde de runtime) | investiga métricas/logs/DLQ e **cria issues** c/ sugestão (não corrige) |
+| `sre-engineer` | 4 · IMPLEMENT (plataforma) | irmão **construtor** do `ops-investigator`: constrói IaC, CI/CD, flags/canário, SLO/alerta e o caminho testado do `/rollback`. Onde o ops aponta, o SRE ergue o mecanismo |
 | `migration-analyst` | 0 · CARACTERIZAÇÃO (brownfield) | lê a solução de ORIGEM (qualquer stack) e destila comportamento observável em spec de caracterização + mapa de migração — **só em migração/reescrita** (skill `/migrate`) |
 | `sdd-orchestrator` | (entrada · **roteador**) | classifica tamanho; roteia **modelo+esforço** por etapa (custo-benefício); tag na issue. **Único de modelo fixo (opus/alto)** |
 | `feature-spec` | 1 · SPECIFY | `docs/sdd/features/NNN-slug/spec.md` |
@@ -40,7 +41,9 @@ custo-benefício empurre para baixo.
 | `ux-designer` | 3½ · DESIGN (UI) | brief de UI/UX — só em UI significativa |
 | `backend-engineer` | 4 · IMPLEMENT | código na branch de feature |
 | `frontend-engineer` | 4 · IMPLEMENT (UI) | implementa a UI — o brief do `ux-designer` ou tweaks diretos |
-| `bdd-author` | 4¾ · ACCEPTANCE | critérios de aceite → cenários BDD executáveis (oráculo) — **se `bdd_style ≠ off`** |
+| `prompt-engineer` | 4 · IMPLEMENT (IA do produto) | dono da **camada de IA voltada ao cliente**: prompts versionados, eval-set do comportamento, blindagem de injeção no produto e o **fallback determinístico** (P-4). Feature com LLM em runtime |
+| `data-engineer` | 4 · IMPLEMENT (dados) | dono do **dado**: migração expand/contract reversível, integridade da chave de escopo e a **instrumentação** (eventos/métricas) que o `outcome-analyst`/`growth-analyst` medem |
+| `bdd-author` | 4¾ · ACCEPTANCE | critérios de aceite → cenários BDD executáveis (oráculo) — **sempre que houver comportamento novo** (o `tester` depende deles) |
 | `tester` | 5 · VERIFY | liga os cenários ao runner + testes + evals; gate verde |
 | `adversarial-reviewer` | 5½ · VERIFY (independente) | tenta QUEBRAR a mudança; dirige o runtime; veredito pode BLOQUEAR o merge |
 | `security-reviewer` | 5¾ · VERIFY (segurança) | **executa o gate de segurança** (revisor independente P-11 + *required checks* de segurança P-13): threat model do diff, authz/escopo, injeção, segredo/PII, dependência/CVE; veredito pode BLOQUEAR. Modelo fixo opus/alto (P-14) |
@@ -51,6 +54,33 @@ custo-benefício empurre para baixo.
 | `finops-steward` | (economia · AIOps/FinOps) | mede o **custo** do pipeline (tokens/etapa, custo por feature mergeada, re-run do modelo barato, cache-hit) + runtime/cloud; cruza com o `outcome-analyst` (ROI) e **realimenta o roteamento** do `sdd-orchestrator`. Só mede/sugere |
 | `evaluator` | (avaliação · quality-rubrics) | mede o **pipeline** (não uma feature): roda **rubricas pass/fail** contra a saída **contratada** de um sub-workflow (ADR-0010) sobre um **conjunto-ouro**, emite scorecard (por critério + regressões vs. baseline) e é o **gate do upgrade de modelo** (re-baseline obrigatório, ADR-0011). Só mede; piso opus/alto; isolado. Roda na cadência `/eval` |
 | `knowledge-curator` | (memória · higiene) | jardineiro da memória (ADR-0005): **destila** o episódico recorrente em padrões/anti-padrões (`knowledge.md`), **poda** para `archive/` datado, audita o índice `context-map.md` e propõe **procedimento → skill**. Roda na cadência `/distill`, sob gate PR+validate. Só escreve docs/skills de memória |
+
+## Times (squads) — o eixo de paralelismo
+
+O roster tem **duas leituras**: a **vertical** (fase SDD, a tabela acima — a ordem em que uma feature
+atravessa o pipeline) e a **horizontal**, os **times**. Um time agrupa os agentes por **missão
+compartilhada**, e é o eixo em que o trabalho corre **em paralelo**: features diferentes avançam ao
+mesmo tempo (`parallelism`/`wip_limit`, footprint disjunto — ADR-0007), e dentro de uma feature as
+etapas que só dependem da spec/plan rodam concorrentes (ADR-0009). Time é organização, **não** relaxa
+o isolamento nem a separação de papéis (P-13): quem constrói nunca é quem aprova o risco.
+
+| Time | Missão | Membros | Paraleliza com… |
+|---|---|---|---|
+| **Descoberta & Produto** | decidir *o quê* e *por que agora* | `product-owner` · `growth-strategist` · `feature-spec` · `experiment-designer` | qualquer build em andamento (só escreve issues/docs) |
+| **Entrega** | construir a fatia | `sdd-orchestrator` · `architect` · `task-decomposer` · `backend-engineer` · `frontend-engineer` · `prompt-engineer` · `data-engineer` · `docs-writer` | outras features (footprint disjunto); dentro da feature, `bdd-author`/`ux-designer` correm ‖ ao implement |
+| **Qualidade & Gate** | provar que presta (independente) | `bdd-author` · `tester` · `adversarial-reviewer` · `security-reviewer` · `evaluator` | é **barreira** por design — não paraleliza com o próprio build que julga; entre features, sim |
+| **Plataforma & Confiabilidade** | manter no ar, reversível, observável | `sre-engineer` · `ops-investigator` · `tech-auditor` | crons/auditoria, fora do caminho do build |
+| **Resultado & Economia** | medir se moveu o ponteiro e a que custo | `outcome-analyst` · `growth-analyst` · `finops-steward` · `release-manager` | pós-merge, assíncrono ao build |
+| **Memória** | consolidar o saber-fazer e podar | `knowledge-curator` | cadência isolada (`/distill`) |
+
+> **Onde o paralelismo real acontece:** (1) **entre features** — o motor do `/daily-build` roda até
+> `parallelism` fatias em contextos/worktrees isolados, serializando só o merge e os footprints
+> sobrepostos; (2) **dentro do fan-out de verificação** — `verification_mode: panel` roda o
+> `adversarial-reviewer` como N céticos de lentes distintas (é um "time" instantâneo); (3) **dentro de
+> uma feature** — as etapas que dependem só da spec/plan (`bdd-author`, `ux-designer`, e, quando o
+> footprint separa, `data-engineer`/`prompt-engineer` vs. `backend-engineer`) correm concorrentes. O
+> time **Qualidade & Gate** é barreira de propósito (P-13) — a independência do julgamento vale mais
+> que o wall-clock.
 
 ## Diagrama de fluxo e interação
 

@@ -243,8 +243,8 @@ atravessando os módulos necessários — sem reorganizar o código por feature.
 | 1 · **SPECIFY** | `spec.md` (o quê/porquê, RFs, aceite, **métrica de sucesso §8**, gate constitucional) | `feature-spec` |
 | 2 · **PLAN** | `plan.md` (design, dados, idempotência, riscos) + `tasks.md` + ADR se durável | `architect` |
 | 2½ · **DECOMPOSE** *(só se grande)* | quebra em **micro-slices** isoladas (contexto estreito, árvore verde) + slice de integração | `task-decomposer` |
-| 4 · **IMPLEMENT** | código na branch `claude/<slug>` — **slice a slice, cada uma em contexto isolado** | `backend`/`frontend-engineer` |
-| 4¾ · **ACCEPTANCE (BDD)** *(se `bdd_style ≠ off`)* | critérios de aceite → **cenários executáveis** (o oráculo) | `bdd-author` |
+| 4 · **IMPLEMENT** | código na branch `claude/<slug>` — **slice a slice, cada uma em contexto isolado** | `backend`/`frontend-engineer` (+ `prompt-engineer` se LLM em runtime · + `data-engineer` se esquema/telemetria) |
+| 4¾ · **ACCEPTANCE (BDD)** *(obrigatória p/ comportamento novo)* | critérios de aceite → **cenários executáveis** (o oráculo do `tester`) | `bdd-author` |
 | 5 · **VERIFY** | liga os cenários ao runner + testes por slice + integração; gate verde | `tester` |
 | 5½ · **VERIFY (independente)** | tenta quebrar + dirige runtime; **pode bloquear o merge** | `adversarial-reviewer` |
 | 6 · **DOCS** | spec e docs refletem o **entregue** | `docs-writer` |
@@ -272,7 +272,9 @@ convenções da sua fase, para o thread principal delegar com **escopo curto**. 
 | `ux-designer` | Brief de UI/UX (só em UI significativa) |
 | `backend-engineer` | Implementa o código de produção |
 | `frontend-engineer` | Implementa a interface |
-| **`bdd-author`** | Converte os critérios de aceite em **cenários BDD executáveis** (o oráculo) — se `bdd_style ≠ off` |
+| `prompt-engineer` | Dono da **camada de IA do produto** — prompts, eval-set, blindagem de injeção, fallback (P-4) |
+| `data-engineer` | Dono do **dado** — migração expand/contract, chave de escopo, instrumentação da §8 |
+| **`bdd-author`** | Converte os critérios de aceite em **cenários BDD executáveis** (o oráculo) — obrigatório p/ comportamento novo |
 | `tester` | Liga os cenários ao runner + testes/evals; deixa o gate verde |
 | **`adversarial-reviewer`** | **Verificação independente** — tenta quebrar; dirige runtime; **bloqueia o merge** |
 | `docs-writer` | Reflete o comportamento final nos docs |
@@ -363,7 +365,7 @@ Definidos na gênese, gravados no genoma (`docs/ai-first/project.md §8`), **mud
   verificação independente + segurança + orçamento) e o kill-switch (`/rollback`) permanecem.
 - **`daily_budget`** — teto de gasto/esforço do loop por período (P-14).
 - **Modelo fixado** — upgrade é decisão explícita, com re-baseline de evals (P-14).
-- **`bdd_style`** — `native` | `gherkin` | `off` (formato dos cenários de aceitação).
+- **`bdd_style`** — `native` | `gherkin` (só o **formato** dos cenários de aceitação; a camada BDD é sempre ativa).
 
 Para mudar: edite o genoma ou rode `/ai-first-init` em modo revisão. Vale já no próximo ciclo.
 
@@ -391,7 +393,7 @@ ai-first/                          · o repo É o plugin (source "./" no marketp
 ├── .claude-plugin/
 │   ├── plugin.json                · manifesto do plugin (name, version, …)
 │   └── marketplace.json           · marketplace de plugin único (source "./")
-├── agents/                        · o roster (16 subagentes) — descoberto pelo plugin
+├── agents/                        · o roster (27 subagentes) — descoberto pelo plugin
 ├── skills/                        · ai-first-init, kickoff, feature-intake, backlog, feature, migrate, reject-feature, rollback, daily-*, new-extension
 ├── README.md                      · este arquivo
 ├── CLAUDE.md                      · índice-mãe (mapa de módulos + invariantes) — preenchido na gênese
@@ -409,7 +411,7 @@ ai-first/                          · o repo É o plugin (source "./" no marketp
 │   ├── context-map.md             · o context mesh leve (domínio → código+docs+ADRs+testes)
 │   ├── knowledge.md               · padrões + anti-padrões (saber-fazer curado)
 │   ├── evolution.md               · linha do tempo de aprendizados (o que mudou + o que ensinou)
-│   ├── roster.md                  · visão geral dos 16 subagentes (fora de agents/ p/ não virar componente)
+│   ├── roster.md                  · visão geral dos 27 subagentes + times (fora de agents/ p/ não virar componente)
 │   └── product/rejections.md      · ledger de rejeições
 ├── scripts/
 │   └── validate-plugin.mjs        · TESTE do manifesto + inventário do plugin (zero-dep)
@@ -449,10 +451,11 @@ alucinação, entrega mais rápida — e a **árvore fica verde a cada passo**. 
 final agrega tudo e prova a feature inteira de ponta a ponta. Feature pequena não é decomposta.
 
 **Onde entra o BDD?** Os critérios de aceite da spec já são escritos em Dado/Quando/Então. O
-`bdd-author` os transforma em **cenários executáveis** (Gherkin `.feature` ou cenários nativos — knob
-`bdd_style`) que viram o **oráculo**: o `tester` os liga ao runner e o `adversarial-reviewer` os usa e
-caça o cenário que faltou. Assim a spec e o teste falam a mesma língua e não divergem. Quem não quer a
-camada BDD põe `bdd_style: off`.
+`bdd-author` os transforma em **cenários executáveis** (Gherkin `.feature` ou cenários nativos — o knob
+`bdd_style` escolhe o formato) que viram o **oráculo**: o `tester` **depende** deles e o
+`adversarial-reviewer` os usa e caça o cenário que faltou. A camada de aceitação é **obrigatória para
+toda mudança de comportamento** — não há como desligá-la; a única exceção é o `fast_path` de baixo
+risco (que cobre com regressão). Assim a spec e o teste falam a mesma língua e não divergem.
 
 **E se a IA fizer besteira?** Cinco redes: **CI verde** obrigatória; **gate de segurança**
 (secret-scan/dep-review/SAST); **verificação independente** (`adversarial-reviewer` que tenta quebrar

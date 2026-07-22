@@ -55,7 +55,9 @@ Só leia o que o pedido exige; não abra a base inteira.
 | `ux-designer` | DESIGN (UI) | brief de UI/UX — **só** em UI significativa |
 | `backend-engineer` | IMPLEMENT | código na branch |
 | `frontend-engineer` | IMPLEMENT (UI) | implementa a interface |
-| `bdd-author` | ACCEPTANCE (BDD) | cenários de comportamento executáveis (oráculo) — **se `bdd_style ≠ off`** |
+| `prompt-engineer` | IMPLEMENT (IA do produto) | prompts + eval-set + blindagem de injeção + fallback (P-4) — **só se a feature usa LLM em runtime** |
+| `data-engineer` | IMPLEMENT (dados) | migração expand/contract + chave de escopo + instrumentação da §8 — **só se toca esquema/migração/telemetria** |
+| `bdd-author` | ACCEPTANCE (BDD) | cenários de comportamento executáveis (oráculo) — **sempre que houver comportamento novo** |
 | `tester` | VERIFY | liga os cenários ao runner + unidade/integração/invariante/runtime + regressão |
 | `adversarial-reviewer` | VERIFY (independente) | tenta quebrar; dirige runtime; pode bloquear |
 | `security-reviewer` | VERIFY (segurança) | gate AppSec do diff (authz/escopo, injeção, segredo/PII, dependência/CVE); pode bloquear — **fixo opus/alto (P-14)** |
@@ -89,10 +91,12 @@ rodar numa **sessão de implementação isolada** (janela menor → menos alucin
 integração agregar o valor de forma testável. **Pule** o decomposer em feature trivial/pequena (o
 `tasks.md` do `architect` já basta) — decompor demais é desperdício.
 
-**Camada de ACEITAÇÃO (BDD):** para **toda mudança de comportamento**, inclua `bdd-author` (antes do
-`tester`) — ele converte os critérios de aceite (spec §4) em **cenários executáveis** que viram o
-oráculo do `tester` e do `adversarial-reviewer`. **Pule** se `docs/ai-first/project.md §7` tiver
-`bdd_style: off`, ou em mudança trivial sem comportamento novo (cópia/refactor).
+**Camada de ACEITAÇÃO (BDD) — obrigatória:** para **toda mudança de comportamento**, inclua
+`bdd-author` (antes do `tester`) — ele converte os critérios de aceite (spec §4) em **cenários
+executáveis** que viram o oráculo do `tester` e do `adversarial-reviewer`. O knob `bdd_style` do genoma
+só escolhe o **formato** (`native`/`gherkin`), não se a fase existe — não há `off`. **A única exceção**
+é o `fast_path` de baixo risco (ADR-0008) ou mudança sem comportamento novo (cópia/refactor puros),
+onde não há cenário a gerar e o `tester` cobre com regressão.
 
 ## 2) Roteie MODELO + ESFORÇO por etapa (custo-benefício)
 Para **cada** subagente do plano, escolha o **modelo mais barato que faz o trabalho bem** e o esforço
@@ -118,6 +122,10 @@ Guia por papel (ponto de partida — ajuste ao caso):
 - `ux-designer`: **fable/médio-alto** (criativo).
 - `backend-engineer`/`frontend-engineer`: **sonnet/médio** (toca pagamento/PII/idempotência/invariante/
   segurança → **opus/alto**).
+- `prompt-engineer`: **opus/alto** por padrão (comportamento de IA voltado ao cliente + injeção é risco;
+  P-4 não tolera fallback frouxo). Ajuste de tom/microcópia de prompt trivial → **sonnet/médio**.
+- `data-engineer`: **sonnet/médio** (migração/instrumentação padrão; a chave de escopo é conhecida);
+  backfill grande, migração de esquema legado ou dado sensível → **opus/alto**.
 - `bdd-author`: **sonnet/médio** (traduz aceite em cenários; feature ambígua → **opus/alto**).
 - `tester`: **sonnet/médio** (invariante crítica → **opus/alto**).
 - `docs-writer`: **haiku/baixo-médio**.

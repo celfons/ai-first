@@ -41,9 +41,11 @@ const AGENT_PHASE = {
   'task-decomposer': 'build', 'bdd-author': 'build', 'backend-engineer': 'build',
   'frontend-engineer': 'build', 'tester': 'build', 'ux-designer': 'build',
   'docs-writer': 'build', 'migration-analyst': 'build',
+  'prompt-engineer': 'build', 'data-engineer': 'build',
   'adversarial-reviewer': 'gate', 'security-reviewer': 'gate', 'tech-auditor': 'gate',
   'ops-investigator': 'gate',
   'release-manager': 'ops', 'finops-steward': 'ops', 'knowledge-curator': 'ops',
+  'sre-engineer': 'ops',
 };
 // Papéis que exigem o modelo mais capaz (piso opus/alto no Claude → "seu LLM mais forte" fora dele).
 const STRONG = new Set(['adversarial-reviewer', 'security-reviewer', 'sdd-orchestrator']);

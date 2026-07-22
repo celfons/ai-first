@@ -86,13 +86,14 @@ invoque-o com a `spec.md`+`plan.md`. Ele reescreve `tasks.md` como um **grafo de
 isoladas + a **slice de integração** (ver `tasks-template.md` Forma B). Se a feature for pequena, o
 orchestrator pula esta etapa e o `tasks.md` do `architect` já serve.
 
-### 4¾ · ACCEPTANCE (BDD — se `bdd_style ≠ off`)
+### 4¾ · ACCEPTANCE (BDD — obrigatória para comportamento novo)
 Invoque **`bdd-author`** com a `spec.md`. Ele converte os critérios de aceite (§4) em **cenários
-executáveis** (`acceptance.feature` ou `acceptance.md`, conforme `docs/ai-first/project.md §7`),
-cobrindo caminho feliz, variações e casos de borda, cada cenário rastreado a um RF. Esses cenários são
-o **oráculo** da feature — o `tester` os liga ao runner e o `adversarial-reviewer` os usa (e caça o que
-faltou). `[NEEDS CLARIFICATION]` num cenário → volte ao `feature-spec`. Pule esta etapa em mudança
-trivial sem comportamento novo, ou se o genoma tiver `bdd_style: off`.
+executáveis** (`acceptance.feature` ou `acceptance.md`, no formato que `docs/ai-first/project.md §7`
+escolhe via `bdd_style`: `native`/`gherkin` — não há `off`), cobrindo caminho feliz, variações e casos
+de borda, cada cenário rastreado a um RF. Esses cenários são o **oráculo** da feature — o `tester`
+depende deles e o `adversarial-reviewer` os usa (e caça o que faltou). `[NEEDS CLARIFICATION]` num
+cenário → volte ao `feature-spec`. A única exceção é o `fast_path` de baixo risco ou mudança sem
+comportamento novo (refactor/cópia puros), onde não há cenário a gerar.
 
 ### 5 · IMPLEMENT (slice a slice, em contexto ISOLADO)
 Percorra o `tasks.md` **na ordem do DAG**. Para **cada slice**, faça uma **invocação nova e separada**

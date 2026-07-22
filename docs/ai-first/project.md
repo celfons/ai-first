@@ -59,9 +59,12 @@
   - `lint`: `[A DEFINIR]`
   - `test`: `[A DEFINIR]`
   - `eval` (se houver IA): `[A DEFINIR]`
-- **`bdd_style`** (formato dos cenários de aceitação do `bdd-author`): `[gherkin | native | off]`
-  (default **`native`** — cenários espelhando Dado/Quando/Então no framework de teste; `gherkin` =
-  `.feature` + runner Cucumber-style; `off` = sem camada BDD, o `tester` cobre os critérios direto)
+- **`bdd_style`** (formato dos cenários de aceitação do `bdd-author` — a camada BDD é **sempre ativa**,
+  este knob só escolhe o **formato**): `[gherkin | native]` (default **`native`** — cenários espelhando
+  Dado/Quando/Então no framework de teste; `gherkin` = `.feature` + runner Cucumber-style). Toda
+  mudança de **comportamento** passa pela fase de aceitação; o `tester` depende dos cenários como
+  oráculo (não há `off`). Mudança **sem comportamento novo** (refactor/cópia puros) naturalmente não
+  gera cenário, e o `fast_path` de baixo risco segue como a única exceção escalada ao risco (ADR-0008).
 - **Acesso a sinais de produção** (para o `ops-investigator`): `[A DEFINIR]` (API/credencial —
   **nome da env var**, nunca o valor — ou "sem acesso ainda")
 
