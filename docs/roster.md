@@ -43,7 +43,7 @@ custo-benefício empurre para baixo.
 | `frontend-engineer` | 4 · IMPLEMENT (UI) | implementa a UI — o brief do `ux-designer` ou tweaks diretos |
 | `prompt-engineer` | 4 · IMPLEMENT (IA do produto) | dono da **camada de IA voltada ao cliente**: prompts versionados, eval-set do comportamento, blindagem de injeção no produto e o **fallback determinístico** (P-4). Feature com LLM em runtime |
 | `data-engineer` | 4 · IMPLEMENT (dados) | dono do **dado**: migração expand/contract reversível, integridade da chave de escopo e a **instrumentação** (eventos/métricas) que o `outcome-analyst`/`growth-analyst` medem |
-| `bdd-author` | 4¾ · ACCEPTANCE | critérios de aceite → cenários BDD executáveis (oráculo) — **sempre que houver comportamento novo** (o `tester` depende deles) |
+| `bdd-author` | 4¾ · ACCEPTANCE | critérios de aceite → cenários BDD executáveis (oráculo) — **quando o `sdd-orchestrator` classifica `comportamento:cria|altera`** (o `tester` depende deles) |
 | `tester` | 5 · VERIFY | liga os cenários ao runner + testes + evals; gate verde |
 | `adversarial-reviewer` | 5½ · VERIFY (independente) | tenta QUEBRAR a mudança; dirige o runtime; veredito pode BLOQUEAR o merge |
 | `security-reviewer` | 5¾ · VERIFY (segurança) | **executa o gate de segurança** (revisor independente P-11 + *required checks* de segurança P-13): threat model do diff, authz/escopo, injeção, segredo/PII, dependência/CVE; veredito pode BLOQUEAR. Modelo fixo opus/alto (P-14) |
@@ -73,9 +73,12 @@ o isolamento nem a separação de papéis (P-13): quem constrói nunca é quem a
 | **Resultado & Economia** | medir se moveu o ponteiro e a que custo | `outcome-analyst` · `growth-analyst` · `finops-steward` · `release-manager` | pós-merge, assíncrono ao build |
 | **Memória** | consolidar o saber-fazer e podar | `knowledge-curator` | cadência isolada (`/distill`) |
 
-> **Onde o paralelismo real acontece:** (1) **entre features** — o motor do `/daily-build` roda até
-> `parallelism` fatias em contextos/worktrees isolados, serializando só o merge e os footprints
-> sobrepostos; (2) **dentro do fan-out de verificação** — `verification_mode: panel` roda o
+> **Onde o paralelismo real acontece:** (1) **entre features** — o `sdd-orchestrator` define, por
+> feature do lote, **qual time de agentes** a executa, e o fan-out concorrente é
+> `min(parallelism, wip_limit, floor(budget.remaining()/budget_per_feature))` — **condicionado ao teto
+> de token** (o orçamento estrangula o paralelismo antes de `parallelism`/`wip_limit`), em contextos/
+> worktrees isolados, serializando só o merge e os footprints sobrepostos; (2) **dentro do fan-out de
+> verificação** — `verification_mode: panel` roda o
 > `adversarial-reviewer` como N céticos de lentes distintas (é um "time" instantâneo); (3) **dentro de
 > uma feature** — as etapas que dependem só da spec/plan (`bdd-author`, `ux-designer`, e, quando o
 > footprint separa, `data-engineer`/`prompt-engineer` vs. `backend-engineer`) correm concorrentes. O

@@ -106,8 +106,13 @@ arquivo) e **agrupar para ninguém ficar na mesma parede ao mesmo tempo**. Regra
   `tasks.md` marcou dependência de contrato, respeite a ordem.
 - Se o footprint não foi declarado ou é ambíguo, **trate como sobreposto** (serialize — conservador).
 
-**Desenvolvimento paralelo (`parallelism` > 1, respeitando `wip_limit` + footprint):** desenvolva até
-`min(parallelism, wip_limit)` features de footprint disjunto **ao mesmo tempo**, cada uma em **contexto
+**Desenvolvimento paralelo (fan-out do lote — definido pelo `sdd-orchestrator`, gated pelo teto de
+token):** o `sdd-orchestrator` calcula o fan-out do lote como
+`min(parallelism, wip_limit, floor(budget.remaining()/budget_per_feature))` (§5 do agente) e define, por
+feature, **o time de agentes** que a executa. Desenvolva até esse `fan_out` features de footprint
+disjunto **ao mesmo tempo** — **o teto de token estrangula o paralelismo primeiro**: com `daily_budget`
+definido, nunca se abre mais frentes do que o orçamento restante cobre a `budget_per_feature` cada
+(com `sem-teto`, o fan-out cai só em `parallelism`/`wip_limit`). Cada frente roda em **contexto
 isolado** (subagentes de implementação com `isolation: 'worktree'`, uma
 branch `claude/<slug>` por feature a partir de `develop`). **Com opt-in de `Workflow`, faça-o num único
 Workflow** (Escala 2 acima): **bundle de recursos compartilhado derivado 1×** (contexto base + índice de

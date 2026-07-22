@@ -109,11 +109,13 @@ reserva de idempotência, laço da fila, chamada de LLM com timeout+validação+
 - **Feature grande é decomposta** (`task-decomposer`) em **micro-slices** implementadas em contexto
   isolado (menos alucinação, janela menor), com a **árvore verde a cada slice** e uma **slice de
   integração** que agrega o valor da feature de ponta a ponta. Feature pequena não é decomposta.
-- **Aceitação em BDD (obrigatória):** o `bdd-author` converte os critérios de aceite da spec
-  (Dado/Quando/Então) em **cenários executáveis** (o oráculo) para **toda mudança de comportamento** — o
-  knob `bdd_style` do genoma só escolhe o **formato** (`native`/`gherkin`), não se a fase existe (não há
-  `off`). O `tester` **depende** deles; o `adversarial-reviewer` os usa e caça o que faltou. Única
-  exceção: `fast_path` de baixo risco (cobre com regressão).
+- **Aceitação em BDD (condicionada ao comportamento, pelo orquestrador):** o `sdd-orchestrator`
+  classifica cada feature com a flag **`comportamento:<cria|altera|nenhum>`** e inclui o `bdd-author`
+  quando `cria`/`altera` — ele converte os critérios de aceite da spec (Dado/Quando/Então) em **cenários
+  executáveis** (o oráculo). Em `nenhum` (refactor/cópia/infra sem efeito observável novo) e no
+  `fast_path` de baixo risco, o `bdd-author` é pulado (o `tester` cobre com regressão). O knob
+  `bdd_style` só escolhe o **formato** (`native`/`gherkin`), não se a fase existe (não há `off`). O
+  `tester` **depende** dos cenários quando eles existem; o `adversarial-reviewer` os usa e caça o que faltou.
 - **Subagentes de desenvolvimento** (`agents/`, ver `docs/roster.md`): roster
   mapeado ao ciclo SDD, agrupado em **times** (Descoberta & Produto · Entrega · Qualidade & Gate ·
   Plataforma & Confiabilidade · Resultado & Economia · Memória — ver `docs/roster.md` § Times). Na
