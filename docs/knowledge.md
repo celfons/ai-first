@@ -32,6 +32,7 @@ de redescobrir o jeito certo (ou repetir um erro já pago).
 | _(ex.: LLM com timeout+schema+fallback)_ | toda chamada de IA | IA nunca confiada (P-4) | `ai/…` · `providerFallback` |
 | _(ex.: acesso a dado só pela porta)_ | toda query | fronteira rígida (P-5) | `repositories/…` · `dataBoundary` |
 | _(ex.: batch de banco em laço de fila)_ | processamento em lote | custo/latência | `…` · `…` |
+| **Superfícies paralelizáveis** (registry · um-arquivo-por-unidade · append-only) | feature nova onde muitos agentes escrevem em paralelo | footprints disjuntos não colidem no merge (ADR-0007) — cada feature no seu arquivo | pontos de extensão do `CLAUDE.md` · `scripts/plan-batch.mjs` |
 
 ## Anti-padrões — "não faça / cuidado" (armadilhas já pagas)
 
@@ -46,6 +47,7 @@ de redescobrir o jeito certo (ou repetir um erro já pago).
 | _(ex.: `SELECT` + `UPDATE` onde cabe atômico)_ | corrida sob concorrência | dado incoerente | operação atômica / lock otimista |
 | _(ex.: novo caminho que contorna o ponto de extensão)_ | lógica duplicada divergente | decadência/drift (P-14) | encaixar no ponto de extensão |
 | **Ação habilitada sem a pré-condição satisfeita** | gerar link/relatório/efeito que aponta para um estado vazio/quebrado (ex.: emitir relatório de conta sem fonte de dados conectada) | o usuário chega num artefato inútil e culpa o produto; parece bug de dados | **barreira no servidor (fail-closed)** que recusa a ação sem a pré-condição **+** UI que desabilita **com o motivo** (causa + como resolver) — nunca só um dos dois |
+| **Arquivo-deus compartilhado** (rota/tipos/DI/i18n/CHANGELOG central que TODA feature edita) | duas features paralelas batem no mesmo arquivo → conflito/rebase constante, contexto inflado | acopla features independentes e serializa o que devia correr junto — mata o paralelismo na raiz (ADR-0007) | **um slot por feature**: registry em vez de array central, um-arquivo-por-handler, migrations timestamped, barrels **gerados** por codegen, logs append-only |
 
 ## Qualidade visual premium (UI) — a régua do `ux-designer`/`frontend-engineer`
 

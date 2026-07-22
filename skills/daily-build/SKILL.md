@@ -82,9 +82,18 @@ como oráculo) → `security-reviewer` (gate de segurança) → `docs-writer`.
   `backend-engineer` (só o contexto da slice → janela menor, menos alucinação), **árvore verde ao fim
   de cada slice** (parcial atrás de flag), e a **slice de integração** por último. Verifique cada slice
   e faça o `adversarial-reviewer` sobre o **agregado**.
-**Escalonamento por WIP + footprint de conflito (ADR-0007).** Antes de fanar out, leia o **footprint de
-escrita** que o `architect` declarou no `plan.md` de cada demanda (superfícies/dirs que ela modifica).
-Regra:
+**Escalonamento por WIP + footprint de conflito (ADR-0007).** Antes de fanar out, **rode o agendador
+determinístico** em vez de decidir no olho:
+
+```
+node scripts/plan-batch.mjs --wip <wip_limit> --only <ids po-suggested da rodada> --json
+```
+
+Ele lê o **footprint de escrita** (bloco ` ```footprint ` do `plan.md` de cada demanda) e devolve o
+**maior lote de footprints disjuntos** (`batch`) que podem rodar em paralelo + as `deferred` (adiadas por
+sobreposição ou WIP cheio). Fane out **exatamente o `batch`**; as `deferred` voltam à próxima rodada.
+É a diferença entre pegar as N primeiras por prioridade (que pode juntar duas que brigam pelo mesmo
+arquivo) e **agrupar para ninguém ficar na mesma parede ao mesmo tempo**. Regra que o script aplica:
 - **Etapas de planejamento** (`feature-spec`, `architect`, `task-decomposer`, `bdd-author`) escrevem só
   nos próprios docs isolados (`docs/sdd/features/NNN-*`) → **sempre em paralelo**, sem restrição de WIP.
 - **Escritores de implementação** (`backend-engineer`, `frontend-engineer`): desenvolva em paralelo

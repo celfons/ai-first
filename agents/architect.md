@@ -61,13 +61,16 @@ use-o (ver a skill `skills/new-extension`).
 ## Entrega
 1. `docs/sdd/features/NNN-slug/plan.md` — todas as 8 seções do template. Cada decisão técnica
    **rastreada ao RF** que serve. Alternativas descartadas em 1 linha cada. **Declare o FOOTPRINT de
-   escrita** (ADR-0007): o conjunto de superfícies (diretórios/arquivos) que a implementação vai
-   **modificar** — é o que o `/daily-build` usa para decidir o que roda em paralelo (footprints
-   disjuntos) e o que serializa (footprints sobrepostos). Marque também, dentro da demanda, se
-   backend e frontend tocam superfícies distintas (paralelos) ou se um depende do contrato do outro
-   (a `tasks.md` os ordena). Seja específico (ex.: `src/api/orders/*`, `src/domain/order.ts`,
-   `web/checkout/*`) — footprint largo demais serializa à toa; estreito demais só cai para o merge
-   serializado (rede de segurança), nunca corrompe `develop`.
+   escrita** (ADR-0007) no **bloco ` ```footprint ` máquina-legível** da §2 do template (não em prosa):
+   o conjunto de superfícies (dirs/arquivos, globs `dir/**`/`dir/*`) que a implementação vai
+   **modificar**. É o que `scripts/plan-batch.mjs` parseia e o `/daily-build` usa para decidir o que
+   roda em paralelo (footprints disjuntos) e o que serializa (footprints sobrepostos). Marque também
+   `backend-frontend: disjunto | dependente` (se dependente, a `tasks.md` os ordena). Seja específico
+   (ex.: `src/api/orders/**`, `src/domain/order.ts`) e **projete para superfícies disjuntas** — prefira
+   os pontos de extensão que dão a cada feature seu próprio arquivo (registry, um-arquivo-por-handler,
+   append-only) em vez de editar um "arquivo-deus" compartilhado (ver o padrão em `docs/knowledge.md`).
+   Footprint largo demais serializa à toa; estreito demais só cai para o merge serializado (rede de
+   segurança), nunca corrompe `develop`.
 2. `docs/sdd/features/NNN-slug/tasks.md` — checklist ordenado por dependência (migration antes de
    código; porta antes de adapter), cada task rastreada a RF/RNF e com "done:" verificável.
    Inclua sempre a task de teste/eval e a task de docs.

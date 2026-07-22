@@ -23,6 +23,16 @@ e não-determinismo desnecessários — a nota é um texto fixo localizado).
 
 Respeita P-5: o acesso ao registro de "nota enviada" passa pela porta de dados.
 
+```footprint
+# Superfícies de ESCRITA (ADR-0007) — estreitas e disjuntas: cada handler/repositório é seu próprio arquivo.
+writes:
+  - src/pipeline/welcome-phase.*
+  - src/actions/send-welcome-note.*
+  - src/repositories/welcome.*
+  - src/domain/welcome-locale.*
+backend-frontend: disjunto
+```
+
 ## 3 · Dados
 
 - **Migration:** tabela/coluna `welcome_sent` por contato (com a chave de escopo do projeto); índice
