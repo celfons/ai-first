@@ -163,8 +163,11 @@ O grafo não precisa viver **monolítico dentro de cada driver**. As subcadeias 
 **sub-workflows contratados** — `workflow('nome', args)` com **schema de entrada e de saída** — que os
 drivers **compõem** em vez de recopiar. A fronteira canônica é **`build-one-feature`** (esta Escala 1
 inteira): `/feature`, `/daily-build`, `/kickoff` e `/migrate` a chamam; o painel adversarial (ADR-0005),
-o experimento de growth (ADR-0004) e o port de migração (ADR-0002) são as outras. Esqueleto de referência:
-[`templates/workflows/build-one-feature.mjs`](../templates/workflows/build-one-feature.mjs).
+o experimento de growth (ADR-0004) e o port de migração (ADR-0002) são as outras. Fonte de verdade:
+[`templates/workflows/build-one-feature.mjs`](../templates/workflows/build-one-feature.mjs) — a gênese
+(`/ai-first-init`) o **instala** no repo-alvo como `.claude/workflows/build-one-feature.mjs`, que é onde
+`workflow('build-one-feature')` **resolve**. O fitness F5 (`scripts/ai-first-fitness.mjs`) barra o build
+se a cópia instalada divergir do template (drift) ou faltar num repo armado.
 
 Três verdades que a composição assume (senão vira bug de expectativa):
 - **Segregar ORGANIZA e habilita eval; NÃO isola recurso.** O `workflow()` aninhado **compartilha** com o
