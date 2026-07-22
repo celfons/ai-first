@@ -41,6 +41,20 @@ Não há `src/` (repo-método): os "módulos" são os artefatos do plugin. P-5 a
 | `docs/sdd/constitution.md` | **corolário aditivo** em P-10/P-11 | RF-COG-08, RF-COG-10 |
 | `CLAUDE.md`, `docs/roster.md`, `docs/adr/README.md` | índice/roster/índice-ADR atualizados (integração) | todos |
 
+```footprint
+# Superfícies de ESCRITA (ADR-0007). Feature de método → toca muitos docs; footprint largo é honesto aqui.
+writes:
+  - docs/ai-first/memory.md
+  - docs/ai-first/project.md
+  - docs/context-map.md
+  - docs/token-efficiency.md
+  - agents/knowledge-curator.md
+  - agents/adversarial-reviewer.md
+  - skills/distill/**
+  - CLAUDE.md
+backend-frontend: disjunto
+```
+
 ## 3 · Dados
 
 - **Sem migration/banco.** O "estado" é markdown versionado.

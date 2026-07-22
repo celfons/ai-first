@@ -151,8 +151,38 @@ function f5_contractedWorkflow() {
   }
 }
 
+// ---- F6 · Footprint declarado em todo plano de feature (ADR-0007) ---------------------------------
+// Torna executável a restrição "todo plano de feature declara footprint" (ADR-0007). Sem footprint
+// bem-formado, o agendador ciente de conflito (scripts/plan-batch.mjs) trata a demanda como sobreposta
+// e serializa à toa — ou pior, duas demandas colidem no merge. É a pré-condição da concorrência segura.
+function f6_footprintDeclared() {
+  console.log('== F6 · Footprint declarado em todo plano de feature (ADR-0007) ==');
+  const base = join(ROOT, 'docs/sdd/features');
+  if (!existsSync(base)) return skip('sem docs/sdd/features/');
+  const dirs = readdirSync(base).filter((d) => existsSync(join(base, d, 'plan.md')));
+  if (!dirs.length) return skip('nenhum plan.md de feature');
+  let good = 0;
+  for (const d of dirs) {
+    const txt = readFileSync(join(base, d, 'plan.md'), 'utf8');
+    const m = /```footprint\s*([\s\S]*?)```/.exec(txt);
+    if (!m) { bad(`docs/sdd/features/${d}/plan.md: sem bloco \`\`\`footprint (ADR-0007 exige footprint de escrita)`); continue; }
+    // ≥1 entrada sob writes:
+    const writes = [];
+    let inW = false;
+    for (const raw of m[1].split('\n')) {
+      const line = raw.replace(/#.*$/, '');
+      if (/^\s*writes:\s*$/.test(line)) { inW = true; continue; }
+      if (inW) { const it = /^\s*-\s+(.+)$/.exec(line); if (it) writes.push(it[1].trim()); else if (line.trim() && !/^\s/.test(raw)) inW = false; }
+    }
+    if (!writes.length) bad(`docs/sdd/features/${d}/plan.md: bloco footprint sem nenhuma superfície sob \`writes:\``);
+    else good++;
+  }
+  if (good && !errors.length) ok(`${good} plano(s) com footprint de escrita bem-formado`);
+  else if (good) ok(`${good} plano(s) com footprint`);
+}
+
 // ---- runner ---------------------------------------------------------------------------------------
-for (const check of [f1_adrTrail, f2_pluginVersion, f3_genomeArmed, f4_dataBehindPort, f5_contractedWorkflow]) {
+for (const check of [f1_adrTrail, f2_pluginVersion, f3_genomeArmed, f4_dataBehindPort, f5_contractedWorkflow, f6_footprintDeclared]) {
   try { check(); } catch (e) { bad(`check ${check.name} lançou: ${e.message}`); }
 }
 

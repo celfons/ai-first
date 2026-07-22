@@ -22,6 +22,21 @@ Respeitar P-5 (fronteiras de camada) e os **pontos de extensão** do projeto (ve
 não invente um caminho novo onde já existe um ponto de extensão canônico (nova rota, nova
 Action/handler, nova porta de provedor, novo repositório).
 
+**Footprint de escrita (ADR-0007) — obrigatório.** Declare, no bloco máquina-legível abaixo, as
+superfícies (dirs/arquivos, globs permitidos) que esta feature vai **modificar**. É o que
+`scripts/plan-batch.mjs` parseia e o `/daily-build` usa para rodar em paralelo o que é **disjunto** e
+serializar o que **sobrepõe**. Prefira superfícies **estreitas e disjuntas** (ver o padrão
+"superfícies paralelizáveis" em `docs/knowledge.md`) — footprint largo demais serializa à toa; estreito
+demais só cai para o merge serializado (rede de segurança), nunca corrompe `develop`.
+
+```footprint
+# Superfícies de ESCRITA desta feature. Um caminho por linha sob `writes:`. Globs: `dir/**`, `dir/*`.
+writes:
+  - <caminho ou glob>
+  - <caminho ou glob>
+backend-frontend: disjunto | dependente
+```
+
 ## 3 · Dados
 
 - **Migrations/esquema**: sempre com a chave de escopo do projeto (ex.: `tenant_id`); índice
