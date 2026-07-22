@@ -108,6 +108,9 @@ que viram o oráculo do `tester` e do `adversarial-reviewer`. O knob `bdd_style`
 `nenhum`, classifique como `altera`** (conservador: o oráculo a mais custa menos que o comportamento
 sem prova).
 
+Emita a flag `comportamento:*` **explicitamente** no plano (na linha "Classificação") — é o sinal que o
+driver usa para incluir ou pular a etapa. A decisão é sua; o `bdd-author` só executa quando você o chama.
+
 ## 2) Roteie MODELO + ESFORÇO por etapa (custo-benefício)
 Para **cada** subagente do plano, escolha o **modelo mais barato que faz o trabalho bem** e o esforço
 proporcional à ambiguidade/risco. Não gaste opus/extra onde sonnet/médio resolve; não economize onde o
