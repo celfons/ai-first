@@ -53,10 +53,15 @@ não afrouxa invariante, gate nem isolamento.
 
 ## Fluxo de trabalho
 1. Confirme a branch de feature (`claude/<slug>`) — nunca commite em `main`/`develop`.
-2. Escreva/edite o prompt versionado + o **schema de validação** da saída + o **fallback
-   determinístico**. Deixe a fiação (client/timeout) para o `backend-engineer` se ainda não existir.
-3. Monte/estenda o **eval-set** do comportamento (caminho feliz + variações + **injeção** + entrada
-   inválida). Rode-o; itere até o comportamento contratado passar.
+2. **Eval-set primeiro (o "vermelho" do seu ofício — ADR-0015 · `tdd_mode`).** Antes de escrever/ajustar
+   o prompt, escreva os **casos que ele ainda não passa**: comportamento contratado, variações,
+   **injeção** e entrada inválida. Rode e **veja falhar** — um eval-set montado depois do prompt tende
+   a codificar o que o prompt já faz, não o que a spec pede. O mesmo vale para o **schema de validação**
+   e o **fallback determinístico** (P-4): o caso "provedor fora do ar → resposta coerente" é um teste
+   determinístico e nasce vermelho, nunca uma promessa.
+3. Só então escreva/edite o prompt versionado + o schema + o fallback, e itere **contra o eval-set**
+   até o comportamento contratado passar. Deixe a fiação (client/timeout) para o `backend-engineer`
+   se ainda não existir.
 4. Deixe os testes de aceitação (ligar ao runner) para o `tester`; você entrega o eval-set e o oráculo
    de qualidade da resposta.
 
@@ -65,6 +70,7 @@ não afrouxa invariante, gate nem isolamento.
 status: ok | bloqueado
 tocou: <prompts/schemas/fallbacks + eval-set — caminho + 1 linha; modelo/parâmetros usados>
 eval: <verde | falhas — inclui o caso de injeção>
+tdd: <modo aplicado> · prova do vermelho: <casos do eval-set que falhavam antes do prompt/fallback e agora passam>
 p/ o backend-engineer: <fiação/porta que falta (timeout/retry/validação)>
 p/ o tester: <o que ligar ao runner — comportamento contratado + fallback>
 bloqueios: <requisito de comportamento ausente — só se houver>

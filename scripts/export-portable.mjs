@@ -55,6 +55,9 @@ const WIRING = [
   'daily-growth  →  daily-backlog  →  daily-build',
   'dentro do daily-build: sdd-orchestrator → feature-spec → architect → task-decomposer → bdd-author'
     + ' → (backend-engineer ∥ frontend-engineer) → tester → adversarial-reviewer → security-reviewer → docs-writer',
+  'duplo laço de teste: bdd-author escreve a aceitação ANTES do código (laço externo, nasce vermelho);'
+    + ' o implementador roda vermelho → verde → refatorar por comportamento (laço interno) e devolve a'
+    + ' prova do vermelho; o tester audita. Bug reproduz em vermelho antes da correção.',
 ];
 
 // ---- Utilidades -----------------------------------------------------------------------------------

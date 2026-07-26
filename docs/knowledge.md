@@ -33,6 +33,9 @@ de redescobrir o jeito certo (ou repetir um erro já pago).
 | _(ex.: acesso a dado só pela porta)_ | toda query | fronteira rígida (P-5) | `repositories/…` · `dataBoundary` |
 | _(ex.: batch de banco em laço de fila)_ | processamento em lote | custo/latência | `…` · `…` |
 | **Superfícies paralelizáveis** (registry · um-arquivo-por-unidade · append-only) | feature nova onde muitos agentes escrevem em paralelo | footprints disjuntos não colidem no merge (ADR-0007) — cada feature no seu arquivo | pontos de extensão do `CLAUDE.md` · `scripts/plan-batch.mjs` |
+| **Duplo laço: cenário de aceitação vermelho por fora, ciclo vermelho→verde→refatorar por dentro** | toda mudança de comportamento (ADR-0015) | o teste-depois espelha a implementação e passa por acidente; o teste-antes prova o contrato e denuncia o acoplamento | `acceptance.*` da feature · micro-testes da unidade |
+| **Prova do vermelho no retorno do implementador** (qual teste falhou primeiro + a razão) | toda etapa de implement em `tdd_mode` ≠ `off` | torna a disciplina verificável em vez de declarada — é teste de mutação a custo ~zero | campo `tdd:` do retorno · auditoria do `tester` |
+| **Bug reproduz em vermelho antes da correção** | **sempre** (todos os modos, inclusive `fast_path`) | regressão que nunca falhou não prova que pega o bug | corpus de regressão (P-11) |
 
 ## Anti-padrões — "não faça / cuidado" (armadilhas já pagas)
 
@@ -47,6 +50,10 @@ de redescobrir o jeito certo (ou repetir um erro já pago).
 | _(ex.: `SELECT` + `UPDATE` onde cabe atômico)_ | corrida sob concorrência | dado incoerente | operação atômica / lock otimista |
 | _(ex.: novo caminho que contorna o ponto de extensão)_ | lógica duplicada divergente | decadência/drift (P-14) | encaixar no ponto de extensão |
 | **Ação habilitada sem a pré-condição satisfeita** | gerar link/relatório/efeito que aponta para um estado vazio/quebrado (ex.: emitir relatório de conta sem fonte de dados conectada) | o usuário chega num artefato inútil e culpa o produto; parece bug de dados | **barreira no servidor (fail-closed)** que recusa a ação sem a pré-condição **+** UI que desabilita **com o motivo** (causa + como resolver) — nunca só um dos dois |
+| **Teste escrito depois que espelha a implementação** | mesmos ramos/nomes internos do código; mock devolvendo exatamente o que a função pede; suíte verde que nunca ficou vermelha | passa porque descreve o que o código faz, não o que a spec pede — e regride junto com ele (pior no fluxo autônomo: mesmo cérebro dos dois lados) | teste **antes** do código (ADR-0015), nomeado pelo comportamento, com a **prova do vermelho** declarada |
+| **Verde falso** (asserção frouxa: `toBeTruthy`/`not.toThrow`; `skip` silencioso; mock do próprio código sob teste) | CI verde com bug vivo; sabotar a linha de produção não derruba nenhum teste | dá confiança sem cobertura — é o pior estado possível, porque desliga a desconfiança | asserção do valor/efeito concreto; sabotagem pontual como conferência (o `adversarial-reviewer` faz isso) |
+| **Pular o passo de refatorar** ("está verde, segue") | duplicação e nomes provisórios acumulam atrás de testes verdes | a dívida nasce protegida por teste, então ninguém a vê até custar caro | refatorar **com a árvore verde** é parte do ciclo, não item de backlog |
+| **Mock elaborado para contornar um teste difícil** | fixture gigante para exercitar uma regra simples | teste difícil é sintoma de acoplamento — o mock esconde o diagnóstico | corrija a fronteira (porta/injeção, P-5); o teste volta a ser simples |
 | **Arquivo-deus compartilhado** (rota/tipos/DI/i18n/CHANGELOG central que TODA feature edita) | duas features paralelas batem no mesmo arquivo → conflito/rebase constante, contexto inflado | acopla features independentes e serializa o que devia correr junto — mata o paralelismo na raiz (ADR-0007) | **um slot por feature**: registry em vez de array central, um-arquivo-por-handler, migrations timestamped, barrels **gerados** por codegen, logs append-only |
 
 ## Qualidade visual premium (UI) — a régua do `ux-designer`/`frontend-engineer`

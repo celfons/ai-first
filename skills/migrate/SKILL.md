@@ -79,6 +79,14 @@ correspondente, o ponto de extensão alvo e a linha do `context-map`. Uma slice 
 contexto limpa (janela menor, menos alucinação). Ao fim de cada slice: `typecheck`+`lint` verdes,
 árvore **não quebrada** (parcial atrás de flag), origem ainda servindo o tráfego real.
 
+> **Duplo laço na migração (ADR-0015).** O laço **externo** aqui é a **equivalência**: os RF de
+> caracterização e os *goldens* da origem já estão vermelhos contra o alvo vazio — eles são o oráculo,
+> e por isso são capturados **antes** do port (nunca depois, senão nascem contaminados pelo alvo).
+> O laço **interno** é o mesmo de sempre: passe o **`tdd_mode`** (genoma §7) no escopo da slice e exija
+> o campo `tdd:` no retorno — cada unidade portada nasce de um teste que falha primeiro. Numa migração
+> isso é especialmente barato: o teste já existe como golden; o ciclo é "rodar o golden → vermelho →
+> portar o mínimo → verde → refatorar para o idioma do alvo".
+
 ### 7 · VERIFY por EQUIVALÊNCIA — `tester` → `adversarial-reviewer`
 1. **`tester`**: o critério de aceite de uma migração é **comportar-se como a origem**. Ligue os RF de
    caracterização ao runner e, onde houver golden/parallel-run, **compare alvo × origem** (mesma

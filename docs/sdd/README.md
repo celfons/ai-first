@@ -26,12 +26,13 @@ comportamento **começa e termina** atualizando a spec.
 flowchart LR
   S["1 · SPECIFY<br/>features/NNN-slug/spec.md<br/>(user stories + RFs + aceite)"]
   P["2 · PLAN<br/>plan.md<br/>(design técnico, dados, riscos)"]
-  T["3 · TASKS<br/>tasks.md<br/>(decomposição verificável)"]
-  I["4 · IMPLEMENT<br/>branch claude/&lt;slug&gt; · PR com Closes NNN"]
+  T["3 · TASKS<br/>tasks.md<br/>(decomposição verificável · done red-testável)"]
+  A["3¾ · ACCEPTANCE (laço externo)<br/>acceptance.feature/.md<br/>(cenários BDD — nascem vermelhos)"]
+  I["4 · IMPLEMENT (laço interno)<br/>branch claude/&lt;slug&gt; · TDD vermelho→verde→refatorar"]
   V["5 · VERIFY<br/>typecheck + lint + test + evals"]
   D["6 · DOCS<br/>spec + docs refletem o entregue"]
 
-  S --> P --> T --> I --> V --> D
+  S --> P --> T --> A --> I --> V --> D
   D -->|"spec desatualizada?<br/>atualiza antes do merge"| S
 ```
 
@@ -48,10 +49,15 @@ flowchart LR
    `task-decomposer` a fatia num **grafo de micro-slices** implementáveis em **contexto isolado**
    (janela menor, menos alucinação), com a **árvore verde a cada slice** e uma **slice de integração**
    que agrega o valor da feature inteira (`tasks-template.md` Forma B).
-5. **Implement & verify** — branch de feature, PR com `Closes #NNN`; **slice a slice em contexto
-   isolado** quando decomposta; `typecheck` + `lint` + `test` limpos **a cada slice**; critérios de
-   aceite viram testes; comportamento de IA vira **eval**; verificação independente no agregado.
-6. **Docs** — a `spec.md` termina refletindo o **comportamento implementado**, e os docs
+5. **Acceptance (laço externo)** — os critérios de aceite viram **cenários executáveis**
+   (`bdd-author`), **antes** do código: eles nascem vermelhos e são o oráculo da feature. Pulada só em
+   mudança sem comportamento novo e no `fast_path` de baixo risco.
+6. **Implement & verify (laço interno)** — branch de feature, PR com `Closes #NNN`; **slice a slice em
+   contexto isolado** quando decomposta; cada comportamento nasce de um **teste que falha primeiro**
+   (TDD: vermelho → verde → refatorar, knob `tdd_mode`), com a **prova do vermelho** no retorno do
+   implementador; `typecheck` + `lint` + `test` limpos **a cada slice**; comportamento de IA vira
+   **eval**; verificação independente no agregado. Ver [ADR-0015](../adr/0015-duplo-laco-bdd-tdd.md).
+7. **Docs** — a `spec.md` termina refletindo o **comportamento implementado**, e os docs
    normativos afetados são atualizados.
 
 ## 📏 Convenções de identificadores

@@ -38,6 +38,23 @@ sem reconstruir o passado lendo dez lugares.
 
 ## Linha do tempo
 
+### 2026-07-26 · Duplo laço de teste — TDD entra como laço interno do BDD (meta)
+- **Sinal:** 🔧 processo (sem métrica de produto — é fidelidade da implementação do próprio método).
+- **Aprendizado:** o método tinha o **laço externo** (cenários de aceitação como oráculo) mas mantinha
+  o **teste-depois** no miolo: `backend-engineer` implementava, `tester` cobria. No fluxo autônomo isso
+  é o pior arranjo possível — **o mesmo cérebro escreve código e teste**, então o teste tende a
+  descrever o que a implementação faz (mesmos ramos, mesmos mocks) e passa por *concordância*, não por
+  prova. Faltava também qualquer evidência de que um teste **sabe falhar**: verde nunca visto vermelho
+  pode ser asserção frouxa ou caminho não exercitado. Correção sem inflar o pipeline: **nenhum agente
+  novo** (o ciclo vermelho→verde→refatorar roda **dentro** da invocação do implementador — um hop por
+  ciclo custaria mais que o ganho), **`bdd-author` movido para antes do implement** (o laço externo tem
+  de nascer vermelho), **prova do vermelho** como campo de retorno (torna a disciplina verificável em
+  vez de declarada — teste de mutação a custo ~zero), o `tester` promovido a **auditor** do laço interno
+  e o `adversarial-reviewer` ganhando a lente "**sabote o código: a suíte pega?**" com poder de bloqueio.
+  Escalado ao contexto pelo knob `tdd_mode` (`estrito`/`pragmático`/`off`), com um piso que não se
+  negocia em modo nenhum: **bug reproduz em vermelho antes da correção**.
+- **Links:** ADR-0015 · corolários P-1/P-10 · `docs/engineering-principles.md` §11 · genoma §7 (`tdd_mode`).
+
 ### 2026-07-21 · Bordas que o caminho feliz esconde (meta) — pós-refactor do painel
 - **Sinal:** 🔧 processo (uma solução construída pelo método precisou de 3 refactors de correção; as
   três dores eram a **mesma classe** de omissão).

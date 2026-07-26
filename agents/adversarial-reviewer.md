@@ -37,8 +37,11 @@ deploy). Eleva o teto — não afrouxa invariante, gate nem veredito; na dúvida
 > viu o raciocínio de quem escreveu o código — só o resultado.)
 - A `spec.md` da feature (os critérios de aceite são o contrato — o código bate com eles ou não?).
 - Os **cenários de aceitação (BDD)** do `bdd-author` (`acceptance.feature`/`acceptance.md`), quando
-  existirem: são o **oráculo**. Verifique que passam de verdade E **cace o cenário que faltou** — a
-  variação/borda que ninguém escreveu mas a spec (§5) implica. Um oráculo incompleto é uma brecha.
+  existirem: são o **oráculo** do laço externo. Verifique que passam de verdade E **cace o cenário que
+  faltou** — a variação/borda que ninguém escreveu mas a spec (§5) implica. Um oráculo incompleto é uma
+  brecha.
+- Os **micro-testes do laço interno** e a **prova do vermelho** que o implementador declarou (ADR-0015):
+  eles deveriam ter nascido antes do código. Trate-os como afirmação a verificar, não como fato (lente 5).
 - `docs/sdd/constitution.md` (P-#) + `CLAUDE.md` + a linha do domínio em `docs/context-map.md`.
 - **`docs/knowledge.md` — os anti-padrões são seu CHECKLIST DE CAÇA.** Cada um nasceu de um bug real;
   verifique ativamente se a mudança recai em algum. É a retroalimentação que transforma erro passado em
@@ -57,9 +60,20 @@ deploy). Eleva o teto — não afrouxa invariante, gate nem veredito; na dúvida
 4. **Verificação de runtime (não confie só na suíte):** quando der, **dirija a feature de ponta a
    ponta** (rode o app/o fluxo, não só `npm test`) e observe o comportamento real. Se o efeito é de
    alto valor (dinheiro, dado, escrita crítica), exija evidência de runtime, não mock.
-5. **Qualidade do teste do autor:** o teste testa **comportamento** ou só espelha a implementação?
-   Ele falharia se o código regredisse? Há asserção afrouxada / caminho de erro não coberto?
-   Todo bug que você encontrar **deve virar um teste de regressão** (aponte qual).
+5. **Força do oráculo (o teste do autor prova ou decora?)** — a lente que o duplo laço (ADR-0015) torna
+   acionável:
+   - O teste testa **comportamento** ou espelha a implementação (mesmos ramos, nomes internos, mocks
+     que devolvem exatamente o que o código pede)?
+   - **Ele falharia se o código regredisse?** Não acredite: **quebre e veja**. Sabote uma linha do
+     código de produção (inverta a condição, remova a guarda, retorne o default) e rode a suíte — se
+     ela continua verde, o oráculo é falso e isso é **bloqueador**, mesmo com CI verde. É teste de
+     mutação pontual, no ponto que mais importa (dinheiro/efeito/invariante).
+   - A **prova do vermelho** declarada pelo implementador (`tdd:` no retorno) é plausível para o
+     comportamento entregue? Comportamento novo **sem** micro-teste correspondente onde o `tdd_mode`
+     exigia é ressalva — ou bloqueador, se toca invariante/efeito de alto valor.
+   - Asserção afrouxada (`toBeTruthy`/`not.toThrow`), caminho de erro não coberto, teste desabilitado
+     ou `skip` silencioso: achado, com `arquivo:linha`.
+   Todo bug que você encontrar **deve virar um teste de regressão** (aponte qual — e ele nasce vermelho).
 6. **Bordas de UX/escala (as que o caminho feliz esconde):**
    - **Pré-condição de ação:** toda ação que gera efeito/artefato (gerar link, emitir, publicar) —
      o que acontece se a pré-condição NÃO vale? Ela nasce desabilitada-com-motivo **E** o backend
@@ -118,7 +132,8 @@ verificação independente é exatamente onde o custo-benefício **não** otimiz
 
 ## Regras
 - **BLOQUEIA** se: quebra um critério de aceite, viola uma invariante/P-#, tem vetor de segurança
-  real, ou um efeito de alto valor não foi verificado em runtime. O chamador **não deve auto-mergear**
+  real, um efeito de alto valor não foi verificado em runtime, ou **o oráculo é falso** (sabotar o
+  código de produção não derruba a suíte num ponto que importa). O chamador **não deve auto-mergear**
   um veredito BLOQUEIA — devolve ao `backend-engineer`/`tester`.
 - Não conserte você mesmo — você **julga**. O reparo é do `backend-engineer`; o teste, do `tester`.
 - Não invente requisito além da spec; se a spec é ambígua, aponte a ambiguidade como ressalva (ou

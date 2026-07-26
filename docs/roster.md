@@ -39,12 +39,12 @@ custo-benefício empurre para baixo.
 | `architect` | 2 · PLAN | `plan.md` + `tasks.md` (+ ADR se durável) |
 | `task-decomposer` | 2½ · DECOMPOSE | quebra em micro-slices isoladas + slice de integração — **só se grande/complexa** |
 | `ux-designer` | 3½ · DESIGN (UI) | brief de UI/UX — só em UI significativa |
-| `backend-engineer` | 4 · IMPLEMENT | código na branch de feature |
-| `frontend-engineer` | 4 · IMPLEMENT (UI) | implementa a UI — o brief do `ux-designer` ou tweaks diretos |
+| `bdd-author` | 3¾ · ACCEPTANCE (**laço externo**, antes do implement) | critérios de aceite → cenários BDD executáveis (o oráculo, **nasce vermelho**) — **quando o `sdd-orchestrator` classifica `comportamento:cria|altera`** |
+| `backend-engineer` | 4 · IMPLEMENT (**laço interno · TDD**) | código na branch de feature, pelo ciclo vermelho → verde → refatorar (+ prova do vermelho) |
+| `frontend-engineer` | 4 · IMPLEMENT (UI) | implementa a UI — o brief do `ux-designer` ou tweaks diretos; comportamento pelo ciclo TDD, estética verificada na tela |
 | `prompt-engineer` | 4 · IMPLEMENT (IA do produto) | dono da **camada de IA voltada ao cliente**: prompts versionados, eval-set do comportamento, blindagem de injeção no produto e o **fallback determinístico** (P-4). Feature com LLM em runtime |
 | `data-engineer` | 4 · IMPLEMENT (dados) | dono do **dado**: migração expand/contract reversível, integridade da chave de escopo e a **instrumentação** (eventos/métricas) que o `outcome-analyst`/`growth-analyst` medem |
-| `bdd-author` | 4¾ · ACCEPTANCE | critérios de aceite → cenários BDD executáveis (oráculo) — **quando o `sdd-orchestrator` classifica `comportamento:cria|altera`** (o `tester` depende deles) |
-| `tester` | 5 · VERIFY | liga os cenários ao runner + testes + evals; gate verde |
+| `tester` | 5 · VERIFY | liga os cenários ao runner + integração/invariante/runtime/regressão + evals; **audita o laço interno** (prova do vermelho); gate verde |
 | `adversarial-reviewer` | 5½ · VERIFY (independente) | tenta QUEBRAR a mudança; dirige o runtime; veredito pode BLOQUEAR o merge |
 | `security-reviewer` | 5¾ · VERIFY (segurança) | **executa o gate de segurança** (revisor independente P-11 + *required checks* de segurança P-13): threat model do diff, authz/escopo, injeção, segredo/PII, dependência/CVE; veredito pode BLOQUEAR. Modelo fixo opus/alto (P-14) |
 | `docs-writer` | 6 · DOCS | `docs/*`, `CLAUDE.md`, spec final coerente |
@@ -67,7 +67,7 @@ o isolamento nem a separação de papéis (P-13): quem constrói nunca é quem a
 | Time | Missão | Membros | Paraleliza com… |
 |---|---|---|---|
 | **Descoberta & Produto** | decidir *o quê* e *por que agora* | `product-owner` · `growth-strategist` · `feature-spec` · `experiment-designer` | qualquer build em andamento (só escreve issues/docs) |
-| **Entrega** | construir a fatia | `sdd-orchestrator` · `architect` · `task-decomposer` · `backend-engineer` · `frontend-engineer` · `prompt-engineer` · `data-engineer` · `docs-writer` | outras features (footprint disjunto); dentro da feature, `bdd-author`/`ux-designer` correm ‖ ao implement |
+| **Entrega** | construir a fatia (laço interno TDD incluso) | `sdd-orchestrator` · `architect` · `task-decomposer` · `backend-engineer` · `frontend-engineer` · `prompt-engineer` · `data-engineer` · `docs-writer` | outras features (footprint disjunto); dentro da feature, `bdd-author`/`ux-designer` correm ‖ ao implement |
 | **Qualidade & Gate** | provar que presta (independente) | `bdd-author` · `tester` · `adversarial-reviewer` · `security-reviewer` · `evaluator` | é **barreira** por design — não paraleliza com o próprio build que julga; entre features, sim |
 | **Plataforma & Confiabilidade** | manter no ar, reversível, observável | `sre-engineer` · `ops-investigator` · `tech-auditor` | crons/auditoria, fora do caminho do build |
 | **Resultado & Economia** | medir se moveu o ponteiro e a que custo | `outcome-analyst` · `growth-analyst` · `finops-steward` · `release-manager` | pós-merge, assíncrono ao build |
@@ -105,11 +105,11 @@ flowchart TD
 
   SPEC["📐 feature-spec<br/>spec.md + gate constitucional"] -->|"gate humano"| ARCH
   ARCH["🏗 architect<br/>plan.md + tasks.md + ADR"] -->|"gate humano"| DEC
-  DEC{{"🧩 task-decomposer<br/>micro-slices se grande"}} -->|"slice a slice · contexto isolado"| BE
-  BE["⚙️ backend/frontend-engineer<br/>cada slice · árvore verde"] -->|"próxima slice"| BE
-  BE --> BDD
-  BDD{{"🥒 bdd-author<br/>cenários de aceitação · oráculo"}} --> TEST
-  TEST["🧪 tester<br/>liga os cenários + testes + evals"]
+  DEC{{"🧩 task-decomposer<br/>micro-slices se grande"}} --> BDD
+  BDD{{"🥒 bdd-author · laço EXTERNO<br/>cenários de aceitação · nascem vermelhos"}} -->|"slice a slice · contexto isolado"| BE
+  BE["⚙️ backend/frontend-engineer · laço INTERNO<br/>vermelho → verde → refatorar · árvore verde"] -->|"próxima slice"| BE
+  BE --> TEST
+  TEST["🧪 tester<br/>liga os cenários + audita o laço interno + testes/evals"]
   TEST -->|"bug de produção"| BE
   TEST -->|"verde"| ADV["🛡 adversarial-reviewer<br/>tenta quebrar · dirige runtime"]
   ADV -->|"bloqueia"| BE
@@ -159,14 +159,29 @@ sdd-orchestrator  → devolve o plano de delegação (roteia modelo+esforço)
   └─ feature-spec      (SPECIFY)   → spec.md
      └─ architect      (PLAN)      → plan.md + tasks.md (+ ADR se durável)
         └─ task-decomposer (DECOMPOSE, só se grande) → micro-slices + slice de integração
-           └─ backend-engineer (IMPLEMENT) → slice a slice, cada uma em contexto ISOLADO
-              └─ bdd-author  (ACCEPTANCE) → cenários executáveis dos critérios de aceite (oráculo)
-                 └─ tester    (VERIFY)   → liga os cenários ao runner + testes por slice + integração
+           └─ bdd-author  (ACCEPTANCE · laço EXTERNO) → cenários executáveis dos critérios de aceite
+              │                                          (o oráculo — nasce VERMELHO, antes do código)
+              └─ backend-engineer (IMPLEMENT · laço INTERNO) → slice a slice, contexto ISOLADO,
+                 │                                     ciclo vermelho → verde → refatorar + prova do vermelho
+                 └─ tester    (VERIFY)   → liga os cenários ao runner + audita o laço interno +
+                    │                       integração/invariante/runtime/regressão
                     └─ adversarial-reviewer (VERIFY independente) → tenta quebrar o agregado
                        └─ security-reviewer (VERIFY segurança) → gate AppSec do diff (pode BLOQUEAR)
                           └─ docs-writer (DOCS) → docs coerentes
                              └─ (após promoção a main) release-manager → comunica o valor à persona
 ```
+
+> **O duplo laço (ADR-0015) — por que a ordem importa.** O `bdd-author` roda **antes** do implement: o
+> cenário de aceitação escrito depois do código tende a descrever o que a implementação faz, não o que a
+> spec pede. Escrito antes, ele nasce **vermelho** e continua sendo o contrato. Dentro do implement, o
+> **laço interno** (TDD: escreve o micro-teste do próximo comportamento → **vê falhar** → implementa o
+> mínimo → refatora com a árvore verde) é rodado **pelo próprio implementador, na mesma invocação** —
+> não há agente de TDD, porque um hop por ciclo custaria mais que o ganho e mataria o feedback curto.
+> O que torna a disciplina verificável é a **prova do vermelho** (qual teste falhou primeiro e por quê)
+> no retorno; o `tester` a audita e o `adversarial-reviewer` a testa (sabota o código: a suíte pega?).
+> Modo pelo knob `tdd_mode` (`estrito` default · `pragmático` · `off`); **bug reproduz em vermelho antes
+> da correção em qualquer modo**. A separação de papéis (P-13) não muda: quem escreve o teste do próprio
+> código continua **não** sendo quem aprova o risco.
 
 > **Decompor para não alucinar:** feature grande é fatiada em **micro-slices** pelo `task-decomposer`;
 > cada slice é implementada numa **sessão de contexto limpa** (janela menor, menos alucinação, mais
@@ -203,6 +218,7 @@ migration-analyst (CARACTERIZAÇÃO) → characterization.md (RF observáveis) +
      └─ architect      (PLAN do ALVO) → encaixe nos pontos de extensão + flag + plano de equivalência (+ADR)
         └─ task-decomposer (DECOMPOSE strangler-fig) → fatias na ordem do acoplamento, cada uma atrás de flag
            └─ backend/frontend-engineer (PORT) → fatia a fatia, contexto isolado, árvore verde, origem ainda servindo
+              │                                   (golden vermelho → porta o mínimo → verde → refatora ao idioma do alvo)
               └─ tester (VERIFY por EQUIVALÊNCIA) → parallel-run/golden: alvo × origem, mesma entrada → mesma saída
                  └─ adversarial-reviewer → tenta quebrar a paridade; veredito pode BLOQUEAR
                     └─ docs-writer → caracterização vira spec viva do alvo; fecha ADRs; critério de desligar o legado
