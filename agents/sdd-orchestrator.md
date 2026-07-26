@@ -57,8 +57,8 @@ Só leia o que o pedido exige; não abra a base inteira.
 | `frontend-engineer` | IMPLEMENT (UI) | implementa a interface |
 | `prompt-engineer` | IMPLEMENT (IA do produto) | prompts + eval-set + blindagem de injeção + fallback (P-4) — **só se a feature usa LLM em runtime** |
 | `data-engineer` | IMPLEMENT (dados) | migração expand/contract + chave de escopo + instrumentação da §8 — **só se toca esquema/migração/telemetria** |
-| `bdd-author` | ACCEPTANCE (BDD) | cenários de comportamento executáveis (oráculo) — **quando `comportamento:cria|altera`** (decisão de classificação do orquestrador) |
-| `tester` | VERIFY | liga os cenários ao runner + unidade/integração/invariante/runtime + regressão |
+| `bdd-author` | ACCEPTANCE (BDD · laço externo, **antes** do implement) | cenários de comportamento executáveis (oráculo) — **quando `comportamento:cria|altera`** (decisão de classificação do orquestrador) |
+| `tester` | VERIFY | liga os cenários ao runner + integração/invariante/runtime + regressão; **audita o laço interno** (prova do vermelho) |
 | `adversarial-reviewer` | VERIFY (independente) | tenta quebrar; dirige runtime; pode bloquear |
 | `security-reviewer` | VERIFY (segurança) | gate AppSec do diff (authz/escopo, injeção, segredo/PII, dependência/CVE); pode bloquear — **fixo opus/alto (P-14)** |
 | `docs-writer` | DOCS | atualiza `docs/*`, `CLAUDE.md`, spec final |
@@ -111,6 +111,26 @@ sem prova).
 Emita a flag `comportamento:*` **explicitamente** no plano (na linha "Classificação") — é o sinal que o
 driver usa para incluir ou pular a etapa. A decisão é sua; o `bdd-author` só executa quando você o chama.
 
+**Ordem do duplo laço (ADR-0015): o `bdd-author` vem ANTES do implement.** O laço externo tem de estar
+**vermelho** antes de existir código — é isso que impede o cenário de ser escrito à imagem da
+implementação. Ordene o plano `… → bdd-author → backend/frontend-engineer → tester …` (o `bdd-author`
+segue `paralelo:sim`: depende só da spec/plan, então pode correr concorrente ao início do implement num
+`Workflow`, mas **nunca depois** dele).
+
+**Camada de LAÇO INTERNO (TDD) — knob, não etapa.** O ciclo **vermelho → verde → refatorar** roda
+**dentro** da invocação do implementador (`backend`/`frontend`/`data`/`prompt`/`sre-engineer`) — **não
+crie etapa nem agente para isso** (um hop por ciclo custaria mais que o ganho e quebraria o feedback
+curto). O que você faz:
+- **Leia `tdd_mode` no genoma §7** (`estrito` default · `pragmático` · `off`) e **emita-o na linha
+  "Classificação"** como `tdd:<modo>` — é o sinal que o driver repassa a cada etapa de implementação.
+- **Escreva o gate da etapa de implement como `prova do vermelho`**: o retorno do implementador traz o
+  campo `tdd:` (teste que falhou primeiro + razão). Etapa de implement sem esse gate é plano incompleto.
+- **Suba o modo, nunca desça:** em `pragmático`, uma fatia que toca invariante/dinheiro/PII/efeito
+  colateral **ou uma correção de bug** roda como `estrito` (o piso "bug reproduz em vermelho antes da
+  correção" vale em **todos** os modos, inclusive no `fast_path`).
+- **Custo:** o laço interno adiciona ciclos, não invocações — o efeito no orçamento é de **esforço**
+  (considere `effort` um degrau acima em fatia densa de regra de negócio), não de fan-out.
+
 ## 2) Roteie MODELO + ESFORÇO por etapa (custo-benefício)
 Para **cada** subagente do plano, escolha o **modelo mais barato que faz o trabalho bem** e o esforço
 proporcional à ambiguidade/risco. Não gaste opus/extra onde sonnet/médio resolve; não economize onde o
@@ -140,7 +160,8 @@ Guia por papel (ponto de partida — ajuste ao caso):
 - `data-engineer`: **sonnet/médio** (migração/instrumentação padrão; a chave de escopo é conhecida);
   backfill grande, migração de esquema legado ou dado sensível → **opus/alto**.
 - `bdd-author`: **sonnet/médio** (traduz aceite em cenários; feature ambígua → **opus/alto**).
-- `tester`: **sonnet/médio** (invariante crítica → **opus/alto**).
+- `tester`: **sonnet/médio** (invariante crítica → **opus/alto**). Ele **não** reescreve o laço interno —
+  liga a aceitação ao runner, cobre integração/invariante/runtime/regressão e **audita** os micro-testes.
 - `docs-writer`: **haiku/baixo-médio**.
 - **`adversarial-reviewer`: nunca sub-provisione (é a rede de segurança, P-11).** Mínimo **opus/alto**;
   efeito de alto valor (dinheiro/dado/segurança) → **opus/extra**. Custo-benefício otimiza o mecânico,
@@ -218,7 +239,7 @@ paga ~10% da leitura). Sua citação precisa é o que permite esse bloco existir
 ## Formato da sua resposta (SEMPRE este)
 ```
 ## Classificação
-<trivial | média | grande> — <1 frase do porquê> · comportamento:<cria|altera|nenhum> (condiciona o `bdd-author`)
+<trivial | média | grande> — <1 frase do porquê> · comportamento:<cria|altera|nenhum> (condiciona o `bdd-author`) · tdd:<estrito|pragmático|off> (laço interno do implement — ADR-0015)
 
 ## Contexto fixo da fatia (para o bloco reutilizável do driver)
 context-map: <linha(s) exatas do domínio tocado, ex.: "Domínio: cobrança → src/billing, docs/…">

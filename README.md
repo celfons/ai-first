@@ -191,7 +191,7 @@ flowchart LR
   subgraph L3["3 · Construir — ⏰ /daily-build"]
     ORCH["sdd-orchestrator<br/>roteia modelo · esforço"] --> SPEC["feature-spec"]
     SPEC --> ARCH["architect<br/>declara FOOTPRINT + ADR"]
-    ARCH --> DEC["task-decomposer<br/>(se grande)"] --> BDD["bdd-author<br/>cenários"]
+    ARCH --> DEC["task-decomposer<br/>(se grande)"] --> BDD["bdd-author · laço externo<br/>cenários (nascem vermelhos)"]
     BDD --> WIP{{"paralelo se footprint disjunto<br/>WIP ≤ wip_limit"}}
     WIP --> BE["backend-engineer"]
     WIP --> FE["frontend-engineer"]
@@ -243,9 +243,9 @@ atravessando os módulos necessários — sem reorganizar o código por feature.
 | 1 · **SPECIFY** | `spec.md` (o quê/porquê, RFs, aceite, **métrica de sucesso §8**, gate constitucional) | `feature-spec` |
 | 2 · **PLAN** | `plan.md` (design, dados, idempotência, riscos) + `tasks.md` + ADR se durável | `architect` |
 | 2½ · **DECOMPOSE** *(só se grande)* | quebra em **micro-slices** isoladas (contexto estreito, árvore verde) + slice de integração | `task-decomposer` |
-| 4 · **IMPLEMENT** | código na branch `claude/<slug>` — **slice a slice, cada uma em contexto isolado** | `backend`/`frontend-engineer` (+ `prompt-engineer` se LLM em runtime · + `data-engineer` se esquema/telemetria) |
-| 4¾ · **ACCEPTANCE (BDD)** *(obrigatória p/ comportamento novo)* | critérios de aceite → **cenários executáveis** (o oráculo do `tester`) | `bdd-author` |
-| 5 · **VERIFY** | liga os cenários ao runner + testes por slice + integração; gate verde | `tester` |
+| 3¾ · **ACCEPTANCE (BDD — laço externo)** *(obrigatória p/ comportamento novo)* | critérios de aceite → **cenários executáveis**, escritos **antes** do código (nascem vermelhos) — o oráculo | `bdd-author` |
+| 4 · **IMPLEMENT (laço interno · TDD)** | código na branch `claude/<slug>` — **slice a slice em contexto isolado**, ciclo **vermelho → verde → refatorar** + prova do vermelho | `backend`/`frontend-engineer` (+ `prompt-engineer` se LLM em runtime · + `data-engineer` se esquema/telemetria) |
+| 5 · **VERIFY** | liga os cenários ao runner, **audita o laço interno** + integração/invariante/runtime/regressão; gate verde | `tester` |
 | 5½ · **VERIFY (independente)** | tenta quebrar + dirige runtime; **pode bloquear o merge** | `adversarial-reviewer` |
 | 6 · **DOCS** | spec e docs refletem o **entregue** | `docs-writer` |
 | ↻ · **OUTCOME** | mede pós-ship se a métrica de sucesso foi atingida | `outcome-analyst` |
@@ -270,12 +270,12 @@ convenções da sua fase, para o thread principal delegar com **escopo curto**. 
 | `architect` | Desenha o plano técnico + tasks + ADR |
 | **`task-decomposer`** | Quebra feature grande em **micro-slices** isoladas + integração (contexto estreito, árvore verde) |
 | `ux-designer` | Brief de UI/UX (só em UI significativa) |
-| `backend-engineer` | Implementa o código de produção |
-| `frontend-engineer` | Implementa a interface |
+| `backend-engineer` | Implementa o código de produção pelo ciclo **TDD** (vermelho → verde → refatorar) |
+| `frontend-engineer` | Implementa a interface (comportamento pelo ciclo TDD; estética verificada na tela) |
 | `prompt-engineer` | Dono da **camada de IA do produto** — prompts, eval-set, blindagem de injeção, fallback (P-4) |
 | `data-engineer` | Dono do **dado** — migração expand/contract, chave de escopo, instrumentação da §8 |
-| **`bdd-author`** | Converte os critérios de aceite em **cenários BDD executáveis** (o oráculo) — obrigatório p/ comportamento novo |
-| `tester` | Liga os cenários ao runner + testes/evals; deixa o gate verde |
+| **`bdd-author`** | Converte os critérios de aceite em **cenários BDD executáveis** (o oráculo, **antes** do código) — obrigatório p/ comportamento novo |
+| `tester` | Liga os cenários ao runner, **audita os micro-testes do implementador** + integração/invariante/runtime/regressão/evals; deixa o gate verde |
 | **`adversarial-reviewer`** | **Verificação independente** — tenta quebrar; dirige runtime; **bloqueia o merge** |
 | `docs-writer` | Reflete o comportamento final nos docs |
 | **`outcome-analyst`** | **Mede o resultado real** pós-ship vs. a métrica declarada |
@@ -366,6 +366,7 @@ Definidos na gênese, gravados no genoma (`docs/ai-first/project.md §8`), **mud
 - **`daily_budget`** — teto de gasto/esforço do loop por período (P-14).
 - **Modelo fixado** — upgrade é decisão explícita, com re-baseline de evals (P-14).
 - **`bdd_style`** — `native` | `gherkin` (só o **formato** dos cenários de aceitação; a camada BDD é sempre ativa).
+- **`tdd_mode`** — `estrito` | `pragmático` | `off` (disciplina do **laço interno**: o teste vem antes do código, com **prova do vermelho**; ADR-0015).
 
 Para mudar: edite o genoma ou rode `/ai-first-init` em modo revisão. Vale já no próximo ciclo.
 
@@ -456,6 +457,21 @@ final agrega tudo e prova a feature inteira de ponta a ponta. Feature pequena n�
 `adversarial-reviewer` os usa e caça o cenário que faltou. A camada de aceitação é **obrigatória para
 toda mudança de comportamento** — não há como desligá-la; a única exceção é o `fast_path` de baixo
 risco (que cobre com regressão). Assim a spec e o teste falam a mesma língua e não divergem.
+
+**E o TDD — não é a mesma coisa?** Não: eles contratam coisas diferentes e o método usa **os dois, em
+duplo laço** (ADR-0015). O **laço externo** é o BDD — comportamento de negócio, na linguagem da persona,
+escrito **antes** do código (nasce vermelho) e respondendo *quando terminou*. O **laço interno** é o TDD,
+dentro do IMPLEMENT: para cada comportamento, o implementador escreve o menor teste, **vê-o falhar pela
+razão certa**, escreve o mínimo que o faz passar e **refatora com a árvore verde** — respondendo *como
+chegar*. Por que isso importa mais aqui do que num time humano: no fluxo autônomo **o mesmo cérebro
+escreve o código e o teste**, então um teste escrito depois tende a descrever o que a implementação faz
+e passar por concordância, não por prova. Duas coisas tornam a disciplina real em vez de declarada: a
+**prova do vermelho** (qual teste falhou primeiro e por quê) no retorno do implementador — que o
+`tester` audita — e o `adversarial-reviewer`, que **sabota o código de produção** e exige que a suíte
+pegue (se não pegar, **bloqueia**). O rigor é escalável pelo knob `tdd_mode` (`estrito` default ·
+`pragmático` · `off`), com um piso que não se negocia em modo nenhum: **bug reproduz em vermelho antes
+da correção**. E não há agente de TDD — o ciclo roda dentro da própria invocação de quem escreve o
+código, senão o custo por volta comeria o ganho.
 
 **E se a IA fizer besteira?** Cinco redes: **CI verde** obrigatória; **gate de segurança**
 (secret-scan/dep-review/SAST); **verificação independente** (`adversarial-reviewer` que tenta quebrar

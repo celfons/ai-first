@@ -38,8 +38,11 @@ ofício e anti-padrões em `docs/knowledge.md`
 1. **Contexto estreito e explícito.** Cada slice lista **exatamente** os módulos/arquivos que toca e a
    **linha do `docs/context-map.md`** do seu domínio — para o implementador carregar **só** isso
    (janela pequena → menos alucinação, mais velocidade). Nada de "leia o repositório".
-2. **Independentemente verificável.** Cada slice tem seu **critério de "done" observável** e o **teste
-   que a prova** — não depende da feature inteira estar pronta para ser validada.
+2. **Independentemente verificável — e red-testável (ADR-0015).** Cada slice tem seu **critério de
+   "done" observável** e o **teste que a prova** — não depende da feature inteira estar pronta para ser
+   validada. Escreva o "done" como o **teste que falha antes da slice existir** ("o teste X falha hoje;
+   ao fim da slice, passa"): é o que o implementador usa para abrir o laço interno no vermelho. Slice
+   cujo "done" não vira teste concreto está **grande ou vaga demais** — refatie.
 3. **Ordenada por dependência (DAG).** Migration/porta antes de quem usa; alicerce antes do efeito.
    Marque quais slices são **independentes** (podem ser feitas em paralelo, se não tocarem os mesmos
    arquivos) e quais são **sequenciais**.

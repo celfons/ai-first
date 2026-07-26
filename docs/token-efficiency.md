@@ -112,7 +112,15 @@ feature-spec → architect → ┬→ backend/frontend ─┐
 ```
 
 - `bdd-author` e `ux-designer` dependem só da **spec/plan**, não do código → rodam **em paralelo** com o
-  implement (`parallel()`/`pipeline()` sem barreira). Ganho de **wall-clock**, não de token.
+  implement (`parallel()`/`pipeline()` sem barreira). Ganho de **wall-clock**, não de token. O
+  `bdd-author` **nunca vai depois** do implement (ADR-0015: o laço externo nasce vermelho); concorrente
+  ao início do implement é o mais tarde aceitável.
+- **O laço interno (TDD) não é um nó do grafo.** O ciclo vermelho→verde→refatorar roda **dentro** da
+  invocação do implementador: custa **ciclos e esforço**, não invocações — não crie `agent()` por ciclo
+  (o hop pagaria contexto de novo a cada volta e mataria o feedback curto que é o valor do TDD). Onde a
+  fatia é densa de regra de negócio, o ajuste certo é subir o `effort` da etapa de implement, não fatiar
+  o ciclo entre agentes. O retorno traz a **prova do vermelho** em uma linha por comportamento —
+  ponteiro, nunca o log da suíte (§3).
 - `budget.total` dá **teto de token explícito** que casa com o knob `daily_budget` do genoma — o
   `/daily-build` pode escalar profundidade/parar de pegar features ao esgotar o orçamento.
 - `pipeline()` fatia N slices **sem barreira entre etapas** (uma slice pode estar no `tester` enquanto

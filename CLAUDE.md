@@ -109,6 +109,15 @@ reserva de idempotência, laço da fila, chamada de LLM com timeout+validação+
 - **Feature grande é decomposta** (`task-decomposer`) em **micro-slices** implementadas em contexto
   isolado (menos alucinação, janela menor), com a **árvore verde a cada slice** e uma **slice de
   integração** que agrega o valor da feature de ponta a ponta. Feature pequena não é decomposta.
+- **Duplo laço de teste — BDD por fora, TDD por dentro (ADR-0015).** O laço **externo** são os cenários
+  de aceitação do `bdd-author`, escritos **antes** do código (nascem vermelhos) — o contrato da feature.
+  O laço **interno** é o ciclo **vermelho → verde → refatorar** que o *implementador* roda dentro da fase
+  IMPLEMENT, por comportamento, **na mesma invocação** (não há agente de TDD): escreve o menor teste do
+  próximo comportamento, **vê-o falhar pela razão certa**, implementa o mínimo, refatora com a árvore
+  verde. O que torna isso verificável é a **prova do vermelho** (qual teste falhou primeiro e por quê) no
+  retorno — o `tester` a audita e o `adversarial-reviewer` a testa sabotando o código. Modo pelo knob
+  **`tdd_mode`** (`estrito` default · `pragmático` · `off`); **bug reproduz em vermelho antes da correção
+  em qualquer modo, inclusive no `fast_path`**. Os gates (CI + adversarial + segurança) não mudam.
 - **Aceitação em BDD (condicionada ao comportamento, pelo orquestrador):** o `sdd-orchestrator`
   classifica cada feature com a flag **`comportamento:<cria|altera|nenhum>`** e inclui o `bdd-author`
   quando `cria`/`altera` — ele converte os critérios de aceite da spec (Dado/Quando/Então) em **cenários
@@ -178,6 +187,8 @@ reserva de idempotência, laço da fila, chamada de LLM com timeout+validação+
   memória auto-evolutiva é `docs/product/growth-playbook.md`. **Autonomia total inclui mundo-externo**
   (preço/canal/comunicação em massa), contida por freios automáticos — canário, `external_action_cap`,
   `guardrail_metrics`, kill e o gate de conformidade do `security-reviewer` (não relaxa).
+- **Qualidade da autoria de teste** é knob do genoma: `bdd_style` (formato do laço externo) e
+  **`tdd_mode`** (disciplina do laço interno — ADR-0015), ajustáveis a qualquer momento (P-15).
 - **Cadência/paralelismo/autonomia/orçamento** são knobs do genoma (`features_per_day`, `parallelism`,
   `wip_limit` — teto de WIP + serialização por footprint de conflito, ADR-0007;
   `fast_path` — cerimônia escalada ao risco: baixo risco pula a autoria, os gates permanecem, ADR-0008;

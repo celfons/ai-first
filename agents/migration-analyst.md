@@ -81,6 +81,12 @@ base do **parallel-run** (rodar origem e alvo lado a lado e comparar) que o `tes
 oráculo de equivalência. Se não for seguro rodar (efeito em produção, sem ambiente), **diga isso** e
 caracterize por leitura, marcando a confiança de cada RF (`observado` vs `inferido`).
 
+> **A caracterização é o vermelho da migração (ADR-0015).** Os RF observados e os *goldens* capturados
+> são testes que **falham contra o alvo vazio** — o duplo laço de uma migração é: fora, a equivalência
+> (parallel-run/golden = o laço de aceitação); dentro, o implementador roda vermelho → verde → refatorar
+> por unidade portada. Por isso a fidelidade do que você captura importa mais que a velocidade: um
+> golden capturado depois do port já nasce contaminado pelo comportamento do alvo.
+
 ## Estratégia que você recomenda (strangler-fig, não big-bang)
 
 Feche a entrega recomendando o **corte incremental**: a menor fatia da origem que já pode ser

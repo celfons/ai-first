@@ -45,19 +45,28 @@ sinal de que o `/daily-backlog` pode ter falhado ou o board está seco. **Avise*
 Para **cada** issue selecionada, rode o **fluxo `/feature`** em **modo autônomo** (branch
 `claude/<slug>` a partir de `develop`; uma issue = uma branch = um `Closes #NNN`):
 `sdd-orchestrator` (fixo opus/alto — roteia o resto) → `feature-spec` → `architect` →
-**`task-decomposer` (se grande/complexa)** → **`bdd-author` (cenários de aceitação — SÓ se o
-`sdd-orchestrator` classificou `comportamento:cria|altera`; pule em `comportamento:nenhum`; formato
-pelo `bdd_style`)** → `backend-engineer` (+ `prompt-engineer` se usa LLM em
-runtime, + `data-engineer` se toca esquema/telemetria) → `tester` (liga os cenários ao runner) →
+**`task-decomposer` (se grande/complexa)** → **`bdd-author` (laço EXTERNO — cenários de aceitação
+**antes** do implement; SÓ se o `sdd-orchestrator` classificou `comportamento:cria|altera`; pule em
+`comportamento:nenhum`; formato pelo `bdd_style`)** → `backend-engineer` (+ `prompt-engineer` se usa LLM em
+runtime, + `data-engineer` se toca esquema/telemetria) **rodando o laço INTERNO (TDD: vermelho → verde →
+refatorar, conforme `tdd_mode`)** → `tester` (liga os cenários ao runner + audita o laço interno) →
 `adversarial-reviewer` (usa os cenários
 como oráculo) → `security-reviewer` (gate de segurança) → `docs-writer`.
+
+> **Duplo laço (ADR-0015).** Passe o **`tdd_mode`** do genoma (§7 — `estrito` default · `pragmático` ·
+> `off`) no escopo de **cada** etapa de implementação e **exija o campo `tdd:` (prova do vermelho) no
+> retorno**: qual teste falhou primeiro e por quê. Não é etapa nova nem agente novo — o ciclo roda
+> dentro da invocação do implementador. Retorno sem a prova onde o modo a exigia = etapa incompleta
+> (peça de volta, não presuma). **Em qualquer modo, inclusive `off` e `fast_path`: bug reproduz em
+> vermelho antes da correção** — vale também para o re-implement depois de um veredito BLOQUEIA.
 
 > **Fast-path de baixo risco (ADR-0008 — só se `fast_path: on`).** Se o `sdd-orchestrator` classificou a
 > demanda como elegível (marca `fast-path`: `size:trivial` **e** risco 🟢 — só texto/UI/leitura, sem
 > dinheiro/PII/idempotência/efeito/invariante/dependência nova — **e** confiança alta, sem comportamento
 > novo), **colapse as fases de autoria**: pule `feature-spec`, `architect`/ADR, `task-decomposer` e
 > `bdd-author`. O fluxo vira `backend`/`frontend-engineer` → `tester` (**com teste de regressão**) → os
-> gates. **Os gates (Fases 3, 3½ e 5) NÃO mudam:** CI + `adversarial-reviewer` (single) +
+> gates. **O fast-path não desliga o laço interno:** se a demanda é uma **correção de bug**, o teste que
+> a reproduz nasce **vermelho antes** da correção (piso de todos os modos de `tdd_mode`). **Os gates (Fases 3, 3½ e 5) NÃO mudam:** CI + `adversarial-reviewer` (single) +
 > `security-reviewer` continuam obrigatórios. Qualquer dúvida na classificação → cadeia completa.
 
 **Invoque cada subagente com o modelo (`haiku`/`sonnet`/`opus`/`fable`) e o esforço

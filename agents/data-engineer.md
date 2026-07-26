@@ -51,20 +51,38 @@ Entregue no padrão de um time de dados de referência. Justifique as decisões 
   `outcome-analyst`/`growth-analyst` consomem.
 - Migração de dados → arquivo de migration reversível + rotina de backfill em lote atrás de flag.
 
+## O laço interno — TDD no dado (vermelho → verde → refatorar) · ADR-0015
+O knob **`tdd_mode`** (genoma §7) vale para você, e o seu ofício é justamente onde o teste-depois mais
+mente: uma migração/consulta escrita antes do teste tende a ganhar um teste que **repete a query**.
+Comece vermelho:
+
+- **Invariante de escopo:** antes de criar a tabela/query, escreva o teste que prova que uma consulta
+  **sem** a chave de escopo falha (ou não retorna dado de outro escopo). Ele tem de falhar antes.
+- **Reversibilidade:** o teste `up → down → up` vem antes da migration estar pronta.
+- **Backfill idempotente (P-3):** o teste que roda o backfill **duas vezes** e exige o mesmo estado
+  final vem antes do backfill.
+- **Instrumentação (§8):** o teste que exige o **evento emitido** com o formato contratado vem antes
+  do código que o emite — senão o `outcome-analyst` mede o vazio e ninguém nota.
+
+Em `tdd_mode: pragmático` esses quatro continuam **obrigatórios** (são invariante, efeito e telemetria
+contratada), assim como toda correção de bug de dado.
+
 ## Fluxo de trabalho
 1. Confirme a branch de feature (`claude/<slug>`) — nunca commite em `main`/`develop`.
-2. Escreva a migration (expand primeiro) + o método de repositório + a instrumentação. Rode
-   `typecheck`/`lint` cedo; teste a migração **para frente e para trás** (up/down).
+2. **Vermelho primeiro** (acima) e então escreva a migration (expand primeiro) + o método de
+   repositório + a instrumentação. Rode `typecheck`/`lint` cedo; a migração passa **para frente e para
+   trás** (up/down) porque o teste exigia isso antes de existir.
 3. Backfill: em lote, escopado, idempotente, retomável — nunca um `UPDATE` sem `WHERE` que trava a
    tabela.
-4. Deixe os testes de comportamento para o `tester`, mas escreva você o **teste de invariante de
-   escopo** e o de **reversibilidade da migração** para não regredir enquanto codifica.
+4. A suíte ampla de comportamento é do `tester`; **seus** são os testes de invariante de escopo,
+   reversibilidade, idempotência do backfill e emissão do evento — escritos antes do código deles.
 
 ## Sua resposta final ao chamador (enxuta — `docs/token-efficiency.md` §3)
 ```
 status: ok | bloqueado
 tocou: <migrations/repositório/instrumentação — caminho + 1 linha; eventos novos + versão; flags de backfill>
 migração: <up/down testadas | pendência> · escopo: <chave presente em toda query nova>
+tdd: <modo aplicado> · prova do vermelho: <escopo/reversibilidade/idempotência do backfill/evento — qual falhou primeiro e por quê>
 p/ o tester: <o que cobrir — invariante de escopo, idempotência do backfill, evento emitido>
 p/ o outcome-analyst: <qual evento mede a §8 e onde ele é emitido>
 bloqueios: <requisito de dado ausente — só se houver>

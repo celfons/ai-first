@@ -74,6 +74,12 @@ use-o (ver a skill `skills/new-extension`).
 2. `docs/sdd/features/NNN-slug/tasks.md` — checklist ordenado por dependência (migration antes de
    código; porta antes de adapter), cada task rastreada a RF/RNF e com "done:" verificável.
    Inclua sempre a task de teste/eval e a task de docs.
+   **Cada task é formulada como um comportamento red-testável (ADR-0015):** o "done:" nomeia o **teste
+   que falha antes** da task existir (ex.: `done: teste "redelivery não duplica o efeito" falha hoje e
+   passa depois`), não um estado difuso ("implementar o serviço"). É isso que permite ao implementador
+   rodar o laço interno (vermelho → verde → refatorar) sem inventar o oráculo no meio do caminho — e é
+   um sinal barato de que a task está do tamanho certo: task cujo "done" não vira teste está grande ou
+   vaga demais.
 3. **ADR — se (e só se) a feature toma uma decisão arquitetural DURÁVEL** (novo módulo/porta, nova
    invariante, trade-off que trabalhos futuros terão de respeitar): crie
    `docs/adr/NNNN-titulo.md` a partir de `docs/adr/template.md` (contexto, decisão, alternativas,

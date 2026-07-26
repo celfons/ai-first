@@ -51,6 +51,8 @@ by Example/Adzic, BDD/North, DDD/Evans, vertical slicing/Cockburn).
 | Cenários são **living documentation** ligada ao runner — passam de verdade, não decoram | Specification by Example |
 | Critério de aceite é o **contrato**; o `adversarial-reviewer` caça o cenário que faltou | Oracle completo |
 | **Três amigos** (produto/dev/teste) alinham o exemplo antes de codar | Three amigos |
+| O cenário é escrito **antes do código** e nasce **vermelho** — escrito depois, ele descreve a implementação, não o requisito | Outside-in / ATDD |
+| O cenário de aceitação é o **laço externo**; ele diz *quando terminou*, não *como chegar* — o laço interno (TDD, do implementador) preenche o caminho | Duplo laço (GOOS) |
 
 ## 4 · Decomposição — *micro-slices verticais*
 
@@ -60,6 +62,7 @@ by Example/Adzic, BDD/North, DDD/Evans, vertical slicing/Cockburn).
 | Cada slice: **árvore verde**, isolada em contexto próprio (janela menor, menos alucinação) | Elephant carpaccio |
 | Uma **slice de integração** agrega o valor de ponta a ponta — a feature não é a soma solta das partes | Integration slice |
 | Ordem por **dependência** (migration antes de código; porta antes de adapter); cada task com "done:" verificável | DAG de tasks |
+| O "done:" de cada task/slice é **red-testável**: nomeia o teste que falha hoje e passa ao fim. Done que não vira teste = task vaga ou grande demais | Testabilidade como régua de tamanho |
 
 ## 5 · Anti-padrões de spec
 
@@ -75,6 +78,6 @@ by Example/Adzic, BDD/North, DDD/Evans, vertical slicing/Cockburn).
 
 ## Como usar
 - **`feature-spec`:** problema+persona+critérios testáveis+anti-escopo; ambiguidade vira `[NEEDS CLARIFICATION]`.
-- **`bdd-author`:** Dado/Quando/Então declarativo, um comportamento por cenário, bordas e caminhos infelizes; liga ao runner.
+- **`bdd-author`:** Dado/Quando/Então declarativo, um comportamento por cenário, bordas e caminhos infelizes; **antes** do implement (nasce vermelho); liga ao runner.
 - **`task-decomposer`:** só o grande; fatia vertical com árvore verde + slice de integração; ordem por dependência.
 - **`migration-analyst`:** a spec de caracterização É specification-by-example — captura o comportamento da origem como oráculo, não reinventa a spec.

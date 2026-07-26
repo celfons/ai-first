@@ -21,6 +21,10 @@
 //     · verificationParallelism — validação em dois tiers (ADR-0013): 'staged' (default) roda o tester
 //                           barato PRIMEIRO (fail-fast) e, se verde, painel ‖ security em paralelo (diff
 //                           congelado); 'flat' roda tester ‖ tier opus (mais wall-clock, mais token).
+//     · tddMode           — laço INTERNO do implement (ADR-0015): 'estrito' (default) | 'pragmatico' |
+//                           'off'. NÃO é etapa nem agente: o ciclo vermelho→verde→refatorar roda DENTRO
+//                           da invocação do implementador, que devolve a `prova do vermelho`. O laço
+//                           EXTERNO (bdd-author) permanece obrigatório p/ comportamento novo.
 //   Saída (FEATURE_RESULT_SCHEMA): veredito estruturado que o pai trata como FATO validado, não texto.
 //
 // LIMITES QUE O DESENHO ASSUME (ADR-0010):
@@ -57,7 +61,11 @@ const FEATURE_RESULT_SCHEMA = {
 }
 
 const { issue, fixedContext, routing = {}, budgetPerFeature = null, maxRerunAttempts = 2,
-        contextClearPolicy = 'seam', verificationParallelism = 'staged' } = args ?? {}
+        contextClearPolicy = 'seam', verificationParallelism = 'staged', tddMode = 'estrito' } = args ?? {}
+// Laço interno (ADR-0015): instrução anexada a TODA etapa de implementação. Custa ciclos, não hops.
+const TDD = tddMode === 'off'
+  ? 'tdd_mode: off — test-after permitido. PISO INEGOCIÁVEL: correção de bug reproduz em VERMELHO antes da correção.'
+  : `tdd_mode: ${tddMode} — rode o laço interno VERMELHO → VERDE → REFATORAR por comportamento${tddMode === 'pragmatico' ? ' (obrigatório em invariante/dinheiro/PII/efeito e em TODA correção de bug)' : ''}. Devolva a PROVA DO VERMELHO: qual teste falhou primeiro e por quê.`
 // Helper: prefixa SEMPRE o bloco de contexto fixo (idêntico, primeiro) para cache de prompt (§1).
 // A limpeza de contexto working (ADR-0012 §8) PRESERVA este prefixo byte-a-byte — nunca o descarta.
 const withContext = (role, body) => `${fixedContext ?? ''}\n\n## Papel: ${role}\n${body}`
@@ -86,9 +94,9 @@ const plan = await agent(withContext('architect', `Com base na spec, escreva pla
 // só da spec/plan, §4). NÃO ponha aqui o gate de JULGAMENTO (opus) — esse exige diff congelado (Tier 2).
 phase('Implement')
 const [impl] = await parallel([
-  () => agent(withContext('backend-engineer', `Implemente as slices do tasks.md. Árvore verde a cada slice.`),
+  () => agent(withContext('backend-engineer', `Implemente as slices do tasks.md. Árvore verde a cada slice.\n${TDD}`),
     { phase: 'Implement', ...route('backend-engineer', { model: 'sonnet', effort: 'high' }) }),
-  () => agent(withContext('bdd-author', `Converta os critérios de aceite em cenários executáveis (oráculo).`),
+  () => agent(withContext('bdd-author', `Converta os critérios de aceite em cenários executáveis (oráculo do LAÇO EXTERNO — nascem vermelhos, antes do código).`),
     { phase: 'Implement', ...route('bdd-author', { model: 'sonnet', effort: 'medium' }) }),
   // Track contínuo determinístico — barato, sem julgamento. Bash de typecheck/lint, não um agente opus.
   () => agent(withContext('tester', `TRACK CONTÍNUO (Tier 1): rode typecheck + lint + testes rápidos e reporte quebras cedo. Sem julgamento de mérito — só o sinal determinístico.`),
@@ -120,14 +128,14 @@ while (attempt < maxRerunAttempts) {
   if (verificationParallelism === 'flat') {
     // urgência > custo: tester concorre com o tier opus (paga opus mesmo em reprovação barata).
     const [tested, ...opus] = await parallel([
-      () => agent(withContext('tester', `Ligue os cenários ao runner + testes/evals. Gate verde?`),
+      () => agent(withContext('tester', `Ligue os cenários ao runner + testes/evals (integração/invariante/runtime/regressão). AUDITE o laço interno: os micro-testes falhariam se o código regredisse? A prova do vermelho está declarada? Gate verde?`),
         { phase: 'Verify', ...route('tester', { model: 'sonnet', effort: 'medium' }) }),
       () => opusGate('diff congelado'),
     ])
     results = [tested, ...(opus[0] ?? [])]
   } else {
     // staged (default): fail-fast onde protege token, paralelo onde é grátis.
-    const tested = await agent(withContext('tester', `Ligue os cenários ao runner + testes/evals. Gate verde?`),
+    const tested = await agent(withContext('tester', `Ligue os cenários ao runner + testes/evals (integração/invariante/runtime/regressão). AUDITE o laço interno: os micro-testes falhariam se o código regredisse? A prova do vermelho está declarada? Gate verde?`),
       { phase: 'Verify', ...route('tester', { model: 'sonnet', effort: 'medium' }) })
     if (/BLOQUEIA|bloqueado|blocked/i.test(String(tested))) {
       results = [tested]                                 // tester reprovou → NEM chama o tier opus (fail-fast)
@@ -146,7 +154,7 @@ while (attempt < maxRerunAttempts) {
   const fix = contextClearPolicy === 'off'
     ? `A verificação bloqueou:\n${results.join('\n')}`                  // sem limpeza: arrasta tudo (caro)
     : blockingDigest(results)                                          // seam/dynamic: só o veredito
-  await agent(withContext('backend-engineer', `A verificação bloqueou. Corrija o MÍNIMO apontado e mantenha a árvore verde.\n\n## Veredito a corrigir\n${fix}`),
+  await agent(withContext('backend-engineer', `A verificação bloqueou. Reproduza cada achado num teste VERMELHO primeiro, então corrija o MÍNIMO apontado e mantenha a árvore verde.\n${TDD}\n\n## Veredito a corrigir\n${fix}`),
     { phase: 'Implement', ...route('backend-engineer', { model: 'sonnet', effort: 'high' }) })
 }
 if (!verdict) {

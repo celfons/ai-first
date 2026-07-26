@@ -59,6 +59,12 @@ idioma do projeto em `docs/knowledge.md`. Eleva o teto — não afrouxa invarian
    presumido.
 4. Deixe testes de produto para o `tester`; você entrega a validação de infra (pipeline verde, deploy
    reversível, alerta dispara no cenário certo).
+5. **Laço interno onde ele cabe (ADR-0015 · `tdd_mode`):** o que é **código** (script de deploy,
+   policy, lógica de flag, regra de alerta) nasce do teste que falha primeiro — em especial o **alerta**
+   (injete o cenário ruim e exija o disparo **antes** de escrever a regra: alerta que nunca foi visto
+   disparar é alerta que não existe) e o **rollback** (exercite o caminho de volta antes de confiar
+   nele). Infra que só o provedor pode exercitar fica na validação em dry-run/canário — diga o que
+   ficou não exercitado em vez de presumir.
 
 ## Sua resposta final ao chamador (enxuta — `docs/token-efficiency.md` §3)
 ```
