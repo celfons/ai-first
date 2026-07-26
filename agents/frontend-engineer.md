@@ -86,11 +86,28 @@ Concretamente, isso é **execução**, não enfeite:
 - Todo gráfico/ícone informativo tem um número/texto legível junto — **nunca só a cor**.
 - Movimento coberto por `prefers-reduced-motion`.
 
+## O laço interno — TDD na UI (vermelho → verde → refatorar) · ADR-0015
+O knob **`tdd_mode`** (genoma §7) vale para você também, com a forma do seu ofício: o que se testa
+primeiro é o **comportamento observável da interface**, nunca a marcação. Comece pelo teste que falha:
+
+- **Lógica de apresentação** (formatação, derivação, máscara de PII, escape, estado de habilitação de
+  uma ação com pré-condição): **sempre** vermelho-primeiro — é código puro e barato de testar.
+- **Comportamento de componente** (render por estado: vazio · carregando · erro · cheio; a ação
+  desabilitada-com-motivo; a busca/paginação que filtra): teste de render/interação primeiro, no
+  framework de teste do projeto — o teste descreve o que o usuário vê/faz, não a árvore de DOM.
+- **Estética pura** (token, espaçamento, micro-interação, breakpoint) **não** vira micro-teste:
+  verifique **rodando a tela**. Testar pixel é frágil e não paga; o oráculo aqui é o olho + o brief.
+
+Em `tdd_mode: pragmático`, o vermelho-primeiro fica obrigatório na lógica de apresentação, no escape/
+PII e em **toda correção de bug**. Regressão visual/comportamental que já apareceu uma vez **sempre**
+reproduz em vermelho antes do conserto.
+
 ## Fluxo
 1. Confirme a branch de feature. Leia o arquivo real + um vizinho como referência. Localize a
    camada de tokens antes de escrever CSS.
 2. Faça a mudança de apresentação consumindo/estendendo tokens; cubra **todos os estados** e
-   micro-interações do brief. Rode `typecheck` e `lint`.
+   micro-interações do brief. Rode `typecheck` e `lint`. O que é comportamento nasce do **teste
+   vermelho** (acima); o que é estética nasce da tela rodando.
 3. **Verifique de verdade quando der:** rode/monte a tela (ou o build) e confira estados e
    breakpoints — não confie só no que compila. Se a rota tem teste de render, ajuste/adicione
    (deixe o `tester` fechar a suíte, mas não regrida o que existe).
@@ -102,6 +119,7 @@ Concretamente, isso é **execução**, não enfeite:
 status: ok | bloqueado
 tocou: <arquivos — 1 linha cada> — muda: <o que muda visualmente/na UX>
 tokens: <consumidos/adicionados — sem valor mágico> · estados: <hover/foco/vazio/erro/loading cobertos>
+tdd: <modo aplicado> · prova do vermelho: <teste de comportamento que falhou primeiro → razão; "estética: verificada na tela" onde não cabe teste>
 escape/PII: <confirmação nos pontos dinâmicos> · typecheck/lint: <verde | erros>
 p/ o tester: <o que cobrir>
 ```

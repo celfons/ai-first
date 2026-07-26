@@ -42,8 +42,14 @@ mudança de comportamento dispensam spec (o `plan.md` da feature ou o próprio P
 Corolário — **critério de aceite vira cenário executável (BDD).** Os critérios da spec (§4,
 já em Dado/Quando/Então) são convertidos pelo `bdd-author` em **cenários de aceitação executáveis**
 (o *oráculo* da feature): é o que o `tester` liga ao runner e o `adversarial-reviewer` usa para
-julgar e para caçar o cenário que faltou. O formato é o knob `bdd_style` do genoma (`native` default ·
-`gherkin` · `off`). Assim o "o quê" da spec e o "prova" do teste falam a mesma língua e não divergem.
+julgar e para caçar o cenário que faltou. A camada de aceitação é **obrigatória para toda mudança de
+comportamento** (o `tester` depende dela como oráculo); o knob `bdd_style` do genoma só escolhe o
+**formato** (`native` default · `gherkin`), não se a fase existe. Assim o "o quê" da spec e o "prova"
+do teste falam a mesma língua e não divergem.
+
+Esta é a metade **externa** do duplo laço (ADR-0015): o cenário de aceitação nasce **antes** do código
+e, por isso, nasce **vermelho**. A metade **interna** — o teste que precede cada unidade implementada —
+é o corolário de P-10 abaixo.
 
 - *Enforcement:* revisão no gate do PR; a spec deve existir e bater com o diff; os cenários de
   aceitação passam no CI (parte do `test`).
@@ -148,6 +154,22 @@ publicar sem verificação; significa publicar sem *humano no caminho*. O nível
 > 🟢 que o pipeline mal entendeu e não trava uma 🔴 trivial que ele entendeu bem. Governado pelo knob
 > `uncertainty_escalation` (default `on`). A confiança **roteia** a decisão; **não** remove nenhum gate
 > automático nem afrouxa o piso de verificação. Refina P-10, não o substitui.
+
+> **Corolário (ADR-0015) — o teste PRECEDE a implementação (laço interno · TDD).** "Toda mudança de
+> comportamento carrega teste" não diz só *que* existe teste, mas *quando* ele nasce. Dentro da fase
+> IMPLEMENT, o implementador roda o ciclo **vermelho → verde → refatorar** por comportamento: escreve o
+> menor teste que expressa o próximo comportamento, **vê-o falhar pela razão certa**, implementa o
+> mínimo que o faz passar, e refatora com a árvore verde. A **prova do vermelho** (qual teste falhou
+> primeiro e por quê) acompanha o retorno do implementador — é o que torna a disciplina **verificável**
+> em vez de declarada, e é o análogo barato do teste de mutação: um oráculo que nunca foi visto vermelho
+> pode estar passando por acidente. Governado pelo knob **`tdd_mode`** (`estrito` default · `pragmático`
+> · `off`). **Piso em qualquer modo, inclusive no `fast_path`: correção de bug reproduz em vermelho
+> antes da correção.** O corolário fortalece a suíte que P-11 julga; **não** substitui a verificação
+> independente nem transfere ao implementador a aprovação do risco (P-13 intacto).
+>
+> - *Enforcement:* campo `tdd:` no retorno do implementador (teste que falhou primeiro + razão); o
+>   `tester` audita a força desses testes ao ligar o oráculo; o `adversarial-reviewer` trata "teste que
+>   não falha quando o código quebra" como achado.
 
 ### P-11 · Verificação independente (CI verde não basta)
 

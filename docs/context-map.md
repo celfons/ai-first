@@ -41,6 +41,7 @@ memória de um agente.
 | _(ex.: Observabilidade)_ | `métrica`, `log`, `trace`, `alerta`, `dlq`, `observabilidade` | `core/metrics.ts` | observability.md | — | — | `metrics*` |
 | Growth/experimentação | `growth`, `experimento`, `funil`, `aarrr`, `canário`, `ativação`, `retenção`, `cac` | _(flags/experimentos + adapters de canal)_ | `product/growth-playbook.md`, `sdd/features/002-ecossistema-growth-autonomo/spec.md` | 0004 | issues `growth:*` | _(canário, guardas, `external_action_cap`)_ |
 | Memória/cognição (meta) | `memória`, `consolidação`, `poda`, `esquecimento`, `retrieval`, `índice`, `painel`, `confiança`, `incerteza`, `curator`, `distill` | _(este repo-método: `docs/`, `agents/`, `skills/`)_ | `ai-first/memory.md`, `token-efficiency.md`, `sdd/features/003-arquitetura-cognitiva/spec.md` | 0005 | — | `validate-plugin.mjs` |
+| Disciplina de teste (meta) | `teste`, `tdd`, `bdd`, `aceitação`, `oráculo`, `vermelho`, `red-green`, `refatorar`, `regressão`, `mutação`, `cobertura` | _(este repo-método: `agents/`, `skills/`)_ | `engineering-principles.md §11`, `spec-principles.md §3`, `knowledge.md`, `sdd/constitution.md` (P-1/P-10) | 0015 | — | `check-coherence.mjs` (`tdd_mode`) |
 
 > **Formato das tags:** minúsculas, sem acento opcional (o casamento é frouxo — sinônimos e a raiz da
 > palavra bastam). Uma tag serve a **um** domínio de preferência; colisão frequente entre dois domínios é

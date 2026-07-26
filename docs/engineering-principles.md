@@ -34,6 +34,9 @@ Se comprimir tudo ao máximo, sobram cinco leis. Todo o resto é aplicação par
 5. **Separe quem faz de quem aprova, e aprenda com cada falha.** Verificação independente + cada bug
    vira regra estrutural. *(Separation of Duties + Kaizen)*
 
+> **Corolário de método (§11):** o teste **precede** o código, em dois laços — o de aceitação (fora) e o
+> da unidade (dentro). Um oráculo que nunca foi visto vermelho não prova nada.
+
 ---
 
 ## 1 · Fronteiras e camadas — *Dependency Inversion + Hexagonal*
@@ -141,6 +144,30 @@ Se comprimir tudo ao máximo, sobram cinco leis. Todo o resto é aplicação par
 | Trocar token por corretude (contexto isolado + revisão independente) é **design deliberado**, não desperdício; corta-se só o descuido | Intencionalidade de custo |
 | Trabalho de fundo não rouba recurso do caminho ao vivo (lanes/orçamentos separados) | Bulkhead, isolamento de recursos |
 | Espaçar tarefas pesadas para caber na janela de capacidade disponível | Capacity planning |
+
+## 11 · Disciplina de teste — *Test-First + Duplo Laço*
+
+| Regra | Princípio/pattern |
+|---|---|
+| **O teste precede a implementação.** Teste escrito depois descreve o que o código faz; escrito antes, prova o que o contrato pede | TDD (Beck) · red→green→refactor |
+| **Duplo laço:** por fora, o cenário de aceitação (comportamento de negócio); por dentro, o micro-teste da unidade. O externo diz *quando terminou*; o interno diz *como chegar* | Outside-in / ATDD (Freeman & Pryce, GOOS) |
+| **Um teste que nunca foi visto vermelho não é oráculo.** A prova de que ele *sabe falhar* é o sinal, não o fato de estar verde | Mutation testing (a versão a custo ~zero) |
+| **Ele deve falhar pela razão certa** — asserção do comportamento, não `import` quebrado nem fixture ausente | Falseabilidade |
+| **A menor implementação que passa**; o próximo teste puxa o próximo pedaço (nada de generalizar por antecipação) | YAGNI · triangulação |
+| **Refatorar é o terceiro passo, não um item de backlog** — só com a árvore verde, sem mudar comportamento | Refactoring (Fowler) |
+| **Teste difícil de escrever é diagnóstico de acoplamento**, não motivo para mock elaborado: corrija a fronteira | Design pressure / DIP |
+| **Bug reproduz em vermelho antes da correção** — só assim se sabe que o teste de regressão pega o bug | Defect-driven testing · Poka-yoke |
+| Teste que espelha a implementação (mesmos ramos/nomes internos, mock que devolve o esperado) regride junto com ela | Behavioral, não structural, testing |
+
+> **Semântica:** TDD e BDD não competem — **contratam coisas diferentes**. BDD contrata o
+> *comportamento de negócio* (linguagem da persona, oráculo da feature); TDD guia o *desenho* e falseia
+> a *unidade*. Sem o laço externo, o software fica correto em partes e errado no todo; sem o laço
+> interno, cada unidade só é provada por acidente, através do agregado.
+>
+> **No fluxo autônomo isto pesa mais**, não menos: o mesmo modelo escreve código e teste, então o viés
+> de confirmação não tem contrapeso natural — a ordem (teste antes) e a evidência (prova do vermelho)
+> são o que substituem o "outro par de olhos" no nível da unidade. A verificação independente (§8)
+> continua obrigatória por cima; o duplo laço fortalece a suíte que ela julga.
 
 ---
 

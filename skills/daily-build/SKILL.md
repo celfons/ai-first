@@ -45,16 +45,28 @@ sinal de que o `/daily-backlog` pode ter falhado ou o board está seco. **Avise*
 Para **cada** issue selecionada, rode o **fluxo `/feature`** em **modo autônomo** (branch
 `claude/<slug>` a partir de `develop`; uma issue = uma branch = um `Closes #NNN`):
 `sdd-orchestrator` (fixo opus/alto — roteia o resto) → `feature-spec` → `architect` →
-**`task-decomposer` (se grande/complexa)** → **`bdd-author` (cenários de aceitação, se `bdd_style ≠ off`)**
-→ `backend-engineer` → `tester` (liga os cenários ao runner) → `adversarial-reviewer` (usa os cenários
+**`task-decomposer` (se grande/complexa)** → **`bdd-author` (laço EXTERNO — cenários de aceitação
+**antes** do implement; SÓ se o `sdd-orchestrator` classificou `comportamento:cria|altera`; pule em
+`comportamento:nenhum`; formato pelo `bdd_style`)** → `backend-engineer` (+ `prompt-engineer` se usa LLM em
+runtime, + `data-engineer` se toca esquema/telemetria) **rodando o laço INTERNO (TDD: vermelho → verde →
+refatorar, conforme `tdd_mode`)** → `tester` (liga os cenários ao runner + audita o laço interno) →
+`adversarial-reviewer` (usa os cenários
 como oráculo) → `security-reviewer` (gate de segurança) → `docs-writer`.
+
+> **Duplo laço (ADR-0015).** Passe o **`tdd_mode`** do genoma (§7 — `estrito` default · `pragmático` ·
+> `off`) no escopo de **cada** etapa de implementação e **exija o campo `tdd:` (prova do vermelho) no
+> retorno**: qual teste falhou primeiro e por quê. Não é etapa nova nem agente novo — o ciclo roda
+> dentro da invocação do implementador. Retorno sem a prova onde o modo a exigia = etapa incompleta
+> (peça de volta, não presuma). **Em qualquer modo, inclusive `off` e `fast_path`: bug reproduz em
+> vermelho antes da correção** — vale também para o re-implement depois de um veredito BLOQUEIA.
 
 > **Fast-path de baixo risco (ADR-0008 — só se `fast_path: on`).** Se o `sdd-orchestrator` classificou a
 > demanda como elegível (marca `fast-path`: `size:trivial` **e** risco 🟢 — só texto/UI/leitura, sem
 > dinheiro/PII/idempotência/efeito/invariante/dependência nova — **e** confiança alta, sem comportamento
 > novo), **colapse as fases de autoria**: pule `feature-spec`, `architect`/ADR, `task-decomposer` e
 > `bdd-author`. O fluxo vira `backend`/`frontend-engineer` → `tester` (**com teste de regressão**) → os
-> gates. **Os gates (Fases 3, 3½ e 5) NÃO mudam:** CI + `adversarial-reviewer` (single) +
+> gates. **O fast-path não desliga o laço interno:** se a demanda é uma **correção de bug**, o teste que
+> a reproduz nasce **vermelho antes** da correção (piso de todos os modos de `tdd_mode`). **Os gates (Fases 3, 3½ e 5) NÃO mudam:** CI + `adversarial-reviewer` (single) +
 > `security-reviewer` continuam obrigatórios. Qualquer dúvida na classificação → cadeia completa.
 
 **Invoque cada subagente com o modelo (`haiku`/`sonnet`/`opus`/`fable`) e o esforço
@@ -104,8 +116,13 @@ arquivo) e **agrupar para ninguém ficar na mesma parede ao mesmo tempo**. Regra
   `tasks.md` marcou dependência de contrato, respeite a ordem.
 - Se o footprint não foi declarado ou é ambíguo, **trate como sobreposto** (serialize — conservador).
 
-**Desenvolvimento paralelo (`parallelism` > 1, respeitando `wip_limit` + footprint):** desenvolva até
-`min(parallelism, wip_limit)` features de footprint disjunto **ao mesmo tempo**, cada uma em **contexto
+**Desenvolvimento paralelo (fan-out do lote — definido pelo `sdd-orchestrator`, gated pelo teto de
+token):** o `sdd-orchestrator` calcula o fan-out do lote como
+`min(parallelism, wip_limit, floor(budget.remaining()/budget_per_feature))` (§5 do agente) e define, por
+feature, **o time de agentes** que a executa. Desenvolva até esse `fan_out` features de footprint
+disjunto **ao mesmo tempo** — **o teto de token estrangula o paralelismo primeiro**: com `daily_budget`
+definido, nunca se abre mais frentes do que o orçamento restante cobre a `budget_per_feature` cada
+(com `sem-teto`, o fan-out cai só em `parallelism`/`wip_limit`). Cada frente roda em **contexto
 isolado** (subagentes de implementação com `isolation: 'worktree'`, uma
 branch `claude/<slug>` por feature a partir de `develop`). **Com opt-in de `Workflow`, faça-o num único
 Workflow** (Escala 2 acima): **bundle de recursos compartilhado derivado 1×** (contexto base + índice de

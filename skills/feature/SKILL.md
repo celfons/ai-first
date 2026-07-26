@@ -86,19 +86,31 @@ invoque-o com a `spec.md`+`plan.md`. Ele reescreve `tasks.md` como um **grafo de
 isoladas + a **slice de integração** (ver `tasks-template.md` Forma B). Se a feature for pequena, o
 orchestrator pula esta etapa e o `tasks.md` do `architect` já serve.
 
-### 4¾ · ACCEPTANCE (BDD — se `bdd_style ≠ off`)
+### 3¾ · ACCEPTANCE (BDD — o laço EXTERNO, antes do implement)
 Invoque **`bdd-author`** com a `spec.md`. Ele converte os critérios de aceite (§4) em **cenários
-executáveis** (`acceptance.feature` ou `acceptance.md`, conforme `docs/ai-first/project.md §7`),
-cobrindo caminho feliz, variações e casos de borda, cada cenário rastreado a um RF. Esses cenários são
-o **oráculo** da feature — o `tester` os liga ao runner e o `adversarial-reviewer` os usa (e caça o que
-faltou). `[NEEDS CLARIFICATION]` num cenário → volte ao `feature-spec`. Pule esta etapa em mudança
-trivial sem comportamento novo, ou se o genoma tiver `bdd_style: off`.
+executáveis** (`acceptance.feature` ou `acceptance.md`, no formato que `docs/ai-first/project.md §7`
+escolhe via `bdd_style`: `native`/`gherkin` — não há `off`), cobrindo caminho feliz, variações e casos
+de borda, cada cenário rastreado a um RF. Esses cenários são o **oráculo** da feature — o `tester`
+depende deles e o `adversarial-reviewer` os usa (e caça o que faltou). `[NEEDS CLARIFICATION]` num
+cenário → volte ao `feature-spec`. A única exceção é o `fast_path` de baixo risco ou mudança sem
+comportamento novo (refactor/cópia puros), onde não há cenário a gerar.
 
-### 5 · IMPLEMENT (slice a slice, em contexto ISOLADO)
+> **Por que antes do implement (ADR-0015):** o cenário escrito **depois** do código tende a descrever o
+> que a implementação faz. Escrito antes, ele nasce **vermelho** e continua sendo o contrato. É a metade
+> externa do duplo laço; a interna (TDD) roda dentro da fase 5.
+
+### 5 · IMPLEMENT (slice a slice, em contexto ISOLADO — com o laço interno TDD)
 Percorra o `tasks.md` **na ordem do DAG**. Para **cada slice**, faça uma **invocação nova e separada**
 do **`backend-engineer`** (ou `ux-designer`→`frontend-engineer` se for UI), passando **só** o escopo
 daquela slice: os arquivos/contexto que ela lista + a linha do `context-map`. **Uma slice = uma sessão
 de contexto limpa** — é isso que reduz a janela e evita alucinação.
+- **Passe o `tdd_mode`** (genoma §7 — `estrito` default · `pragmático` · `off`) no escopo da slice e
+  **exija a prova do vermelho no retorno**: o implementador roda **vermelho → verde → refatorar** por
+  comportamento, dentro da própria invocação (não há etapa nem agente extra para isso — ADR-0015), e
+  devolve o campo `tdd:` com o teste que falhou primeiro e a razão. **Retorno sem a prova onde o modo a
+  exigia = etapa incompleta:** peça a prova antes de seguir, não a presuma.
+- **Em qualquer modo (inclusive `off` e `fast_path`): correção de bug reproduz em vermelho antes da
+  correção.**
 - Ao fim de **cada** slice: `typecheck`+`lint` verdes e a **árvore não pode ficar quebrada** (parcial
   fica atrás de flag/stub). Só então siga para a próxima.
 - Slices **independentes** (sem arquivos em comum) podem ser feitas em invocações **paralelas**; as do
@@ -106,10 +118,12 @@ de contexto limpa** — é isso que reduz a janela e evita alucinação.
 - A **slice de integração** (última) liga tudo, remove os andaimes e é implementada por último.
 
 ### 6 · VERIFY (por slice + no agregado)
-1. Invoque **`tester`** para **ligar os cenários de aceitação (BDD) ao runner** e cobrir cada slice
-   (idealmente logo após implementá-la) + o **teste de ponta a ponta da integração** que prova a feature
-   inteira. Deixe `typecheck`+`lint`+`test` (+`eval`) verdes. Bug de produção volta ao
-   `backend-engineer`. Cenário de aceitação vermelho = comportamento não entregue, não "ajuste o teste".
+1. Invoque **`tester`** para **ligar os cenários de aceitação (BDD) ao runner**, **auditar os
+   micro-testes do laço interno** (força do oráculo + prova do vermelho declarada) e cobrir o que eles
+   não alcançam — integração, invariante, runtime, regressão — mais o **teste de ponta a ponta da
+   integração** que prova a feature inteira. Deixe `typecheck`+`lint`+`test` (+`eval`) verdes. Bug de
+   produção volta ao `backend-engineer` (**com o teste que o reproduz em vermelho primeiro**). Cenário
+   de aceitação vermelho = comportamento não entregue, não "ajuste o teste".
 2. Invoque **`adversarial-reviewer`** sobre o **agregado** (a feature montada): ele tenta quebrá-la e
    dirige o runtime. Veredito **BLOQUEIA** → corrija antes de seguir (o bug vira regressão).
 

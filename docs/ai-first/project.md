@@ -59,9 +59,27 @@
   - `lint`: `[A DEFINIR]`
   - `test`: `[A DEFINIR]`
   - `eval` (se houver IA): `[A DEFINIR]`
-- **`bdd_style`** (formato dos cenários de aceitação do `bdd-author`): `[gherkin | native | off]`
-  (default **`native`** — cenários espelhando Dado/Quando/Então no framework de teste; `gherkin` =
-  `.feature` + runner Cucumber-style; `off` = sem camada BDD, o `tester` cobre os critérios direto)
+- **`bdd_style`** (formato dos cenários de aceitação do `bdd-author` — a camada BDD é **sempre ativa**,
+  este knob só escolhe o **formato**): `[gherkin | native]` (default **`native`** — cenários espelhando
+  Dado/Quando/Então no framework de teste; `gherkin` = `.feature` + runner Cucumber-style). Toda
+  mudança de **comportamento** passa pela fase de aceitação; o `tester` depende dos cenários como
+  oráculo (não há `off`). Mudança **sem comportamento novo** (refactor/cópia puros) naturalmente não
+  gera cenário, e o `fast_path` de baixo risco segue como a única exceção escalada ao risco (ADR-0008).
+- **`tdd_mode`** (disciplina do **laço interno** — o teste precede a implementação; ADR-0015 · corolário
+  de P-10): `[estrito | pragmático | off]` (default **`estrito`**). Governa o ciclo **vermelho → verde →
+  refatorar** que o implementador (`backend`/`frontend`/`data`/`prompt`/`sre-engineer`) roda **dentro**
+  da fase IMPLEMENT, por comportamento:
+  - **`estrito`** — todo comportamento novo/alterado começa por um teste que **falha primeiro**; a
+    **prova do vermelho** (qual teste falhou + a razão) vai no retorno do implementador.
+  - **`pragmático`** — vermelho-primeiro obrigatório só onde o erro é caro: invariantes (P-3/P-4/P-5/
+    P-6/P-7), dinheiro/PII/efeito colateral e **toda correção de bug**; o resto o `tester` cobre depois.
+  - **`off`** — sem exigência test-first (test-after). Opt-out explícito para base legada sem arnês de
+    teste; reversível (P-15).
+
+  **Piso em qualquer modo, inclusive no `fast_path`: bug reproduz em vermelho ANTES da correção.** Os
+  gates (CI + `adversarial-reviewer` + `security-reviewer`) não mudam com este knob — ele governa a
+  **autoria** do teste, nunca a verificação. Complementa o `bdd_style` (laço externo): BDD contrata o
+  comportamento de negócio, TDD guia o desenho e falseia a unidade.
 - **Acesso a sinais de produção** (para o `ops-investigator`): `[A DEFINIR]` (API/credencial —
   **nome da env var**, nunca o valor — ou "sem acesso ainda")
 

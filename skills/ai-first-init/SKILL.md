@@ -136,10 +136,20 @@ contexto, mas a **semente do que construir primeiro**. Pergunte:
 - **Comandos de qualidade REAIS:** os comandos exatos de `typecheck`, `lint`, `test` e (se houver
   IA) `eval`. Se algum não existe ainda, registre como `[A DEFINIR]` e sinalize que o gate fica
   incompleto até existir.
-- **Estilo BDD (`bdd_style`):** como o `bdd-author` grava os cenários de aceitação — `native`
-  (default; cenários espelhando Dado/Quando/Então no framework de teste do projeto), `gherkin`
-  (`.feature` + runner Cucumber-style, quando o time quer living-docs) ou `off` (sem camada BDD; o
-  `tester` cobre os critérios direto — só para projetos muito pequenos). Confirme o framework de teste.
+- **Estilo BDD (`bdd_style`):** a camada de aceitação é **sempre ativa** (o `tester` depende dela como
+  oráculo); este knob só escolhe o **formato** de como o `bdd-author` grava os cenários — `native`
+  (default; cenários espelhando Dado/Quando/Então no framework de teste do projeto) ou `gherkin`
+  (`.feature` + runner Cucumber-style, quando o time quer living-docs). Não há `off`. Confirme o
+  framework de teste.
+- **Disciplina de TDD (`tdd_mode`) — o laço interno (ADR-0015):** o BDD contrata o comportamento de
+  negócio (laço externo); o TDD guia o desenho e falseia a unidade (laço interno, dentro do implement).
+  Pergunte: *"Quando a IA implementar, o teste deve vir sempre antes do código, só onde o erro é caro,
+  ou não impor ordem?"* — `estrito` (**default**; todo comportamento novo começa por um teste que falha,
+  com a **prova do vermelho** no retorno) · `pragmático` (vermelho-primeiro só em invariante/dinheiro/
+  PII/efeito colateral **e toda correção de bug**) · `off` (test-after; opt-out para base legada sem
+  arnês de teste). **Em qualquer modo, bug reproduz em vermelho antes da correção**, e os gates (CI +
+  `adversarial-reviewer` + `security-reviewer`) não mudam. Se o projeto ainda **não tem** runner de
+  teste configurado, registre isso: o `estrito` só é real depois que `test` existir de verdade.
 - **Sinais de observabilidade:** como o `ops-investigator` alcança métricas/logs/DLQ em produção
   (qual API/credencial) — ou "sem acesso ainda" (aí o cron reporta sinais cegos, não finge saúde).
 - **Grava em:** `CLAUDE.md` (pontos de extensão + padrões one-liner), `docs/knowledge.md` (padrões +
