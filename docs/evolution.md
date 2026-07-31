@@ -38,6 +38,27 @@ sem reconstruir o passado lendo dez lugares.
 
 ## Linha do tempo
 
+### 2026-07-31 · O motor passa a fatiar de verdade — e o teste passa a caber no laço (meta)
+- **Sinal:** 🔧 processo (execução do que o método já prometia + wall-clock do laço interno).
+- **Aprendizado:** duas descobertas acopladas. (1) **Prosa de skill não é execução.** A decomposição em
+  micro-slices com contexto isolado estava escrita no `task-decomposer` e implementada na skill
+  `/feature` §5 — mas o **subgrafo contratado** (`build-one-feature.mjs`), que é o que `/daily-build`,
+  `/kickoff` e `/migrate` compõem, colapsava tudo numa invocação (`"Implemente as slices do tasks.md"`).
+  Resultado perverso: o caminho **manual** (com humano olhando) ganhava o isolamento; o **autônomo**
+  (volume, sem observador) não. Quando prosa e motor divergem, **o motor é o que roda** — e o obstáculo
+  técnico era simples: o decompositor devolvia **prosa**, e script não roteia prosa. Corrigido com
+  contrato estruturado (footprint + DAG + `doneTest`) e ondas de execução por footprint disjunto,
+  reusando a regra de conflito do ADR-0007 **dentro** da feature. (2) **Fatiar sem escopo de teste seria
+  uma regressão travestida de melhoria:** N slices × suíte completa é pior que a invocação monolítica.
+  O "testes rápidos" do Tier 1 (ADR-0013) nunca tinha definição operacional — ganhou três níveis
+  (relacionado no laço → footprint ao fechar a slice → **completa no gate, sempre**), com os freios que
+  tornam o estreito honesto (migration/config/DI/fixture ⇒ full; invariante/segurança no escopo mínimo;
+  sem comando de seleção, **degrada e reporta** em vez de simular). O que **não** se fatia: o gate de
+  julgamento continua uma vez por feature sobre o diff agregado — fatiar autoria nunca é fatiar
+  verificação (P-14).
+- **Links:** ADR-0017 · ADR-0013 (refinado) · ADR-0012/0007/0010 · `templates/workflows/build-one-feature.mjs`
+  · genoma §7 (`test (escopo)`, `test_scope`) e §8 (`slice_fanout`).
+
 ### 2026-07-31 · Stacked PRs avaliados e recusados (meta)
 - **Sinal:** 🔧 processo (decisão de método — recusa registrada, sem métrica de produto).
 - **Aprendizado:** um padrão de mercado só entra se o **gargalo que ele resolve existir aqui**. Stacked

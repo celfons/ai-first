@@ -109,6 +109,18 @@ reserva de idempotência, laço da fila, chamada de LLM com timeout+validação+
 - **Feature grande é decomposta** (`task-decomposer`) em **micro-slices** implementadas em contexto
   isolado (menos alucinação, janela menor), com a **árvore verde a cada slice** e uma **slice de
   integração** que agrega o valor da feature de ponta a ponta. Feature pequena não é decomposta.
+  **O fan-out é do motor, não só da prosa (ADR-0017):** o subgrafo contratado roda a fase DECOMPOSE e dá
+  **uma invocação por slice** (contexto estreito = só os arquivos dela) — slices de **footprint disjunto**
+  em paralelo, as demais em série, integração por último. Vale igual no caminho **autônomo**
+  (`/daily-build`, `/kickoff`, `/migrate`) e no manual (`/feature`). Knob `slice_fanout` (genoma §8). O
+  **gate não é fatiado**: painel adversarial + segurança rodam **uma vez por feature**, sobre o diff
+  agregado e congelado (fatiar o Tier 2 multiplicaria o piso opus por N — P-14).
+- **Escopo de teste escalado ao diff (ADR-0017 — define o Tier 1 do ADR-0013):** no **laço interno TDD**
+  roda só o teste relacionado aos arquivos tocados; ao **fechar a slice**, typecheck+lint+a suíte do
+  footprint; no **diff congelado/gate/CI**, a **suíte completa, sempre**. O estreito acelera o laço e
+  **nunca** substitui o gate. Freios: migration/config/DI/fixture no diff ⇒ escopo `full`; as suítes de
+  invariante/segurança entram no escopo mínimo sempre; sem o comando `test (escopo)` no genoma o motor
+  **degrada e reporta**, não simula. Knob `test_scope` (genoma §7).
 - **Duplo laço de teste — BDD por fora, TDD por dentro (ADR-0015).** O laço **externo** são os cenários
   de aceitação do `bdd-author`, escritos **antes** do código (nascem vermelhos) — o contrato da feature.
   O laço **interno** é o ciclo **vermelho → verde → refatorar** que o *implementador* roda dentro da fase

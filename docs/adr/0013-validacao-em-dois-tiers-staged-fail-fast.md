@@ -79,4 +79,9 @@ Constituição `P-11`/`P-13` (verificação independente), `P-14` (custo — pis
 adversarial — dimensões paralelas), ADR-0010 (sub-workflow contratado), ADR-0012 (higiene de contexto —
 o re-run do fail-fast já passa só o veredito); `docs/token-efficiency.md` §4 (grafo/fan-out); genoma §8
 (`verification_parallelism`); `templates/workflows/build-one-feature.mjs` (Tier 1 + staged Tier 2).
+
+> **Refinado por [ADR-0017](0017-fan-out-por-slice-e-escopo-de-teste.md):** o "testes rápidos" do Tier 1
+> ganhou **definição operacional** (escopo escalado ao diff: relacionado no laço interno → suíte do
+> footprint ao fechar a slice → **suíte completa no gate, sempre**). O Tier 2 não muda — continua **uma
+> vez por feature**, sobre o diff agregado e congelado, mesmo com o fan-out por slice.
 </content>

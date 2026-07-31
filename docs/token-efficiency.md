@@ -133,6 +133,24 @@ Regras de fan-out (barreira só quando a etapa N precisa de **todos** os resulta
 `pipeline()`), roteamento por etapa (`model`/`effort` no `agent()`) e piso de segurança do
 `adversarial-reviewer` valem **igual** dentro do `Workflow`.
 
+### Fan-out por micro-slice · e o escopo de teste que o torna barato (ADR-0017)
+
+Dentro de **uma** feature decomposta, o motor dá **uma invocação por slice** com contexto **estreito**
+(só os arquivos dela) e roda **ondas**: slices de **footprint disjunto** em paralelo, as demais em série,
+integração por último. Três coisas mantêm isso econômico:
+
+- **O prefixo fixo é o mesmo em todas as slices** (§1) → o custo marginal de um hop a mais é o **rabo
+  variável**, não o bloco todo. Sem o bloco fixo, fatiar seria caro; com ele, é quase de graça.
+- **A costura por slice descarta o rabo anterior** (§8/ADR-0012): a slice N não arrasta o contexto da
+  N-1 — que é justamente o ponto (janela menor ⇒ menos alucinação).
+- **O escopo de teste escala com o diff**, não com o repositório: o laço interno roda só o relacionado,
+  o fechamento da slice roda a suíte do footprint. Sem isso, fatiar **multiplicaria** a suíte completa
+  por N e o fan-out seria uma piora de wall-clock disfarçada de melhoria de qualidade.
+
+**O que NÃO se fatia:** o gate de julgamento. Painel + `security-reviewer` rodam **uma vez por feature**,
+sobre o diff agregado e congelado — fatiar o Tier 2 multiplicaria o piso opus por N (P-14), e ainda
+julgaria fragmentos em vez do comportamento agregado. **Fatiar autoria nunca é fatiar verificação.**
+
 ### Painel adversarial · fan-out da verificação independente (ADR-0005)
 
 Quando `verification_mode: panel` (tier 🔴 ou `autonomy_level: autônomo`), a etapa de verificação vira um
