@@ -62,5 +62,6 @@ trade-off. Nesses casos, o `plan.md` da feature já basta.
 | [0014](0014-quarentena-de-input-nao-confiavel.md) | Quarentena de conteúdo não-confiável na ingestão dos agentes (defesa anti-injeção de prompt) | Accepted | método (segurança da ingestão) | P-6, P-8, P-11, P-13 |
 | [0015](0015-duplo-laco-bdd-tdd.md) | Duplo laço de teste — BDD (aceitação) por fora, TDD (red→green→refactor) por dentro, com prova do vermelho | Accepted | método (fidelidade da implementação) | P-1, P-10, P-11, P-13, P-14, P-15 |
 | [0016](0016-stacked-prs-nao-adotar.md) | Stacked PRs — não adotar como padrão; checkpoint incremental por sub-issue | Accepted | método (convenção de git) | P-10, P-11, P-13, P-14, P-15 |
+| [0017](0017-fan-out-por-slice-e-escopo-de-teste.md) | Fan-out por micro-slice no subgrafo contratado + escopo de teste escalado ao diff (gate sempre completo) | Accepted | método (execução da decomposição + custo do laço) | P-10, P-11, P-13, P-14, P-15 |
 
 > Ao criar um ADR, adicione a linha aqui (o `docs-writer` fecha isso no fim da feature).

@@ -83,6 +83,17 @@ Por comportamento (não por arquivo), repita:
 3. **🔵 Refatorar** — **com a árvore verde**, melhore nomes, remova duplicação, empurre a dependência
    para trás da porta (P-5). Comportamento não muda; o teste é a rede.
 
+**Escopo de teste do laço (ADR-0017 · genoma §7):** nos passos 🔴/🟢 rode **só os testes relacionados
+aos arquivos que você tocou** (o comando `test (escopo)` do genoma — `vitest related`,
+`jest --findRelatedTests`, `pytest --testmon`, `go test ./<pkg>/...`, `dotnet test --filter`). É o loop
+que roda dezenas de vezes: pagar a suíte inteira a cada ciclo é o que torna TDD lento e faz o time
+abandoná-lo. **Ao fechar a slice:** typecheck + lint + a suíte do(s) módulo(s) do seu footprint (árvore
+verde, P-10). A **suíte completa é do gate** (`tester` + CI), não sua. **Três exceções em que você roda
+completo mesmo assim:** diff que toca **migration/esquema, config, injeção de dependência, fixture ou
+snapshot** (a seleção é cega a esses acoplamentos); qualquer mudança que toque uma **invariante**
+(P-3/P-5/P-6/P-7 — essas suítes entram no seu escopo mínimo sempre); e quando o genoma **não declara** o
+comando de escopo — aí rode a suíte do diretório e **diga que degradou**, não finja que selecionou.
+
 Ordem dos comportamentos: **contrato/caso feliz → bordas → falha/idempotência**. Onde o desenho
 não está claro, deixe o teste puxá-lo: se o teste é difícil de escrever (precisa de meio mundo montado),
 o acoplamento é o problema — corrija a fronteira, não o teste.

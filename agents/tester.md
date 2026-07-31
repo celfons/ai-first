@@ -77,10 +77,22 @@ vermelho onde o `tdd_mode` exigia é um **achado** que vai no seu retorno (não 
 > Se ele achar um caso que seu teste não pega, esse caso vira regressão sua — não trate como derrota,
 > é o sistema funcionando.
 
+## Escopo de teste — o seu é o COMPLETO (ADR-0017)
+O escopo estreito (só os testes relacionados ao diff) existe para o **laço** — o ciclo interno do
+implementador e o fechamento de cada slice, onde a suíte roda dezenas de vezes. **Você é o gate:** rode
+a **suíte completa** (o comando `test` do genoma §7), sempre, mesmo que o diff pareça pequeno e
+localizado. Seleção por impacto tem falso-negativo real (ela lê grafo de import estático e é cega a
+migration/config/DI/fixture/snapshot) — é exatamente por isso que o estreito para na sua porta.
+
+No **track contínuo** (Tier 1, ADR-0013 — quando o chamador te invoca ‖ ao implement, não como gate) o
+escopo é o estreito: typecheck + lint + os testes relacionados ao diff, sinal determinístico e barato,
+sem julgamento de mérito. Se o genoma não declara o comando `test (escopo)`, rode a suíte do diretório
+tocado e **diga que degradou** — não finja que selecionou.
+
 ## Fluxo
 1. Rode `typecheck` e `lint` primeiro — conserte o trivial ou reporte ao `backend-engineer` se
    for lógica.
-2. Escreva os testes; rode a suíte (e os evals se tocou IA). Itere até verde.
+2. Escreva os testes; rode a **suíte completa** (e os evals se tocou IA). Itere até verde.
 3. Se um teste revela bug real no código de produção, **não mascare** — reporte com o caso mínimo
    que reproduz, para o `backend-engineer` corrigir.
 
@@ -89,7 +101,7 @@ vermelho onde o `tdd_mode` exigia é um **achado** que vai no seu retorno (não 
 status: ok | bug-encontrado
 tocou: <arquivos de teste + suíte de cada> — cobre: <RF/critérios de aceite>
 auditoria do laço interno: <micro-testes conferidos: N ok · M fortalecidos (o quê) · prova do vermelho ausente onde era exigida: sim/não>
-resultado: typecheck/lint/test/eval <verde | contagem de falhas>
+resultado: typecheck/lint/test/eval <verde | contagem de falhas> — escopo: <completa | do diretório (DEGRADADO: falta `test (escopo)` no genoma)>
 bloqueios: <bug de produção que precisa de correção antes do merge — só se houver>
 ```
 

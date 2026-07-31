@@ -57,8 +57,25 @@
 - **Comandos de qualidade (reais):**
   - `typecheck`: `[A DEFINIR]`
   - `lint`: `[A DEFINIR]`
-  - `test`: `[A DEFINIR]`
+  - `test`: `[A DEFINIR]` (a **suíte completa** — é o que roda no gate e no CI)
+  - `test (escopo)`: `[A DEFINIR]` — o comando que roda **só os testes relacionados a arquivos dados**
+    (ex.: `npx vitest related` · `npx jest --findRelatedTests` · `pytest --testmon` · `go test ./<pkg>/...`
+    · `dotnet test --filter`). É o que torna o Tier 1 do ADR-0013 realmente **rápido** (ADR-0017). Deixe
+    vazio se a stack não tem seleção por impacto: o motor **degrada para a suíte do diretório e reporta**
+    a degradação — não simula seleção.
   - `eval` (se houver IA): `[A DEFINIR]`
+- **`test_scope`** (escopo de teste escalado ao diff — ADR-0017 · def. operacional do Tier 1 do
+  ADR-0013): `[impacted | full]` (default **`impacted`**). Três níveis, e o terceiro é o que torna o
+  estreito seguro:
+  - **laço interno TDD** (dezenas de ciclos por slice) → só o teste relacionado aos arquivos tocados;
+  - **fechamento da slice** (árvore verde, P-10) → typecheck + lint + a suíte do(s) módulo(s) do footprint;
+  - **diff congelado · gate · CI** → **suíte completa, sempre** (`test`). Não negocia.
+
+  **Freios inegociáveis:** diff que toca **migration/esquema, config, injeção de dependência, fixture ou
+  snapshot ⇒ escopo `full`** (a seleção enxerga grafo de import estático e é cega a isso); as suítes de
+  **invariante/segurança (P-3/P-5/P-6/P-7) entram no escopo mínimo sempre**, mesmo "não relacionadas" —
+  são as que quebram por acoplamento indireto. `full` = suíte completa em todo nível (base sem seleção
+  confiável). O ganho é de **laço**, nunca de cobertura no gate.
 - **`bdd_style`** (formato dos cenários de aceitação do `bdd-author` — a camada BDD é **sempre ativa**,
   este knob só escolhe o **formato**): `[gherkin | native]` (default **`native`** — cenários espelhando
   Dado/Quando/Então no framework de teste; `gherkin` = `.feature` + runner Cucumber-style). Toda
@@ -108,6 +125,16 @@
 - **`proposal_ttl`** (validade de uma proposta `growth-proposed` não priorizada, antes de ser podada;
   ADR-0007): `[A DEFINIR]` (default **= 3 ciclos**). O PO **fecha** (com motivo, para o ledger) as
   propostas que não ganharam vaga por `proposal_ttl` ciclos — o board de propostas não incha indefinidamente.
+- **`slice_fanout`** (fan-out por micro-slice no motor — ADR-0017): `[on | off]` (default **on**). Com
+  `on`, o subgrafo contratado roda a fase **DECOMPOSE** e dá **uma invocação por slice**, cada uma com
+  contexto **estreito** (só os arquivos daquela slice) — é o que faz o isolamento do ADR-0012 valer
+  também no caminho **autônomo** (`/daily-build`, `/kickoff`, `/migrate`), e não só na skill `/feature`.
+  Slices de **footprint de arquivo disjunto** rodam em paralelo (mesma regra de conflito do ADR-0007,
+  aqui **intra**-feature); as demais serializam; a **slice de integração** vai por último. O
+  `task-decomposer` continua livre para responder `nao-decomposto` (feature pequena ⇒ invocação única), e
+  o `fast_path` de baixo risco não decompõe. **O gate de julgamento não é fatiado:** painel adversarial +
+  `security-reviewer` rodam **uma vez por feature**, sobre o diff agregado e congelado (fatiar o Tier 2
+  multiplicaria o piso opus por N — P-14). `off` = comportamento anterior (invocação única).
 - **`fast_path`** (cerimônia escalada ao risco — ADR-0008): `[on | off]` (default **on**). Quando `on`,
   uma demanda **de baixo risco** pula as fases de **autoria** (spec/plan/ADR/decomposição/BDD) e vai
   direto a implementação → `tester` (com regressão) → gates. **Elegibilidade (TODAS):** `size:trivial`

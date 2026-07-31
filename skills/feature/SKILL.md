@@ -111,10 +111,17 @@ de contexto limpa** — é isso que reduz a janela e evita alucinação.
   exigia = etapa incompleta:** peça a prova antes de seguir, não a presuma.
 - **Em qualquer modo (inclusive `off` e `fast_path`): correção de bug reproduz em vermelho antes da
   correção.**
+- **Passe o escopo de teste** (ADR-0017 · genoma §7): no laço interno o implementador roda **só os
+  testes relacionados aos arquivos que tocou** (comando `test (escopo)`); ao **fechar a slice**,
+  `typecheck`+`lint`+a suíte do footprint. A **suíte completa é da fase 6**, não do laço. Exceções em que
+  a slice roda completo mesmo assim: diff em **migration/esquema, config, DI, fixture ou snapshot**, ou
+  mudança que toque **invariante** (P-3/P-5/P-6/P-7). Sem o comando de escopo no genoma, degrada para a
+  suíte do diretório **e reporta** — não simula seleção.
 - Ao fim de **cada** slice: `typecheck`+`lint` verdes e a **árvore não pode ficar quebrada** (parcial
   fica atrás de flag/stub). Só então siga para a próxima.
 - Slices **independentes** (sem arquivos em comum) podem ser feitas em invocações **paralelas**; as do
-  caminho crítico vão em sequência.
+  caminho crítico vão em sequência. É a mesma regra de **footprint disjunto** que o motor
+  (`build-one-feature`, ADR-0017) aplica em ondas quando o build é autônomo — aqui você a executa à mão.
 - A **slice de integração** (última) liga tudo, remove os andaimes e é implementada por último.
 
 ### 6 · VERIFY (por slice + no agregado)

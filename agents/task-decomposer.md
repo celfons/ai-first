@@ -65,6 +65,26 @@ Escreva/atualize `docs/sdd/features/NNN-slug/tasks.md` no formato de **grafo de 
 **depende de**, **paralelizável? (s/n)**, **done + teste**, **RF**, e como **mantém a árvore verde**.
 Feche com a **slice de integração** e o gate de merge da feature inteira.
 
+## O contrato estruturado (ADR-0017 — é ele que faz a decomposição ser EXECUTADA)
+Quando o chamador for o motor (`build-one-feature`, via `schema`), sua decomposição não é prosa: é
+**dado que roteia a execução**. O script monta as **ondas** a partir dela e dá **uma invocação por
+slice**. Devolva, por slice:
+
+| Campo | O que é | Por que o motor precisa |
+|---|---|---|
+| `id` · `titulo` | identidade da slice | rastro no log de ondas |
+| `arquivos` | o **footprint** — os arquivos que a slice toca | **decide o que paraleliza**: só slices de footprint **disjunto** entram na mesma onda (ADR-0007, aqui intra-feature) |
+| `dependeDe` | ids das slices que precisam ter fechado antes | as arestas do DAG |
+| `doneTest` | o teste que **falha hoje** e passa ao fim da slice | é o que abre o laço interno no vermelho (ADR-0015) |
+| `rf` | o RF-### que a slice serve | rastreabilidade ao contrato |
+| `integracao` | `true` na slice que agrega o valor | ela roda **por último e sozinha**; é o alvo do gate |
+| `escopoDeTeste` | `impacted` (default) ou `full` | marque **`full`** quando o diff da slice toca **migration/esquema, config, injeção de dependência, fixture ou snapshot** — a seleção por impacto enxerga grafo de import estático e é **cega** a esses acoplamentos (ADR-0017 §E) |
+
+**Consequências de errar isso** (declare com cuidado, não por preguiça): footprint incompleto faz duas
+slices concorrentes editarem o mesmo arquivo; `dependeDe` com id inexistente ou ciclo **falha a feature
+explicitamente** (o motor não adivinha); `escopoDeTeste` errado deixa passar quebra por acoplamento
+indireto até o gate.
+
 ## Sua resposta final ao chamador (enxuta — `docs/token-efficiency.md` §3)
 ```
 status: ok | não-decomposto
@@ -72,7 +92,8 @@ tocou: <tasks.md reescrito como DAG> — <N> slices
 caminho crítico: <ordem serial obrigatória> · independentes: <as que paralelizam>
 p/ o implement: <slice de integração + qualquer slice ainda grande demais>
 ```
-Se decidiu **não quebrar**, diga por quê em `status`.
+Se decidiu **não quebrar**, diga por quê em `status` (o motor cai no caminho de invocação única — é uma
+resposta legítima, não uma falha).
 
 ## Não faça
 - Não desenhe arquitetura nova nem escolha stack/porta (é do `architect`) — você **fatia** o que ele
