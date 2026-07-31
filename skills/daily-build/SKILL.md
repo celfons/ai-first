@@ -60,6 +60,12 @@ como oráculo) → `security-reviewer` (gate de segurança) → `docs-writer`.
 > (peça de volta, não presuma). **Em qualquer modo, inclusive `off` e `fast_path`: bug reproduz em
 > vermelho antes da correção** — vale também para o re-implement depois de um veredito BLOQUEIA.
 
+> **Escopo de teste (ADR-0017 · genoma §7).** Passe o comando `test (escopo)` às etapas de
+> implementação: no laço interno roda **só o teste relacionado aos arquivos tocados**; ao fechar a slice,
+> typecheck+lint+a suíte do footprint. O **`tester` e o CI rodam a suíte COMPLETA** — o estreito acelera
+> o laço e nunca substitui o gate. Diff em migration/config/DI/fixture, ou que toque invariante ⇒ escopo
+> completo já no laço. Sem o comando declarado, o retorno diz **degradado** — trate como sinal, não ruído.
+
 > **Fast-path de baixo risco (ADR-0008 — só se `fast_path: on`).** Se o `sdd-orchestrator` classificou a
 > demanda como elegível (marca `fast-path`: `size:trivial` **e** risco 🟢 — só texto/UI/leitura, sem
 > dinheiro/PII/idempotência/efeito/invariante/dependência nova — **e** confiança alta, sem comportamento
@@ -113,7 +119,12 @@ arquivo) e **agrupar para ninguém ficar na mesma parede ao mesmo tempo**. Regra
   **sobreposto SERIALIZAM** — a segunda espera a primeira mergear e **rebaseia** sobre o `develop`
   avançado antes de começar (evita o conflito antes dele nascer, não só no merge).
 - **Dentro de uma demanda:** backend e frontend tocam superfícies distintas → **paralelos**; se a
-  `tasks.md` marcou dependência de contrato, respeite a ordem.
+  `tasks.md` marcou dependência de contrato, respeite a ordem. **E dentro de uma demanda decomposta
+  (ADR-0017 · `slice_fanout: on`):** a mesma regra desce mais um nível — **uma invocação por slice**, com
+  contexto estreito (só os arquivos dela), slices de **footprint disjunto** em paralelo e as demais em
+  série, integração por último. É a mesma aritmética de conflito, agora **intra**-feature. O gate de
+  julgamento **não** desce com ela: painel + segurança rodam **uma vez por feature**, sobre o diff
+  agregado e congelado (P-14).
 - Se o footprint não foi declarado ou é ambíguo, **trate como sobreposto** (serialize — conservador).
 
 **Desenvolvimento paralelo (fan-out do lote — definido pelo `sdd-orchestrator`, gated pelo teto de

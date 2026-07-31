@@ -133,9 +133,16 @@ contexto, mas a **semente do que construir primeiro**. Pergunte:
   jeito certo de fazer as coisas neste projeto) e as **armadilhas** já conhecidas (o que evitar). Semeie
   as primeiras linhas do `knowledge.md` — o acervo cresce depois (bug caçado vira anti-padrão). Se o
   dono não souber ainda, deixe o esqueleto; o `docs-writer` preenche ao longo das features.
-- **Comandos de qualidade REAIS:** os comandos exatos de `typecheck`, `lint`, `test` e (se houver
-  IA) `eval`. Se algum não existe ainda, registre como `[A DEFINIR]` e sinalize que o gate fica
-  incompleto até existir.
+- **Comandos de qualidade REAIS:** os comandos exatos de `typecheck`, `lint`, `test` (a **suíte
+  completa**) e (se houver IA) `eval`. Se algum não existe ainda, registre como `[A DEFINIR]` e sinalize
+  que o gate fica incompleto até existir.
+- **Comando de teste POR ESCOPO (`test (escopo)`) e `test_scope` — ADR-0017:** pergunte *"como este
+  projeto roda só os testes relacionados a um conjunto de arquivos?"* (ex.: `npx vitest related` ·
+  `npx jest --findRelatedTests` · `pytest --testmon` · `go test ./<pkg>/...` · `dotnet test --filter`).
+  É o que torna o laço interno de TDD viável: sem ele, cada ciclo vermelho→verde paga a suíte inteira e
+  a disciplina é abandonada na prática. Se a stack não tem seleção por impacto, deixe vazio — o motor
+  **degrada para a suíte do diretório e reporta** (nunca simula seleção). Explique o piso: a **suíte
+  completa roda sempre no gate e no CI**; o escopo estreito vale só dentro do laço.
 - **Estilo BDD (`bdd_style`):** a camada de aceitação é **sempre ativa** (o `tester` depende dela como
   oráculo); este knob só escolhe o **formato** de como o `bdd-author` grava os cenários — `native`
   (default; cenários espelhando Dado/Quando/Então no framework de teste do projeto) ou `gherkin`
@@ -168,6 +175,11 @@ Estes são os **knobs ajustáveis** (P-15) — o humano pode mudá-los aqui e a 
   arranque para formar a base do produto rápido. O merge em `develop` é sempre **serializado** (uma de
   cada vez), então subir o paralelismo acelera a implementação sem abrir mão dos gates. Pergunte junto
   da cadência: "quer desenvolver 1 por vez, ou várias em paralelo para o produto nascer mais rápido?"
+- **`slice_fanout` (fan-out por micro-slice — ADR-0017):** default **`on`** — normalmente **não precisa
+  perguntar**, só registre. É o que faz uma feature grande virar **uma invocação por slice** (contexto
+  estreito → janela menor → menos alucinação), com slices de **footprint disjunto** em paralelo dentro
+  da mesma feature. Distinto do `parallelism`, que é **entre** features. Só mencione ao dono se ele
+  perguntar por que uma feature aparece como várias invocações no log.
 - **`initial_backlog` (arranque inicial):** **quantas histórias/épicos criar de imediato** para começar
   o produto. **Pergunte aqui, na entrevista** (não depois): "Para começar, quantas histórias/épicos você
   quer que eu crie de imediato no board?" É o número que a **Fase Final** passa ao `/kickoff` sem
