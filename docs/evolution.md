@@ -38,6 +38,19 @@ sem reconstruir o passado lendo dez lugares.
 
 ## Linha do tempo
 
+### 2026-07-31 · Stacked PRs avaliados e recusados (meta)
+- **Sinal:** 🔧 processo (decisão de método — recusa registrada, sem métrica de produto).
+- **Aprendizado:** um padrão de mercado só entra se o **gargalo que ele resolve existir aqui**. Stacked
+  PRs compra revisão barata para o **revisor humano** — que este pipeline não tem (`autonomy_level:
+  autônomo`); e os ganhos restantes já estavam cobertos pelo isolamento por slice (contexto), pela
+  árvore verde por slice (feedback cedo) e pelo `tasks.md` como DAG (rastreabilidade). O que sobrava
+  eram os custos: gate caro pago N vezes (opus/alto), N rodadas na fila de merge serializada, WIP/
+  footprint mudando de unidade e rebase em cascata. A necessidade legítima por trás do pedido —
+  **checkpoint auditável em feature 🔴** — já tinha mecanismo pronto: **sub-issues** sequenciadas pelo
+  `wip_limit`. Recusar com o trade-off escrito vale mais que adotar "por via das dúvidas": um knob
+  desligado custa quase o mesmo que o default, porque o caminho precisa existir para sempre.
+- **Links:** ADR-0016 · `docs/knowledge.md` (anti-padrão "cadeia de PRs empilhados") · ADR-0003/0007/0008.
+
 ### 2026-07-26 · Duplo laço de teste — TDD entra como laço interno do BDD (meta)
 - **Sinal:** 🔧 processo (sem métrica de produto — é fidelidade da implementação do próprio método).
 - **Aprendizado:** o método tinha o **laço externo** (cenários de aceitação como oráculo) mas mantinha
