@@ -84,11 +84,11 @@ como oráculo) → `security-reviewer` (gate de segurança) → `docs-writer`.
 > orchestrator citou) e passe-o **idêntico e primeiro** a cada subagente → cache de prompt; (2) passe
 > `model`/`effort` do plano em **cada** `Agent()` — nunca o default (piso opus/alto para
 > `adversarial-reviewer` e invariante/segurança); (3) exija **retorno enxuto** (status · tocou · p/ o
-> próximo · bloqueios), detalhe só quando o `adversarial-reviewer` bloqueia. Com opt-in do humano por
-> `Workflow`, paralelize as etapas `paralelo:sim` e imponha `budget.total` = `daily_budget`.
+> próximo · bloqueios), detalhe só quando o `adversarial-reviewer` bloqueia. O `Workflow` impõe
+> `budget.total` = `daily_budget` e paraleliza as etapas `paralelo:sim`.
 >
-> **Paralelismo de FEATURES num único `Workflow` (`parallelism > 1` + opt-in — `token-efficiency.md` §4
-> Escala 2).** Em vez de N invocações soltas, construa as features **na mesma orquestração**:
+> **Paralelismo de FEATURES num único `Workflow` — é o DEFAULT (ADR-0018 · `parallelism > 1` ·
+> `token-efficiency.md` §4 Escala 2).** Em vez de N invocações soltas, construa as features **na mesma orquestração**:
 > (1) **pré-fase** deriva **1×** o **bundle compartilhado** — BLOCO DE CONTEXTO FIXO base (CLAUDE.md +
 > constitution), índice de repo, audit de dependências, digest de market-scan — e o passa **read-through**
 > a cada feature (fato, não raciocínio → isolamento intacto); (2) a `feature` é a **dimensão externa** do
@@ -135,11 +135,23 @@ disjunto **ao mesmo tempo** — **o teto de token estrangula o paralelismo prime
 definido, nunca se abre mais frentes do que o orçamento restante cobre a `budget_per_feature` cada
 (com `sem-teto`, o fan-out cai só em `parallelism`/`wip_limit`). Cada frente roda em **contexto
 isolado** (subagentes de implementação com `isolation: 'worktree'`, uma
-branch `claude/<slug>` por feature a partir de `develop`). **Com opt-in de `Workflow`, faça-o num único
-Workflow** (Escala 2 acima): **bundle de recursos compartilhado derivado 1×** (contexto base + índice de
-repo + deps + market-scan, passados read-through) e **teto `budget_per_feature`** por sub-pipeline — a
-feature que estoura o seu teto **para sozinha** (as vizinhas seguem). Sem `Workflow`, o mesmo desenho
-vale de forma sequencializada. Mas **o merge em `develop` é SERIALIZADO** em qualquer caso: mergeie uma
+branch `claude/<slug>` por feature a partir de `develop`). **Faça-o num único Workflow — é o default
+(ADR-0018):**
+
+```
+Workflow({ scriptPath: '.claude/workflows/build-many-features.mjs', args: {
+  features,                 // o `batch` que o plan-batch.mjs devolveu (footprints disjuntos)
+  fanOut,                   // min(parallelism, wip_limit, floor(budget.remaining()/budget_per_feature))
+  budgetPerFeature, dailyBudget, maxRerunAttempts,
+  tddMode, sliceFanout, testCmd, testScopedCmd, testScope,
+}})
+```
+
+Ele deriva o **bundle compartilhado 1×**, compõe `build-one-feature` por feature e aplica o teto
+**antes de abrir cada frente** — a feature que estoura **para sozinha** (as vizinhas seguem). O retorno
+(`rodada`, `prontasParaMerge`) é **fato validado**: você decide o merge a partir dele. Com
+`orchestration_mode: sequencial` — ou se `Workflow` não estiver disponível (aí **reporte a degradação**)
+— o mesmo desenho vale sequencializado. Mas **o merge em `develop` é SERIALIZADO** em qualquer caso: mergeie uma
 de cada vez (Fase 5) e **rebase/atualize** cada branch sobre o `develop` já avançado antes do merge —
 conflito volta ao `backend-engineer`. Duas features nunca tocam `develop` ao mesmo tempo. Com
 `parallelism: 1`, o comportamento é o sequencial de sempre.

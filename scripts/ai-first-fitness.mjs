@@ -124,30 +124,41 @@ function f4_dataBehindPort() {
 }
 
 // ---- F5 · Sub-workflow contratado materializado (ADR-0010) ----------------------------------------
+// Cobre os DOIS grafos que o método executa por default (ADR-0018): o subgrafo contratado de UMA
+// feature (Escala 1, ADR-0010) e o pai da rodada (Escala 2, ADR-0003). Com `Workflow` como caminho
+// default, a ausência de qualquer um deles deixa de ser "modo opcional indisponível" e passa a ser o
+// caminho quente quebrado — por isso vira fitness function, não observação.
 function f5_contractedWorkflow() {
-  console.log('== F5 · Sub-workflow contratado build-one-feature ==');
-  const TEMPLATE = 'templates/workflows/build-one-feature.mjs';
-  const INSTALLED = '.claude/workflows/build-one-feature.mjs';
-  const isWorkflow = (txt) => /export\s+const\s+meta\s*=/.test(txt) && /['"]build-one-feature['"]/.test(txt);
+  console.log('== F5 · Grafos contratados (build-one-feature · build-many-features) ==');
+  const GRAFOS = [
+    { name: 'build-one-feature', adr: 'ADR-0010' },
+    { name: 'build-many-features', adr: 'ADR-0003/0018' },
+  ];
+  const isWorkflow = (txt, name) => /export\s+const\s+meta\s*=/.test(txt) && new RegExp(`['"]${name}['"]`).test(txt);
 
-  if (ctx.isPluginRepo) {
-    // Repo do plugin/método: o template é a fonte de verdade; a cópia instalada (se existir) não diverge.
-    if (!has(TEMPLATE)) return bad(`${TEMPLATE} ausente — o subgrafo contratado (ADR-0010) precisa existir no plugin`);
-    if (!isWorkflow(read(TEMPLATE))) return bad(`${TEMPLATE} não parece um workflow (falta export const meta / name build-one-feature)`);
-    ok('template do subgrafo presente e bem-formado');
-    if (has(INSTALLED)) {
-      if (read(INSTALLED) === read(TEMPLATE)) ok('cópia instalada em .claude/workflows/ em sincronia com o template');
-      else bad(`${INSTALLED} DIVERGE de ${TEMPLATE} — a cópia resolvível derivou do template (drift)`);
+  for (const { name, adr } of GRAFOS) {
+    const TEMPLATE = `templates/workflows/${name}.mjs`;
+    const INSTALLED = `.claude/workflows/${name}.mjs`;
+
+    if (ctx.isPluginRepo) {
+      // Repo do plugin/método: o template é a fonte de verdade; a cópia instalada não diverge.
+      if (!has(TEMPLATE)) { bad(`${TEMPLATE} ausente — o grafo contratado (${adr}) precisa existir no plugin`); continue; }
+      if (!isWorkflow(read(TEMPLATE), name)) { bad(`${TEMPLATE} não parece um workflow (falta export const meta / name ${name})`); continue; }
+      ok(`template ${name} presente e bem-formado`);
+      if (has(INSTALLED)) {
+        if (read(INSTALLED) === read(TEMPLATE)) ok(`cópia instalada de ${name} em sincronia com o template`);
+        else bad(`${INSTALLED} DIVERGE de ${TEMPLATE} — a cópia resolvível derivou do template (drift)`);
+      }
+      continue;
     }
-    return;
-  }
-  // Repo de produto ARMADO: o named workflow precisa RESOLVER (.claude/workflows/) — a gênese o instala.
-  if (ctx.isArmed) {
-    if (!has(INSTALLED)) bad(`${INSTALLED} ausente — workflow('build-one-feature') não resolveria (a gênese deveria instalá-lo)`);
-    else if (!isWorkflow(read(INSTALLED))) bad(`${INSTALLED} não é um workflow válido`);
-    else ok('sub-workflow contratado instalado e resolvível');
-  } else {
-    skip('repo de produto não armado');
+    // Repo de produto ARMADO: o named workflow precisa RESOLVER (.claude/workflows/) — a gênese instala.
+    if (ctx.isArmed) {
+      if (!has(INSTALLED)) bad(`${INSTALLED} ausente — workflow('${name}') não resolveria (a gênese deveria instalá-lo)`);
+      else if (!isWorkflow(read(INSTALLED), name)) bad(`${INSTALLED} não é um workflow válido`);
+      else ok(`grafo contratado ${name} instalado e resolvível`);
+    } else {
+      skip(`repo de produto não armado (${name})`);
+    }
   }
 }
 

@@ -125,6 +125,15 @@
 - **`proposal_ttl`** (validade de uma proposta `growth-proposed` não priorizada, antes de ser podada;
   ADR-0007): `[A DEFINIR]` (default **= 3 ciclos**). O PO **fecha** (com motivo, para o ledger) as
   propostas que não ganharam vaga por `proposal_ttl` ciclos — o board de propostas não incha indefinidamente.
+- **`orchestration_mode`** (como o driver EXECUTA o grafo — ADR-0018): `[workflow | sequencial]`
+  (default **workflow**). Com `workflow`, os drivers (`/feature`, `/daily-build`, `/kickoff`, `/migrate`)
+  rodam o subgrafo contratado `.claude/workflows/build-one-feature.mjs` **nativamente** — e a rodada
+  multi-feature roda o pai `build-many-features.mjs` (bundle compartilhado 1× + teto por feature +
+  merge serializado pelo driver). **Invocar a skill É o opt-in** — não há frase mágica, e continua não
+  havendo disparo de `Workflow` fora de skill. `sequencial` executa a mesma cadeia com `Agent()` um a um
+  (para depurar ou em ambiente sem a ferramenta). **Se `Workflow` não estiver disponível, o driver
+  degrada para sequencial e REPORTA** — nunca simula. Os gates humanos (P-10), o isolamento (P-11/P-13),
+  o piso opus/alto (P-14) e o fluxo git não mudam em nenhum modo.
 - **`slice_fanout`** (fan-out por micro-slice no motor — ADR-0017): `[on | off]` (default **on**). Com
   `on`, o subgrafo contratado roda a fase **DECOMPOSE** e dá **uma invocação por slice**, cada uma com
   contexto **estreito** (só os arquivos daquela slice) — é o que faz o isolamento do ADR-0012 valer
