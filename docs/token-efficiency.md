@@ -98,10 +98,18 @@ Ganho: médio, mas **composto** ao longo da fatia. Risco: baixo. Toca corretude:
 
 ## 4 · `Workflow` — pipeline real (paralelismo + orçamento)
 
-**Exige opt-in explícito** do humano (a ferramenta `Workflow` não roda em modo silencioso). O driver
-**não** dispara `Workflow` por conta própria — só quando o humano pede orquestração multi-agente
-("use um workflow", "ultracode", ou equivalente). Sem opt-in, o fluxo sequencial das skills segue como
-está.
+**É o caminho DEFAULT (ADR-0018), governado pelo knob `orchestration_mode`** (genoma §8; default
+`workflow`). A ferramenta `Workflow` não roda em modo silencioso — mas **invocar a skill É o opt-in**:
+`/feature`, `/daily-build`, `/kickoff` e `/migrate` declaram nas suas instruções que chamam `Workflow`,
+então quem roda a skill consentiu. Não há frase mágica ("use um workflow"/"ultracode" continuam válidos,
+mas deixaram de ser necessários) e **continua não havendo disparo fora de skill**. Com
+`orchestration_mode: sequencial`, ou se a ferramenta não estiver disponível na sessão, o driver executa
+a mesma cadeia com `Agent()` um a um — e, no segundo caso, **REPORTA a degradação** (nunca simula ter
+rodado o grafo).
+
+> **O grafo é código, não desenho.** `.claude/workflows/build-one-feature.mjs` (Escala 1, subgrafo
+> contratado do ADR-0010) e `.claude/workflows/build-many-features.mjs` (Escala 2, o pai da rodada).
+> O que segue descreve o que esses scripts fazem.
 
 **O que ganha.** A cadeia de uma fatia **não é toda sequencial-obrigatória**. Grafo real:
 
@@ -240,14 +248,16 @@ branch de cada vez, rebase sobre o `develop` já avançado antes de cada merge �
 próprios gates (CI + `adversarial-reviewer` + `security-reviewer`) — o compartilhamento é de **insumo**,
 nunca de **veredito**.
 
-Esboço (a `feature` é a dimensão externa; cada uma é a Escala 1 com o bundle injetado e o teto próprio):
+**Isto é `.claude/workflows/build-many-features.mjs`** (ADR-0018) — não é mais esboço. A `feature` é a
+dimensão externa do `pipeline()`; cada uma compõe o subgrafo contratado por
+`workflow('build-one-feature', …)` (aninhamento **pai→filho**, o único nível permitido — ADR-0010 §3):
 ```
-bundle = derivaShared()                        // 1x: contexto base + índice + deps + market-scan
-pipeline(features,                             // dimensão externa: N features concorrentes
-  f => subPipelineDaFeature(f, bundle,         // Escala 1 inteira, isolada em worktree próprio
-         capBudget = budget_per_feature),      // teto por feature; estourou → pausa SÓ esta
-  ...                                          // gates por feature; merge serializado fora do fan-out
-)
+phase('Bundle');   bundle = await agent(deriva)        // 1x: contexto base + índice + deps + market-scan
+phase('Features'); pipeline(features, f => {           // dimensão externa: N features concorrentes
+  if (budget.remaining() < budget_per_feature) return awaitingHuman(f)   // guarda ANTES de abrir a frente
+  return workflow('build-one-feature', { ...f, fixedContext: bundle + linhaDoContextMap(f) })
+})
+return { rodada, prontasParaMerge }                    // o MERGE é do driver, serializado, fora do grafo
 ```
 
 Ganho: wall-clock (features concorrentes) **+** token (bundle derivado 1×, não N×) **+** contenção de
@@ -397,7 +407,8 @@ O prompt cache (§1) tem TTL ~1h. Duas consequências operacionais:
 2. **Passa `model`/`effort`** do plano do orchestrator em **cada** `Agent()`. Nunca deixa cair no
    default. Piso opus/alto para `adversarial-reviewer` e invariante/segurança.
 3. **Exige retorno enxuto** (status · tocou · p/ o próximo · bloqueios). Detalhe só quando bloqueia.
-4. **Com opt-in do humano:** usa `Workflow` para paralelizar o independente e impor `budget.total`.
+4. **Roda o grafo por default** (ADR-0018 · `orchestration_mode: workflow`): `Workflow` com o script
+   contratado, paralelizando o independente e impondo `budget.total`.
    Com `parallelism > 1`, constrói **N features num só `Workflow`** (§4 Escala 2): deriva o **bundle
    compartilhado 1×**, roda cada feature isolada com **teto `budget_per_feature`** e mantém o **merge
    serializado** — um runaway pausa só a sua feature, não o lote.

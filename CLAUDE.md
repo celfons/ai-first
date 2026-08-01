@@ -201,6 +201,15 @@ reserva de idempotência, laço da fila, chamada de LLM com timeout+validação+
   `guardrail_metrics`, kill e o gate de conformidade do `security-reviewer` (não relaxa).
 - **Qualidade da autoria de teste** é knob do genoma: `bdd_style` (formato do laço externo) e
   **`tdd_mode`** (disciplina do laço interno — ADR-0015), ajustáveis a qualquer momento (P-15).
+- **O grafo é o caminho default, e é código (ADR-0018).** Os drivers não "descrevem" a orquestração —
+  eles **rodam** `.claude/workflows/build-one-feature.mjs` (uma feature: spec→plan→decompose→implement→
+  verify→docs, com fan-out por slice e staged fail-fast) e `.claude/workflows/build-many-features.mjs`
+  (a rodada: bundle compartilhado derivado 1× + uma composição de `build-one-feature` por feature +
+  teto por feature; o **merge em `develop` continua serializado pelo driver**). **Invocar a skill é o
+  opt-in** — não há frase mágica, e continua não havendo disparo de `Workflow` fora de skill. Knob
+  `orchestration_mode` (`workflow` default · `sequencial`); sem a ferramenta, o driver **degrada e
+  reporta**, não simula. Os gates humanos (P-10) ficam **fora** do grafo — o grafo acelera o que já foi
+  aprovado, não atropela aprovação.
 - **Cadência/paralelismo/autonomia/orçamento** são knobs do genoma (`features_per_day`, `parallelism`,
   `wip_limit` — teto de WIP + serialização por footprint de conflito, ADR-0007;
   `fast_path` — cerimônia escalada ao risco: baixo risco pula a autoria, os gates permanecem, ADR-0008;

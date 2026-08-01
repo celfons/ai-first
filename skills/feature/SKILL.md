@@ -61,13 +61,32 @@ revisão independente):
   próximo · bloqueios) — ponteiros, não cópias (a auditoria vive no commit/spec/PR). Exceção: o
   `adversarial-reviewer`, **ao BLOQUEAR**, devolve o detalhe (invariante/cenário quebrado + repro).
 
-### 2¾ · `Workflow` (opcional — só com opt-in do humano)
-Se — e só se — o humano pediu orquestração multi-agente (ex.: "use um workflow"/"ultracode"), rode a
-fatia via `Workflow` em vez de sequencial: paralelize as etapas marcadas `paralelo:sim` (`bdd-author`/
-`ux-designer`, que dependem só da spec/plan) com o implement, e imponha `budget.total` casado ao
-`daily_budget` do genoma. Dentro do `Workflow` valem as mesmas regras: bloco fixo, `model`/`effort` por
-`agent()`, piso opus/alto do `adversarial-reviewer`, isolamento preservado. **Sem opt-in, siga
-sequencial** — não dispare `Workflow` por conta própria.
+### 2¾ · `Workflow` nativo — o caminho DEFAULT (ADR-0018)
+**Rode a fatia pelo grafo, não sequencial.** Com `orchestration_mode: workflow` (genoma §8 — o default),
+invoque o subgrafo contratado:
+
+```
+Workflow({ scriptPath: '.claude/workflows/build-one-feature.mjs', args: {
+  issue, fixedContext,            // o BLOCO FIXO que você montou em 2½ — passado read-through
+  routing,                        // {etapa: {model, effort}} do plano do orchestrator
+  budgetPerFeature, maxRerunAttempts,
+  tddMode, sliceFanout, testCmd, testScopedCmd, testScope,   // knobs do genoma §7/§8
+}})
+```
+
+**Invocar esta skill JÁ é o opt-in** — o humano pediu `/feature`, e estas instruções mandam chamar
+`Workflow`. Não peça frase mágica. Dentro do grafo valem as mesmas regras (bloco fixo, `model`/`effort`
+por `agent()`, piso opus/alto do `adversarial-reviewer`, isolamento) — elas já estão codificadas no
+script.
+
+**Os gates humanos ficam FORA do grafo.** Se o `autonomy_level` exige parada após spec e após plan
+(§ Configuração de gates), **não** dispare o workflow inteiro de uma vez: rode as fases 3 e 4 com
+`Agent()`, pare nos gates, e só então entre no workflow para implement→verify→docs. O grafo acelera o
+que já foi aprovado; ele não atropela aprovação.
+
+**Degradação:** com `orchestration_mode: sequencial`, ou se a ferramenta `Workflow` não estiver
+disponível nesta sessão, execute a mesma cadeia com `Agent()` um a um (fases 3→7 abaixo) e **diga ao
+usuário que degradou** — nunca simule ter rodado o grafo.
 
 ### 3 · SPECIFY (gate)
 1. Invoque **`feature-spec`** com a issue. Ele cria `docs/sdd/features/<n>-<slug>/spec.md`.

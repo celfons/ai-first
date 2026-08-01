@@ -269,7 +269,8 @@ model:<…> · effort:<…>
 ```
 > **`paralelo:sim`** marca a etapa que depende só da spec/plan (não do código) e pode rodar concorrente
 > ao implement num `Workflow` — tipicamente `bdd-author` e `ux-designer` (ver `docs/token-efficiency.md`
-> §4). É informativo: só vale se o humano optou por `Workflow`; sem opt-in, o driver roda sequencial.
+> §4). O driver roda o grafo **por default** (ADR-0018 · knob `orchestration_mode: workflow`), então esta
+> marca é operante, não decorativa; só com `orchestration_mode: sequencial` ela vira informativa.
 
 ## Regras
 - **Você é o único subagente de modelo fixo (opus/alto).** Todos os outros são roteados por você — o

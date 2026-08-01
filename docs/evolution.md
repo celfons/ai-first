@@ -38,6 +38,26 @@ sem reconstruir o passado lendo dez lugares.
 
 ## Linha do tempo
 
+### 2026-08-01 · O grafo sai do opt-in e vira o caminho default — e a rodada vira código (meta)
+- **Sinal:** 🔧 processo (execução do que o método já tinha decidido E implementado).
+- **Aprendizado:** a lição de 2026-07-31 ("prosa de skill não é execução") tinha um degrau abaixo dela:
+  **motor que só liga sob frase mágica também não é execução**. O `build-one-feature.mjs` existia,
+  correto e completo — mas `token-efficiency.md` §4 e `/feature` §2¾ o mantinham *"opcional, só com
+  opt-in do humano"*. O efeito era o mesmo perverso de antes, invertido no eixo: o caminho **autônomo**
+  (`/daily-build`, `/kickoff` — volume, sem observador) era o que **menos** rodava o grafo, porque não
+  há ninguém lá para dizer "use um workflow". Ao reler a restrição real da ferramenta, o freio se
+  revelou **autoimposto**: `Workflow` não pode disparar em silêncio, mas *invocar uma skill cujas
+  instruções mandam chamá-lo* **já é** o consentimento. O opt-in extra não protegia nada — só desligava
+  o motor. Segunda descoberta: a **Escala 2** (N features numa orquestração) estava em pseudocódigo há
+  duas ADRs; sem workflow pai, o bundle compartilhado era derivado N× e a guarda de orçamento global
+  não tinha onde morar. Virou `build-many-features.mjs`, compondo o filho por `workflow()` (1 nível —
+  ADR-0010 §3) e checando o teto **antes de abrir cada frente**, não depois de queimar. O que **não**
+  mudou é o ponto: gates humanos ficam **fora** do grafo (o grafo acelera o aprovado, não atropela
+  aprovação), isolamento/piso opus/merge serializado intactos. E o freio novo é honesto: sem a
+  ferramenta, **degrada e reporta** — nunca simula.
+- **Links:** ADR-0018 · ADR-0009/0010/0003 (refinados) · `templates/workflows/build-many-features.mjs`
+  · `token-efficiency.md` §4 · genoma §8 (`orchestration_mode`) · fitness F5 (agora cobre os dois grafos).
+
 ### 2026-07-31 · O motor passa a fatiar de verdade — e o teste passa a caber no laço (meta)
 - **Sinal:** 🔧 processo (execução do que o método já prometia + wall-clock do laço interno).
 - **Aprendizado:** duas descobertas acopladas. (1) **Prosa de skill não é execução.** A decomposição em
