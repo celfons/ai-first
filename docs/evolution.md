@@ -38,6 +38,27 @@ sem reconstruir o passado lendo dez lugares.
 
 ## Linha do tempo
 
+### 2026-08-06 · O gate passa a decidir por dado — e o motor passa a se medir (meta)
+- **Sinal:** 🔧 processo (mesma classe de falha do ADR-0017, agora corrigida no ponto mais crítico).
+- **Aprendizado:** a lição "script não roteia prosa" tinha sobrado exatamente onde mais dói: o loop de
+  verificação casava `/BLOQUEIA|blocked/i` no texto livre dos revisores — *"NÃO BLOQUEIA"* disparava
+  re-run falso (orçamento queimado corrigindo uma aprovação) e um bloqueio fraseado de outro jeito
+  (*"REPROVADO"*) passava **direto ao merge**: falso verde furando o gate (P-11), invisível justamente
+  no modo `autônomo`, onde o gate automático é o único gate. Corrigido com o mesmo remédio da
+  decomposição: **contrato estruturado** (`VERDICT_SCHEMA`: aprova|bloqueia + confiança + achados) em
+  todo membro do Tier 2, com o script roteando pelo campo. Dois débitos fecharam **de carona**, porque
+  o dado novo os habilita: (1) a **escalada por incerteza** (ADR-0005) era knob sem motor —
+  `uncertainty_escalation` prometia escalar baixa confiança ao humano, mas nenhum ponto do pipeline
+  media confiança; agora gate verde com `confianca: baixa` devolve `awaiting-human` (risco OU
+  incerteza, o maior — e o prompt diz ao revisor que declarar `baixa` escala, não pune). (2) O **loop
+  de AIOps nascia cego** — o §5 mandava o `finops-steward` medir "do `budget.spent()` quando houver",
+  mas o motor jogava o sinal fora; agora o retorno contratado carrega `telemetria.custoPorEtapa` +
+  `reRuns` (a "taxa de re-run do modelo barato", o sinal mais valioso do §5, agora lida do fato) e a
+  rodada devolve `custoDaRodada`. Honestidade primeiro: sob rodada concorrente o delta do pool
+  compartilhado superconta — o dado **declara** `fidelidade: aproximada` em vez de fingir precisão.
+- **Links:** ADR-0019 · ADR-0013/0017 (refinados) · ADR-0005 e `token-efficiency.md` §5 (executados) ·
+  `templates/workflows/*.mjs` · genoma §8 (`uncertainty_escalation`) · fitness F5 (gate estruturado).
+
 ### 2026-08-01 · O grafo sai do opt-in e vira o caminho default — e a rodada vira código (meta)
 - **Sinal:** 🔧 processo (execução do que o método já tinha decidido E implementado).
 - **Aprendizado:** a lição de 2026-07-31 ("prosa de skill não é execução") tinha um degrau abaixo dela:

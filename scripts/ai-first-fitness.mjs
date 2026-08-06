@@ -134,7 +134,10 @@ function f5_contractedWorkflow() {
     { name: 'build-one-feature', adr: 'ADR-0010' },
     { name: 'build-many-features', adr: 'ADR-0003/0018' },
   ];
-  const isWorkflow = (txt, name) => /export\s+const\s+meta\s*=/.test(txt) && new RegExp(`['"]${name}['"]`).test(txt);
+  const isWorkflow = (txt, name) => /export\s+const\s+meta\s*=/.test(txt) && new RegExp(`['"]${name}['"]`).test(txt)
+    // Gate por dado, não por prosa (ADR-0019): o subgrafo de UMA feature precisa do veredito
+    // estruturado — sem VERDICT_SCHEMA, o loop de verificação voltou a rotear regex sobre texto livre.
+    && (name !== 'build-one-feature' || /VERDICT_SCHEMA/.test(txt));
 
   for (const { name, adr } of GRAFOS) {
     const TEMPLATE = `templates/workflows/${name}.mjs`;
@@ -143,7 +146,7 @@ function f5_contractedWorkflow() {
     if (ctx.isPluginRepo) {
       // Repo do plugin/método: o template é a fonte de verdade; a cópia instalada não diverge.
       if (!has(TEMPLATE)) { bad(`${TEMPLATE} ausente — o grafo contratado (${adr}) precisa existir no plugin`); continue; }
-      if (!isWorkflow(read(TEMPLATE), name)) { bad(`${TEMPLATE} não parece um workflow (falta export const meta / name ${name})`); continue; }
+      if (!isWorkflow(read(TEMPLATE), name)) { bad(`${TEMPLATE} não parece um workflow válido (falta export const meta / name ${name} / veredito estruturado VERDICT_SCHEMA — ADR-0019)`); continue; }
       ok(`template ${name} presente e bem-formado`);
       if (has(INSTALLED)) {
         if (read(INSTALLED) === read(TEMPLATE)) ok(`cópia instalada de ${name} em sincronia com o template`);

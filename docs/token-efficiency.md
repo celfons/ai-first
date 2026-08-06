@@ -281,6 +281,10 @@ está sendo jogado fora. Sem medir, `daily_budget` é um teto cego e o roteament
 IA. O `finops-steward` (ver `agents/`) fecha o loop, numa cadência (não por fatia):
 - **Contabiliza** por feature/etapa: tokens e custo (das tags `model:*`/`effort:*` na issue + do
   `budget.spent()` do `Workflow` quando houver), **custo por feature mergeada**, cache-hit, wall-clock.
+  **Desde o ADR-0019 o próprio motor emite isso:** o retorno contratado de cada feature carrega
+  `telemetria.custoPorEtapa` + `reRuns` (com `fidelidade` declarada — sob rodada concorrente o delta do
+  pool compartilhado superconta, é teto e o dado diz isso) e a rodada devolve `custoDaRodada` (exato).
+  Ler do fato substitui estimar; a `taxa de re-run` abaixo vem pronta no campo `reRuns`.
 - **Mede a qualidade do roteamento:** *taxa de re-run do modelo barato* — quantas vezes uma etapa
   roteada barata foi bloqueada e refeita. Alta taxa numa classe de tarefa = o piso daquela classe está
   baixo demais (o "barato" saiu caro).

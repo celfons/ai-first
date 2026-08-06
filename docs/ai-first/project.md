@@ -231,6 +231,9 @@
 - **`uncertainty_escalation`** (P-10): `[on | off]` + limiar (default **on**, limiar `confidence: baixa`).
   Etapa de **baixa confiança** escala ao humano (`awaiting-human`) **independentemente do tier de risco** —
   a escalada é por **risco OU incerteza, o maior**. Barato e seguro; ligado por default mesmo no conservador.
+  **Executada pelo motor no gate (ADR-0019):** todo membro do Tier 2 devolve `confianca` no veredito
+  estruturado; gate verde com `baixa` de qualquer membro devolve `awaiting-human` — não é re-run
+  (re-implementar não compraria confiança), é gate humano adicional.
 
 ### Growth autônomo (ADR-0004 — knobs do ecossistema de crescimento)
 - **`north_star_metric`** (a métrica-mãe que os experimentos de growth movem): `[A DEFINIR]`

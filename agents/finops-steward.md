@@ -41,6 +41,11 @@ isolamento (o piso de segurança P-14 nunca desce por este loop).
 1. **Custo por feature/etapa:** tokens e custo estimado por etapa (das tags `model:*`/`effort:*` +
    `budget.spent()` do `Workflow` quando houver) e **custo por feature MERGEADA** (o que foi abandonado
    também custou — conte). Cache-hit e wall-clock quando alcançáveis.
+   - **No caminho `workflow` (default — ADR-0018/0019) o motor já devolve isso pronto:** cada feature
+     retorna `telemetria.custoPorEtapa` (deltas por `specify`/`plan`/`decompose`/`implement`/`verify#N`/
+     `fix#N`/`docs`) + `reRuns`, e a rodada retorna `custoDaRodada` (exato). **Respeite a `fidelidade`
+     declarada:** `aproximada-pool-compartilhado` = deltas sob rodada concorrente supercontam (é teto,
+     não medida) — agregue por rodada nesse caso, nunca compare etapas entre features concorrentes.
    - **Adesão ao teto por feature (`budget_per_feature`):** no build paralelo, quantas features
      **estouraram** o teto e pararam. Estouro recorrente numa classe = o teto está apertado demais **ou**
      o roteamento daquela classe está caro (cruze com o item 2) → recomende ajustar `budget_per_feature`

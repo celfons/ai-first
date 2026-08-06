@@ -210,6 +210,15 @@ reserva de idempotência, laço da fila, chamada de LLM com timeout+validação+
   `orchestration_mode` (`workflow` default · `sequencial`); sem a ferramenta, o driver **degrada e
   reporta**, não simula. Os gates humanos (P-10) ficam **fora** do grafo — o grafo acelera o que já foi
   aprovado, não atropela aprovação.
+- **O gate decide por dado, não por prosa (ADR-0019).** Todo membro do Tier 2 (`tester` do gate, cada
+  cético do painel, `security-reviewer`) devolve o **veredito estruturado** (`aprova|bloqueia` +
+  confiança + achados) e o loop de re-run roteia pelo **campo** — nunca por regex sobre texto livre
+  (falso bloqueio queima orçamento; falso verde fura o gate). Dois efeitos que o dado habilita: a
+  **escalada por incerteza** (ADR-0005, knob `uncertainty_escalation`, default on) vira motor — gate
+  verde com confiança `baixa` de qualquer membro ⇒ `awaiting-human`, independentemente do tier de
+  risco — e o motor **se mede**: `telemetria.custoPorEtapa` + `reRuns` no retorno de cada feature e
+  `custoDaRodada` na Escala 2, o insumo real que o `finops-steward` grava no `routing-policy.md`
+  (AIOps §5), com a **fidelidade declarada** (sob rodada concorrente o delta do pool superconta).
 - **Cadência/paralelismo/autonomia/orçamento** são knobs do genoma (`features_per_day`, `parallelism`,
   `wip_limit` — teto de WIP + serialização por footprint de conflito, ADR-0007;
   `fast_path` — cerimônia escalada ao risco: baixo risco pula a autoria, os gates permanecem, ADR-0008;

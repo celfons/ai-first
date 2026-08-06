@@ -22,10 +22,12 @@
 //     fanOut?,                  // min(parallelism, wip_limit, floor(budget/budget_per_feature))
 //     budgetPerFeature?, dailyBudget?, maxRerunAttempts?,
 //     contextClearPolicy?, verificationParallelism?, tddMode?, sliceFanout?,
-//     testCmd?, testScopedCmd?, testScope?,
+//     testCmd?, testScopedCmd?, testScope?, uncertaintyEscalation?,
 //   }
-//   Saída (ROUND_RESULT_SCHEMA-shaped): { rodada: [...resultado contratado de cada feature] } —
-//   o driver trata como FATO validado e decide o merge.
+//   Saída (ROUND_RESULT_SCHEMA-shaped): { rodada: [...resultado contratado de cada feature],
+//   prontasParaMerge, custoDaRodada } — o driver trata como FATO validado e decide o merge; a
+//   telemetria (por feature + da rodada) é o insumo que o finops-steward grava no routing-policy.md
+//   (AIOps §5 — ADR-0019: o motor passa a se medir, o loop de roteamento deixa de nascer cego).
 //
 // O QUE ESTE WORKFLOW NÃO FAZ (de propósito)
 //   · Não escolhe features (o `product-owner` e o `plan-batch.mjs` já decidiram — footprint disjunto).
@@ -55,6 +57,7 @@ const {
   testCmd = null,
   testScopedCmd = null,
   testScope = 'impacted',
+  uncertaintyEscalation = 'on',
 } = args ?? {}
 
 if (!features.length) return { rodada: [], nota: 'nenhuma feature elegível na rodada' }
@@ -107,6 +110,10 @@ const resultados = await pipeline(alvo, async (f, _orig, i) => {
       testCmd,
       testScopedCmd,
       testScope,
+      uncertaintyEscalation,
+      // Telemetria honesta (ADR-0019): com >1 feature concorrente, o delta de `budget.spent()` do
+      // filho lê o pool COMPARTILHADO — o filho declara `fidelidade: aproximada` em vez de fingir.
+      poolCompartilhado: alvo.length > 1,
     })
   } catch (e) {
     // Uma feature que morre NÃO derruba o lote (ADR-0003): vira achado triável, as vizinhas seguem.
@@ -119,4 +126,6 @@ const prontas = rodada.filter(r => r.status === 'merged-ready')
 log(`rodada: ${prontas.length}/${rodada.length} prontas para merge (o merge em develop é SERIALIZADO pelo driver)`)
 
 // O pai devolve FATO; quem mergeia, promove e comenta no board é o driver (gate + fluxo git, P-10).
-return { rodada, prontasParaMerge: prontas.map(r => r.issue) }
+// `custoDaRodada` é EXATO (leitura do pool ao fim da rodada, sem deltas concorrentes) — junto com a
+// `telemetria` por feature, é o que o driver entrega ao finops-steward (AIOps §5 — ADR-0019).
+return { rodada, prontasParaMerge: prontas.map(r => r.issue), custoDaRodada: budget.spent() }

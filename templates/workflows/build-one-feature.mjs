@@ -33,7 +33,15 @@
 //                           do Tier 1 do ADR-0013). `impacted` (default): laço interno roda só o teste
 //                           relacionado ao arquivo tocado, fim de slice roda a suíte do footprint, e o
 //                           GATE roda a suíte COMPLETA — sempre. `full`: suíte completa em todo nível.
-//   Saída (FEATURE_RESULT_SCHEMA): veredito estruturado que o pai trata como FATO validado, não texto.
+//     · uncertaintyEscalation — escalada por incerteza (ADR-0005 · knob `uncertainty_escalation` do
+//                           genoma §8, agora EXECUTADA pelo motor — ADR-0019): 'on' (default) — gate
+//                           verde com qualquer veredito de confiança 'baixa' devolve `awaiting-human`,
+//                           independentemente do tier de risco (risco OU incerteza, o maior); 'off'.
+//     · poolCompartilhado — o pai informa se a rodada tem features CONCORRENTES: a telemetria de custo
+//                           usa deltas de `budget.spent()` (pool compartilhado — ADR-0010 §3), então sob
+//                           concorrência o delta SUPERCONTA e o resultado declara a fidelidade (ADR-0019).
+//   Saída (FEATURE_RESULT_SCHEMA): veredito estruturado que o pai trata como FATO validado, não texto —
+//   inclui `telemetria` (custo por etapa + re-runs), o insumo real do AIOps (§5 / routing-policy.md).
 //
 // LIMITES QUE O DESENHO ASSUME (ADR-0010):
 //   · Aninhamento é de 1 nível: este workflow NÃO chama outro workflow() (lançaria erro). O painel
@@ -66,6 +74,52 @@ const FEATURE_RESULT_SCHEMA = {
     touched: { type: 'array', items: { type: 'string' } },      // ponteiros, não conteúdo (§3 token-eff)
     verdict: { type: 'string' },                                 // resumo do gate (adversarial+security)
     reason: { type: 'string' },                                  // preenchido quando status ≠ merged-ready
+    telemetria: {                                                // AIOps (ADR-0019): o custo real medido
+      type: 'object',
+      additionalProperties: false,
+      required: ['custoPorEtapa', 'reRuns', 'fidelidade'],
+      properties: {
+        custoPorEtapa: {
+          type: 'array',
+          items: {
+            type: 'object',
+            additionalProperties: false,
+            required: ['etapa', 'tokens'],
+            properties: { etapa: { type: 'string' }, tokens: { type: 'number' } },
+          },
+        },
+        reRuns: { type: 'number' },                              // re-implementações pós-gate (o sinal §5)
+        fidelidade: { enum: ['exata', 'aproximada-pool-compartilhado'] },
+      },
+    },
+  },
+}
+
+// Contrato do VEREDITO do gate (ADR-0019) — o gate decide por DADO, não por regex sobre prosa. Antes,
+// o loop de verificação casava /BLOQUEIA|blocked/i no texto livre dos revisores: "NÃO BLOQUEIA"
+// disparava re-run falso (orçamento queimado) e um bloqueio fraseado de outro jeito ("REPROVADO")
+// passava DIRETO ao merge (falso verde furando o gate, P-11). Mesma classe de falha que o ADR-0017
+// corrigiu na decomposição: script não roteia prosa. `confianca` é o insumo da escalada por incerteza
+// (ADR-0005); os `achados` bloqueantes são o fato curto que atravessa a costura de re-run (ADR-0012).
+const VERDICT_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['veredito', 'confianca', 'achados'],
+  properties: {
+    veredito: { enum: ['aprova', 'bloqueia'] },
+    confianca: { enum: ['alta', 'media', 'baixa'] },             // baixa + gate verde ⇒ awaiting-human
+    achados: {
+      type: 'array',
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        required: ['severidade', 'resumo'],
+        properties: {
+          severidade: { enum: ['bloqueante', 'aviso'] },
+          resumo: { type: 'string' },                            // curto: é o que cruza a costura (§8)
+        },
+      },
+    },
   },
 }
 
@@ -102,7 +156,8 @@ const SLICES_SCHEMA = {
 
 const { issue, fixedContext, routing = {}, budgetPerFeature = null, maxRerunAttempts = 2,
         contextClearPolicy = 'seam', verificationParallelism = 'staged', tddMode = 'estrito',
-        sliceFanout = 'on', testCmd = null, testScopedCmd = null, testScope = 'impacted' } = args ?? {}
+        sliceFanout = 'on', testCmd = null, testScopedCmd = null, testScope = 'impacted',
+        uncertaintyEscalation = 'on', poolCompartilhado = false } = args ?? {}
 // Laço interno (ADR-0015): instrução anexada a TODA etapa de implementação. Custa ciclos, não hops.
 const TDD = tddMode === 'off'
   ? 'tdd_mode: off — test-after permitido. PISO INEGOCIÁVEL: correção de bug reproduz em VERMELHO antes da correção.'
@@ -113,6 +168,15 @@ const withContext = (role, body) => `${fixedContext ?? ''}\n\n## Papel: ${role}\
 const route = (etapa, fallback) => routing[etapa] ?? fallback
 // GUARDA DE BORDA de orçamento — o aninhamento não isola o pool (ADR-0010 §3).
 const overBudget = () => budgetPerFeature != null && budget.spent() >= budgetPerFeature
+// ── TELEMETRIA DE CUSTO POR ETAPA (ADR-0019 · alimenta o AIOps do token-efficiency.md §5) ───────────
+// O loop de roteamento (routing-policy.md) nasce vazio e só enche se alguém MEDIR — e quem tem o dado
+// é o motor. Deltas de `budget.spent()` nas costuras de fase; o pool é compartilhado (ADR-0010 §3),
+// então com features concorrentes na rodada o delta SUPERCONTA (teto honesto, declarado na
+// `fidelidade`) — nunca número inventado, nunca silêncio.
+const custoPorEtapa = []
+let marcaDeCusto = budget.spent()
+const marcaEtapa = (etapa) => { const agora = budget.spent(); custoPorEtapa.push({ etapa, tokens: agora - marcaDeCusto }); marcaDeCusto = agora }
+const telemetria = (reRuns = 0) => ({ custoPorEtapa, reRuns, fidelidade: poolCompartilhado ? 'aproximada-pool-compartilhado' : 'exata' })
 // ── ESCOPO DE TESTE ESCALADO AO DIFF (ADR-0017 · def. operacional do Tier 1 do ADR-0013) ────────────
 // Três níveis: laço interno (só o relacionado) → fim de slice (suíte do footprint) → GATE (suíte
 // COMPLETA, sempre). O estreito acelera o LAÇO; nunca substitui o gate.
@@ -162,31 +226,37 @@ const planWaves = (slices) => {
 
 // Destila o veredito bloqueante num FATO curto — é o que atravessa a costura de re-run (ADR-0012):
 // o re-implement recebe ISTO, não o contexto inteiro da tentativa falha (menos token + menos ancoragem).
-const blockingDigest = (results) => results.filter(r => /BLOQUEIA|bloqueado|blocked/i.test(String(r)))
-  .map(r => String(r).slice(0, 600)).join('\n---\n') || 'verificação bloqueou (sem detalhe estruturado)'
+// Com o veredito estruturado (ADR-0019) o digest vem dos `achados`, não de um slice de prosa.
+const bloqueia = (r) => r?.veredito === 'bloqueia'
+const blockingDigest = (results) => results.filter(bloqueia)
+  .flatMap(r => (r.achados ?? []).filter(a => a.severidade === 'bloqueante').map(a => `- ${a.resumo}`))
+  .join('\n') || '- verificação bloqueou sem achado estruturado (trate como bloqueio e corrija o gate)'
 
 // 1 · SPECIFY
 phase('Specify')
-if (overBudget()) return { status: 'budget-exceeded', issue: String(issue), touched: [], reason: 'teto por feature atingido antes da spec' }
+if (overBudget()) return { status: 'budget-exceeded', issue: String(issue), touched: [], reason: 'teto por feature atingido antes da spec', telemetria: telemetria() }
 const spec = await agent(withContext('feature-spec', `Escreva a spec.md da issue ${issue}. Gate constitucional.`),
   { phase: 'Specify', ...route('feature-spec', { model: 'sonnet', effort: 'medium' }) })
+marcaEtapa('specify')
 
 // 2 · PLAN
 phase('Plan')
 const plan = await agent(withContext('architect', `Com base na spec, escreva plan.md + tasks.md (+ADR se durável). Leia o índice de ADRs antes de decidir algo durável.`),
   { phase: 'Plan', ...route('architect', { model: 'opus', effort: 'high' }) })
+marcaEtapa('plan')
 
 // 2½ · DECOMPOSE (ADR-0017) — a decomposição vira DADO roteável. Sem isto o motor não tem como fatiar
 // a execução, e o isolamento de contexto (ADR-0012) fica só na prosa da skill /feature: o caminho
 // AUTÔNOMO — o de maior volume, sem humano observando — implementava tudo numa janela só.
 // O decompositor mantém a régua de "quando NÃO quebrar": feature pequena volta `nao-decomposto`.
 phase('Decompose')
-if (overBudget()) return { status: 'budget-exceeded', issue: String(issue), touched: [], reason: 'teto por feature atingido antes da decomposição' }
+if (overBudget()) return { status: 'budget-exceeded', issue: String(issue), touched: [], reason: 'teto por feature atingido antes da decomposição', telemetria: telemetria() }
 const decomp = sliceFanout === 'on'
   ? await agent(withContext('task-decomposer', `Quebre o plano num GRAFO de micro-slices. Para CADA slice declare o footprint (\`arquivos\` — é o que decide o que paraleliza), \`dependeDe\`, o \`doneTest\` (o teste que falha HOJE e passa ao fim dela) e \`escopoDeTeste: full\` se o diff dela toca migration/esquema/config/DI/fixture. Marque \`integracao: true\` na slice que agrega o valor da feature. Feature pequena ⇒ status \`nao-decomposto\`.`),
       { phase: 'Decompose', schema: SLICES_SCHEMA, ...route('task-decomposer', { model: 'sonnet', effort: 'high' }) })
   : null
 const slices = decomp?.status === 'decomposto' ? (decomp.slices ?? []) : []
+marcaEtapa('decompose')
 
 // 3 · IMPLEMENT — fan-out por slice (ADR-0017) ‖ TIER 1 da validação (ADR-0013).
 // · Cada slice = UMA invocação com contexto ESTREITO (só os seus arquivos) — janela menor, menos
@@ -227,8 +297,9 @@ const [implRun] = await parallel([
   () => agent(withContext('tester', `TRACK CONTÍNUO (Tier 1): rode typecheck + lint + ${testScopedCmd && testScope !== 'full' ? `os testes relacionados ao diff (\`${testScopedCmd} <arquivos do diff>\`)` : SUITE_COMPLETA} e reporte quebras cedo. Sem julgamento de mérito — só o sinal determinístico.`),
     { phase: 'Implement', ...route('track', { model: 'haiku', effort: 'low' }) }),
 ])
+marcaEtapa('implement')
 if (implRun && implRun.ok === false) {
-  return { status: implRun.status, issue: String(issue), touched: [String(issue)], reason: implRun.reason }
+  return { status: implRun.status, issue: String(issue), touched: [String(issue)], reason: implRun.reason, telemetria: telemetria() }
 }
 
 // 4 · VERIFY — TIER 2 (ADR-0013): gate de JULGAMENTO sobre o DIFF CONGELADO (nunca alvo em movimento —
@@ -242,66 +313,88 @@ if (implRun && implRun.ok === false) {
 // fatia a AUTORIA, não a VERIFICAÇÃO.
 phase('Verify')
 // [CONGELA O DIFF]: a partir daqui o input é estável — pré-condição do Tier 2.
+// Todo membro do gate devolve o VEREDITO ESTRUTURADO (ADR-0019): o loop roteia por `veredito`, nunca
+// por regex sobre a prosa do revisor. O julgamento continua independente — estruturar a SAÍDA não
+// compartilha raciocínio (P-11/P-13): é contrato, como o SLICES_SCHEMA da decomposição.
+const VEREDITO = `Devolva o veredito ESTRUTURADO: \`veredito\` (aprova|bloqueia), \`confianca\` (alta|media|baixa — seja honesto: baixa escala ao humano, não é falha sua) e \`achados\` (severidade bloqueante|aviso + resumo curto).`
 const opusGate = (diffDigest) => parallel([
   // Painel adversarial (ADR-0005): N céticos de lentes distintas, piso opus/alto POR MEMBRO (P-14).
   ...['correção', 'invariante/segurança', 'reprodução/runtime'].map(lens => () =>
-    agent(withContext('adversarial-reviewer', `Tente QUEBRAR a mudança pela lente "${lens}". Diff: ${diffDigest}. Conclua sozinho.`),
-      { phase: 'Verify', model: 'opus', effort: 'high' })),
+    agent(withContext('adversarial-reviewer', `Tente QUEBRAR a mudança pela lente "${lens}". Diff: ${diffDigest}. Conclua sozinho. ${VEREDITO}`),
+      { phase: 'Verify', schema: VERDICT_SCHEMA, model: 'opus', effort: 'high' })),
   // Security ‖ painel — gate mandatório independente; sequenciar não ganharia nada (ADR-0013).
-  () => agent(withContext('security-reviewer', `Gate de segurança do diff: threat model, authz/escopo, injeção, segredo/PII, CVE. Diff: ${diffDigest}.`),
-    { phase: 'Verify', model: 'opus', effort: 'high' }),
+  () => agent(withContext('security-reviewer', `Gate de segurança do diff: threat model, authz/escopo, injeção, segredo/PII, CVE. Diff: ${diffDigest}. ${VEREDITO}`),
+    { phase: 'Verify', schema: VERDICT_SCHEMA, model: 'opus', effort: 'high' }),
 ])
 let attempt = 0
-let verdict = null
+let gateResults = null
 while (attempt < maxRerunAttempts) {
   attempt++
   let results
   if (verificationParallelism === 'flat') {
     // urgência > custo: tester concorre com o tier opus (paga opus mesmo em reprovação barata).
-    const [tested, ...opus] = await parallel([
-      () => agent(withContext('tester', `Ligue os cenários ao runner + testes/evals (integração/invariante/runtime/regressão). AUDITE o laço interno: os micro-testes falhariam se o código regredisse? A prova do vermelho está declarada? Gate verde? ESCOPO AQUI É COMPLETO (ADR-0017): rode ${SUITE_COMPLETA} — o escopo estreito serve o laço, nunca o gate.`),
-        { phase: 'Verify', ...route('tester', { model: 'sonnet', effort: 'medium' }) }),
+    const [tested, opus] = await parallel([
+      () => agent(withContext('tester', `Ligue os cenários ao runner + testes/evals (integração/invariante/runtime/regressão). AUDITE o laço interno: os micro-testes falhariam se o código regredisse? A prova do vermelho está declarada? Gate verde? ESCOPO AQUI É COMPLETO (ADR-0017): rode ${SUITE_COMPLETA} — o escopo estreito serve o laço, nunca o gate. ${VEREDITO}`),
+        { phase: 'Verify', schema: VERDICT_SCHEMA, ...route('tester', { model: 'sonnet', effort: 'medium' }) }),
       () => opusGate('diff congelado'),
     ])
-    results = [tested, ...(opus[0] ?? [])]
+    results = [tested, ...(opus ?? [])].filter(Boolean)
   } else {
     // staged (default): fail-fast onde protege token, paralelo onde é grátis.
-    const tested = await agent(withContext('tester', `Ligue os cenários ao runner + testes/evals (integração/invariante/runtime/regressão). AUDITE o laço interno: os micro-testes falhariam se o código regredisse? A prova do vermelho está declarada? Gate verde? ESCOPO AQUI É COMPLETO (ADR-0017): rode ${SUITE_COMPLETA} — o escopo estreito serve o laço, nunca o gate.`),
-      { phase: 'Verify', ...route('tester', { model: 'sonnet', effort: 'medium' }) })
-    if (/BLOQUEIA|bloqueado|blocked/i.test(String(tested))) {
+    const tested = await agent(withContext('tester', `Ligue os cenários ao runner + testes/evals (integração/invariante/runtime/regressão). AUDITE o laço interno: os micro-testes falhariam se o código regredisse? A prova do vermelho está declarada? Gate verde? ESCOPO AQUI É COMPLETO (ADR-0017): rode ${SUITE_COMPLETA} — o escopo estreito serve o laço, nunca o gate. ${VEREDITO}`),
+      { phase: 'Verify', schema: VERDICT_SCHEMA, ...route('tester', { model: 'sonnet', effort: 'medium' }) })
+    if (bloqueia(tested)) {
       results = [tested]                                 // tester reprovou → NEM chama o tier opus (fail-fast)
     } else {
       const opus = await opusGate('diff congelado')      // verde → painel ‖ security concorrentes
-      results = [tested, ...opus]
+      results = [tested, ...opus].filter(Boolean)
     }
   }
-  const blocked = results.some(r => /BLOQUEIA|bloqueado|blocked/i.test(String(r)))
-  if (!blocked) { verdict = { results }; break }         // sucesso verificável → sai do loop
-  if (overBudget()) return { status: 'budget-exceeded', issue: String(issue), touched: [String(issue)], reason: `teto por feature atingido no re-run ${attempt}` }
+  marcaEtapa(`verify#${attempt}`)
+  if (!results.some(bloqueia)) { gateResults = results; break }  // sucesso verificável → sai do loop
+  if (overBudget()) return { status: 'budget-exceeded', issue: String(issue), touched: [String(issue)], reason: `teto por feature atingido no re-run ${attempt}`, telemetria: telemetria(attempt - 1) }
 
   // COSTURA DE RE-RUN (ADR-0012 §8): o re-implement recebe o VEREDITO destilado (fato curto), NÃO o
   // contexto da tentativa falha. `withContext` mantém o prefixo fixo cacheado; o rabo variável do
   // attempt anterior (panel/tested/security completos) é DESCARTADO — não entra no próximo prompt.
   const fix = contextClearPolicy === 'off'
-    ? `A verificação bloqueou:\n${results.join('\n')}`                  // sem limpeza: arrasta tudo (caro)
-    : blockingDigest(results)                                          // seam/dynamic: só o veredito
-  await agent(withContext('backend-engineer', `A verificação bloqueou. Reproduza cada achado num teste VERMELHO primeiro, então corrija o MÍNIMO apontado e mantenha a árvore verde.\n${TDD}\n${testeDaSlice(null)}\n\n## Veredito a corrigir\n${fix}`),
+    ? `A verificação bloqueou:\n${results.map(r => JSON.stringify(r)).join('\n')}`  // sem limpeza (caro)
+    : blockingDigest(results)                                          // seam/dynamic: só os achados
+  await agent(withContext('backend-engineer', `A verificação bloqueou. Reproduza cada achado num teste VERMELHO primeiro, então corrija o MÍNIMO apontado e mantenha a árvore verde.\n${TDD}\n${testeDaSlice(null)}\n\n## Achados bloqueantes a corrigir\n${fix}`),
     { phase: 'Implement', ...route('backend-engineer', { model: 'sonnet', effort: 'high' }) })
+  marcaEtapa(`fix#${attempt}`)
 }
-if (!verdict) {
+if (!gateResults) {
   // teto de re-run atingido sem verde → escala, não queima orçamento "até parecer bom" (ADR-0009).
-  return { status: 'awaiting-human', issue: String(issue), touched: [String(issue)], reason: `verificação não passou em ${maxRerunAttempts} re-runs` }
+  return { status: 'awaiting-human', issue: String(issue), touched: [String(issue)], reason: `verificação não passou em ${maxRerunAttempts} re-runs`, telemetria: telemetria(maxRerunAttempts) }
+}
+// ESCALADA POR INCERTEZA (ADR-0005 · knob `uncertainty_escalation`, executada aqui — ADR-0019): gate
+// VERDE com confiança BAIXA de qualquer membro escala ao humano — risco OU incerteza, o maior. Não é
+// re-run (o gate não reprovou; re-implementar não compraria confiança): é gate humano adicional.
+const incertos = gateResults.filter(r => r?.confianca === 'baixa')
+if (uncertaintyEscalation !== 'off' && incertos.length) {
+  return {
+    status: 'awaiting-human',
+    issue: String(issue),
+    touched: [String(issue)],
+    verdict: 'gate aprovado, mas com confiança BAIXA',
+    reason: `escalada por incerteza (ADR-0005): ${incertos.length} veredito(s) 'aprova' com confiança baixa — ${incertos.flatMap(r => (r.achados ?? []).map(a => a.resumo)).slice(0, 3).join(' · ') || 'sem achados declarados'}`,
+    telemetria: telemetria(attempt - 1),
+  }
 }
 
 // 5 · DOCS
 phase('Docs')
 await agent(withContext('docs-writer', `Atualize docs/CLAUDE.md/spec coerentes. Todo bug vira regressão + anti-padrão.`),
   { phase: 'Docs', ...route('docs-writer', { model: 'haiku', effort: 'low' }) })
+marcaEtapa('docs')
 
 // Retorno CONTRATADO — o pai (ex.: daily-build Escala 2) compõe isto por feature e serializa o merge.
+// A `telemetria` é o insumo do finops-steward (§5): custo por etapa + re-runs, medido pelo motor.
 return {
   status: 'merged-ready',
   issue: String(issue),
   touched: [String(issue)],
-  verdict: 'CI verde + adversarial(panel) + security aprovados',
+  verdict: `CI verde + gate aprovado: ${gateResults.length} vereditos estruturados 'aprova' (confiança mínima: ${gateResults.some(r => r?.confianca === 'media') ? 'média' : 'alta'})`,
+  telemetria: telemetria(attempt - 1),
 }
