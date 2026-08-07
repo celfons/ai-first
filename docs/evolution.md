@@ -38,6 +38,24 @@ sem reconstruir o passado lendo dez lugares.
 
 ## Linha do tempo
 
+### 2026-08-07 · O arquiteto sabia projetar solução, não diagnosticar problema (meta)
+- **Sinal:** 🔧 processo (maturidade da fase PLAN).
+- **Aprendizado:** o `architect` tinha régua para **desenhar** (5 lentes, portas, footprint, ADR) e
+  nada para **diagnosticar**. Diante de uma feature em forma de dor ("está lento", "está caro", "quebra
+  muito"), sem ranking toda causa plausível parece igualmente digna de ataque — e o plano vira redesenho
+  que toca tudo: diff grande, risco alto, esforço pousando na cauda. Entrou o **Pareto antes de
+  projetar** (contar de fonte real → ordenar por impacto × frequência → acumular → cortar → declarar a
+  cauda), ancorado no que o torna engenharia e não ritual de qualidade: **Amdahl** (o teto do ganho é a
+  fração que você não toca) e **restrição** (mexer fora do gargalo não move o sistema).
+  **A ferramenta trouxe o próprio risco:** um LLM pedido para "fazer um Pareto"
+  emite "causa A = 45%" sem pestanejar, e a **precisão falsa** dirige o plano inteiro *e passa na
+  revisão por parecer medida*. Por isso a regra dura veio junto — **sem fonte contável não há Pareto**
+  (é `sem dado` + fatia de instrumentação), e **frequência não manda sozinha**: invariante/segurança
+  nunca é cortado como cauda (P-6/P-7). Os dois viraram anti-padrão caçável, não conselho no prompt.
+- **Links:** `agents/architect.md` (§ Diagnóstico) · `docs/engineering-principles.md` §12 ·
+  `docs/knowledge.md` (Pareto inventado · plano que ataca a cauda · corte que engole o risco) ·
+  `docs/sdd/templates/plan-template.md` §1.
+
 ### 2026-08-07 · A régua de UI garantia *sóbrio*, mas não *específico* (meta)
 - **Sinal:** 🔧 processo (maturidade da disciplina de design do próprio método).
 - **Aprendizado:** a régua de 2026-07-11 (benchmark de elite + 5 lentes + "premium = sóbrio") resolveu
