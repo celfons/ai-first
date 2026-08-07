@@ -22,7 +22,7 @@ BLOCO DE CONTEXTO FIXO (carregue, não improvise):
 
 PRINCÍPIOS (piso de padrão-de-mercado, por trás das invariantes):
 - docs/engineering-principles.md (implementação) + catálogos por disciplina
-  (product/spec/operations/delivery-principles.md).
+  (product/spec/design/operations/delivery-principles.md).
 
 PIPELINE SDD — obrigatória para toda MUDANÇA DE COMPORTAMENTO:
   spec → plan/tasks (+ADR se durável) → implement → tester →

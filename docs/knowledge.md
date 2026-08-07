@@ -66,6 +66,11 @@ de redescobrir o jeito certo (ou repetir um erro já pago).
 > concretos — produziu resultado **muito acima da média** numa sessão real de redesenho. O aprendizado
 > virou régua durável nos dois agentes de UI (`agents/ux-designer.md`, `agents/frontend-engineer.md`).
 > Ver `docs/evolution.md`. Vale para **todo trabalho significativo de interface**.
+>
+> **2ª rodada (2026-08-07):** a régua garantia *sóbrio* mas não *específico* — faltava defesa contra a
+> tela **genérica**. As linhas de neutro/tipografia-de-dado/estrutura/copy e o anti-padrão da "cara de
+> IA" entraram aqui; o catálogo completo da disciplina é [`design-principles.md`](design-principles.md)
+> (análogo de `engineering-principles.md` para `ux-designer`/`frontend-engineer`).
 
 **Faça assim (padrões de UI):**
 
@@ -79,6 +84,10 @@ de redescobrir o jeito certo (ou repetir um erro já pago).
 | **Lista/tabela = paginação + filtro por padrão** (busca por campo natural c/ debounce + paginação com contagem; params `q`/`page`/`pageSize` no servidor; estado vazio de busca ≠ "sem itens") | toda coleção que cresce com o uso | acha o item + não trava/entulha em escala | data layer (server filtra/pagina) + componente de lista |
 | **Movimento com propósito, 150–300ms, `prefers-reduced-motion`** | transições | comunica causa/efeito, não enfeita | tokens de duração/easing |
 | **Navegação como sistema** (1 nav primária idêntica em todo o perfil + no máx. 1 secundária de contexto, `aria-current` sempre) | produto logado | usuário sempre sabe onde está e chega ao vizinho em 1 clique | componente único de nav |
+| **Plano de sistema visual antes da tela** (4–6 cores **nomeadas** · papéis tipográficos display/corpo/utilitária · conceito de layout em 1–2 frases) | tela/fluxo novo ou redesenho | força a escolha a ser derivada do domínio e revisável **antes** de virar CSS | brief do `ux-designer` (`ux.md`) |
+| **Neutro escolhido, com viés de matiz na direção do acento** | toda paleta | cinza puro lê como "não foi decidido"; o viés lê como sistema | camada de tokens |
+| **Estado codificado na FORMA, não só no número** (pill · chip · faixa de severidade) | painel/tabela/lista com estado | o que exige atenção lê num relance e não depende de cor (a11y) | componentes compartilhados |
+| **Tipografia de dado** (`tabular-nums` onde dígito alinha em coluna · medida ~65ch no texto corrido · `text-wrap: balance` em título) | tabela, KPI, preço, texto longo | coluna que não "dança" e leitura que não cansa — detalhe barato, lido como acabamento caro | tokens + componentes de dado |
 
 **Não faça (anti-padrões de UI):**
 
@@ -93,6 +102,11 @@ de redescobrir o jeito certo (ou repetir um erro já pago).
 | Página-hub concorrendo com nav persistente | dois menus com os mesmos destinos; seção irmã exige "voltar" | 2 cliques onde cabia 1; sem senso de lugar | nav secundária de contexto persistente; o hub morre |
 | **Polir só a vitrine; deixar a tela logada como rascunho** | landing/marketing premium, mas o painel autenticado sem camada de tokens (cai em `#hardcoded`), sem dark mode, sem chrome | a régua vale onde o cliente CONVERTE, mas quebra onde ele USA todo dia | a MESMA régua (tokens → estados → a11y) em **toda** tela; a **camada de tokens é o 1º passo** de qualquer tela, não um detalhe da landing |
 | **Coleção sem paginação/busca** ("cheio = a lista com itens") | lista que cresce sem limite; sem filtro para achar um item; render de N sem teto | trava/entulha com o uso real; o usuário não acha o que precisa | **projete "cheio = MUITOS"**: paginação + busca/filtro (e virtualização se preciso) **desde a 1ª versão** de toda coleção que cresce com o uso |
+| **A "cara de design gerado por IA"** (creme `#F4F1EA` + serifa + terracota · quase-preto com um verde-ácido solitário · gradiente roxo→azul no hero · Inter/Space Grotesk como face "segura" · emoji como marcador de seção · tudo centralizado · `rounded-lg` em tudo · card arredondado com trilho de acento) | a tela **poderia ser de qualquer produto**; nada nela vem do domínio | com 100% da UI autorada por IA, este é o modo de falha **default** — "premium = sóbrio" barra o excesso, **não** barra o genérico | derive a escolha do **domínio da persona** (vocabulário, materiais, instrumentos); onde nada foi especificado, não gaste a liberdade no cluster — ver `design-principles.md` §8. **A palavra do humano vence sempre**; e reusar o token/componente existente não é genérico, é a lei nº 1 |
+| **Neutro herdado da lib** (`gray-500` puro direto do default) | paleta cinza morta que não conversa com o acento | lê como ausência de decisão, mesmo com tudo o mais certo | neutro com leve viés de matiz na direção do acento, definido no token |
+| **Numeração/eyebrow decorativa** (`01 / 02 / 03` em conteúdo que não é sequência) | marcador de ordem onde a ordem não informa nada | ruído com aparência de rigor — o device afirma algo falso sobre o conteúdo | só numere sequência real (processo, linha do tempo); senão, o device sai |
+| **Copy na língua do sistema** ("configuração de webhook", "sincronizar entidade", "algo deu errado") | rótulo que descreve a implementação; erro que não diz como sair dele | a persona não conhece a arquitetura; erro vago vira ticket | nomeie pelo que a pessoa reconhece; o controle diz o que acontece; erro = o que houve + como resolver |
+| **Especificidade que se cancela** (`.section` brigando com `.cta` por padding/margin) | espaçamento que "some" sem ninguém ter mudado nada | o bug mora entre a fonte e o render; some do diff e reaparece na tela | estruture a cascata; espaço pelo layout (`gap`), não por margem por elemento |
 
 ## Régua de excelência por ofício — a régua premium de TODO o roster
 

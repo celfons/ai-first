@@ -38,6 +38,26 @@ sem reconstruir o passado lendo dez lugares.
 
 ## Linha do tempo
 
+### 2026-08-07 · A régua de UI garantia *sóbrio*, mas não *específico* (meta)
+- **Sinal:** 🔧 processo (maturidade da disciplina de design do próprio método).
+- **Aprendizado:** a régua de 2026-07-11 (benchmark de elite + 5 lentes + "premium = sóbrio") resolveu
+  o **excesso** e deixou passar o oposto: a tela **genérica**, que respeita todos os gates e ainda assim
+  **poderia ser de qualquer produto**. Num pipeline em que 100% da UI é autorada por IA, esse é o modo
+  de falha *default*, não a exceção — e nenhum dos dois agentes tinha defesa contra ele. Correção:
+  nomear o cluster que a geração por IA produz por gravidade (creme+serifa+terracota, gradiente
+  roxo→azul, Inter/Space Grotesk por default, emoji como marcador, `rounded-lg` em tudo) como
+  **anti-padrão caçável** em `knowledge.md`, e criar o catálogo que faltava da disciplina
+  (`design-principles.md` — design era o único ofício do roster sem o seu). Vieram junto os detalhes
+  que separam "funciona" de "acabado": neutro com viés de matiz, `tabular-nums`/medida, estado
+  codificado em **forma** e não só em número, copy na língua da persona, higiene de especificidade.
+  **O que foi recusado importa tanto quanto o que entrou:** a *stance* editorial da fonte ("tome um
+  risco estético real", "o cliente rejeitou o templado") **contradiz** a lei nº 1 do produto —
+  consistência vence originalidade — e teria virado regressão; e as restrições de página
+  auto-contida (CSP, fonte em data-URI, tema do viewer) não são deste meio. Importar catálogo de
+  fora é **recorte**, nunca cópia.
+- **Links:** `docs/design-principles.md` · `docs/knowledge.md` (§ régua de UI, 2ª rodada) ·
+  `agents/ux-designer.md` · `agents/frontend-engineer.md` · origem: skill `artifact-design` (Claude Code).
+
 ### 2026-08-01 · O grafo sai do opt-in e vira o caminho default — e a rodada vira código (meta)
 - **Sinal:** 🔧 processo (execução do que o método já tinha decidido E implementado).
 - **Aprendizado:** a lição de 2026-07-31 ("prosa de skill não é execução") tinha um degrau abaixo dela:

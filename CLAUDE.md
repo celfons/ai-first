@@ -19,6 +19,10 @@ não escrevem código de produção, cada um alinhado ao benchmark de mercado da
 serve `product-owner`/`growth-strategist`/`experiment-designer`/`growth-analyst`/`outcome-analyst`),
 `docs/spec-principles.md` (**especificação/BDD/decomposição** — INVEST, spec-by-example, vertical slicing;
 serve `feature-spec`/`bdd-author`/`task-decomposer`/`migration-analyst`),
+`docs/design-principles.md` (**design de interface** — Refactoring UI, HIG/Material, Design Tokens,
+WCAG, Practical Typography; token/cor, tipografia, estrutura, copy, design de informação e o **§8:
+a "cara de design gerado por IA"**, o modo de falha default de uma UI 100% autorada por IA — serve
+`ux-designer`/`frontend-engineer`),
 `docs/operations-principles.md` (**confiabilidade/auditoria/FinOps** — Google SRE, evolutionary
 architecture, FinOps Foundation; serve `ops-investigator`/`tech-auditor`/`finops-steward`) e
 `docs/delivery-principles.md` (**documentação & release** — Diátaxis, SemVer, Keep a Changelog, DORA;
