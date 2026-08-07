@@ -169,6 +169,28 @@ Se comprimir tudo ao máximo, sobram cinco leis. Todo o resto é aplicação par
 > são o que substituem o "outro par de olhos" no nível da unidade. A verificação independente (§8)
 > continua obrigatória por cima; o duplo laço fortalece a suíte que ela julga.
 
+## 12 · Diagnóstico e priorização — *Pareto + Restrição*
+
+> Vale quando o trabalho é **resolver um problema** (está lento · está caro · quebra muito · gera
+> suporte), não entregar uma capacidade nova. A pergunta que estas regras respondem é **"onde vale
+> mexer"** — antes de "como".
+
+| Regra | Princípio/pattern |
+|---|---|
+| **Quantifique as causas e ataque as poucas que dominam.** Esforço distribuído pela cauda é custo sem efeito mensurável | Princípio de Pareto (Juran) |
+| **Sem fonte contável não há Pareto.** Percentual estimado de cabeça é **precisão falsa** — vira número que dirige o plano e sobrevive à revisão *por parecer medido* | Data-driven decision |
+| Sem dado, a **primeira fatia é instrumentar**, não adivinhar. Enumerar causas é qualitativo (espinha de peixe) e se declara como tal | Ishikawa · measure-then-optimize |
+| Ordene por **impacto × frequência**, nunca por frequência só: o **raro e catastrófico** (invariante, segurança, perda de dado) **não entra em corte de cauda** | Risco = impacto × probabilidade |
+| O ganho total é limitado pela fração que você **não** toca — otimizar o que não domina tem teto baixo por construção | Lei de Amdahl |
+| Melhorar o que **não é o gargalo não melhora o sistema**: ache a restrição, resolva, e reencontre a próxima (ela se move) | Theory of Constraints (Goldratt) |
+| Primeiro o perfil, depois o corte — otimizar antes de medir é otimizar o palpite | Knuth ("premature optimization") |
+| Eleita a causa dominante, **desça até o porquê** antes de desenhar: o fix do sintoma volta | 5 Whys · root-cause |
+| O que ficou **fora** do corte se **declara** (com o motivo), não some em silêncio — senão a cauda vira dívida invisível | Decisão explícita |
+
+> **O limite honesto da ferramenta:** um Pareto só ordena o que **alguém enumerou** — é cego para a
+> causa que ninguém listou. Ele informa a decisão; não a substitui. E a barra mais alta nem sempre é
+> a que se ataca primeiro: entre duas causas próximas, ganha a de **remoção mais barata e reversível**.
+
 ---
 
 ## Como usar

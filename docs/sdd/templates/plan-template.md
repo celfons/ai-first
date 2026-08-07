@@ -5,6 +5,13 @@
 
 ## 1 · Abordagem
 
+> **Se a feature é um PROBLEMA (lento/caro/quebra/suporte), diagnostique antes de propor** — cole aqui
+> o bloco de Pareto (`agents/architect.md` § Diagnóstico · `engineering-principles.md` §12): causas
+> contadas **de fonte real**, ordenadas por **impacto × frequência**, com acumulado, **corte explícito**
+> e a cauda declarada. Sem fonte contável, escreva `sem dado` e faça da **instrumentação a fatia 1** —
+> percentual estimado de cabeça é precisão falsa. Invariante/segurança nunca é cortado como cauda.
+> Feature de capacidade nova pula este bloco.
+
 Resumo da solução em 3–5 frases e por que esta abordagem (alternativas descartadas em uma
 linha cada).
 

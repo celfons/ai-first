@@ -58,6 +58,56 @@ Estão em `CLAUDE.md`. Padrão típico: novo provedor externo → **porta + adap
 rota nova → o mecanismo de rotas do projeto. Se o projeto tem um mecanismo de plugin/strategy,
 use-o (ver a skill `skills/new-extension`).
 
+## Diagnóstico antes de projetar — Pareto (quando a feature é um PROBLEMA, não uma capacidade)
+
+Vale quando a spec descreve uma **dor** — "está lento", "está caro", "quebra muito", "gera suporte",
+"ninguém acha" — em vez de uma capacidade nova. **O modo de falha que isto existe para evitar:** sem
+ranking, toda causa plausível parece igualmente digna de ataque, e o plano vira um redesenho que toca
+tudo — diff grande, risco alto, e a maior parte do esforço pousando na cauda. Ranking primeiro,
+desenho depois.
+
+1. **Enumere as causas candidatas** (espinha de peixe: código · dado · infra · processo · entrada
+   externa). Aqui você pode ser generoso — o corte vem depois.
+2. **Conte, da fonte real.** Cada linha declara **de onde veio o número**: log/trace de erro,
+   lista de incidentes, falhas da suíte, tempo por query, bytes do bundle, gasto de token
+   (`finops-steward`), rótulos de issue, churn do `git log`. Uma linha sem fonte não entra na tabela.
+3. **Ordene por impacto × frequência** e acumule o percentual.
+4. **Trace o corte** onde o acumulado explica a maior parte (tipicamente ~80%).
+5. **O plano ataca só o que está acima do corte** — e **declara** o que ficou fora, com o motivo.
+
+Cole o bloco na **§1 do `plan.md`** (Abordagem), antes da solução:
+
+```
+### Diagnóstico (Pareto) — fonte: <de onde vieram os números> · janela: <período/amostra>
+| # | Causa | Medida | % | % acum. | Fonte |
+|---|---|---|---|---|---|
+| 1 | <causa dominante>  | 412 ocorrências | 48% | 48% | <fonte real> |
+| 2 | <segunda>          | 240             | 28% | 76% | <fonte real> |
+| — | ─── corte: 2 causas = 76% ─── |
+| 3 | <cauda: N causas>  | 205             | 24% | 100% | <fonte real> |
+
+ataca: <1–2> · não ataca (e por quê): <a cauda, nomeada>
+fora do corte por RISCO (entra mesmo sendo cauda): <invariante/segurança/perda de dado, ou "nenhum">
+```
+
+**Duas regras duras — é o que separa a análise do teatro:**
+
+- **Sem fonte contável, não há Pareto.** Escreva `sem dado` e escolha: (a) a **primeira fatia
+  instrumenta** (medir vira a task 1 e o resto do plano espera o número), ou (b) enumere qualitativamente
+  (espinha de peixe) e desça no **5 Whys** da causa mais provável — **declarando que é qualitativo**.
+  Inventar "causa A = 45%" é pior que não analisar: é um palpite com aparência de medição, que dirige o
+  plano e **passa na revisão justamente por parecer medido**.
+- **Frequência não manda sozinha.** O raro e catastrófico — violação de invariante, brecha de
+  segurança, perda de dado (P-6/P-7) — **nunca é cortado como cauda**, por menor que seja o percentual.
+  Ordene por impacto × frequência, não por contagem.
+
+**Sobre o "diagrama":** num plano em texto, o que carrega a informação é a **tabela ordenada com o
+acumulado e o corte explícito** — ela **é** o conteúdo do diagrama de Pareto. Barra desenhada é
+enfeite; se usar, nunca no lugar das colunas de medida e fonte.
+
+O catálogo agnóstico (Pareto/Amdahl/restrição/5 Whys e os limites da ferramenta) está em
+`docs/engineering-principles.md` §12.
+
 ## Entrega
 1. `docs/sdd/features/NNN-slug/plan.md` — todas as 8 seções do template. Cada decisão técnica
    **rastreada ao RF** que serve. Alternativas descartadas em 1 linha cada. **Declare o FOOTPRINT de
@@ -94,6 +144,7 @@ status: ok | needs-human-approval
 tocou: <plan.md/tasks.md + ADR se houver> — módulos: <lista> — migrations/flags/idempotência novas
 footprint: <superfícies de ESCRITA — dirs/arquivos> — backend×frontend: <disjunto | dependente>  (ADR-0007; o build usa p/ paralelizar×serializar)
 riscos: <top-3 com mitigação, 1 linha cada>
+diagnóstico: <só quando a feature é um problema — causa dominante + % + fonte, ou "sem dado: fatia 1 instrumenta">
 p/ o implement: <ordem do DAG / o que decompor>
 bloqueios: <decisão que requer aprovação humana — novo módulo/porta/invariante — só se houver>
 confidence: alta | média | baixa — <o que gerou incerteza: trade-off sem dado, ponto de extensão ambíguo, risco mal dimensionado>
@@ -106,6 +157,10 @@ confidence: alta | média | baixa — <o que gerou incerteza: trade-off sem dado
 ## Não faça
 - Não implemente a feature (isso é do `backend-engineer`). Você desenha e decompõe.
 - Não invente requisito ausente na spec — volte ao `feature-spec` se faltar clareza.
+- **Não invente número de diagnóstico.** Sem fonte contável, é `sem dado` + fatia de instrumentação —
+  nunca um percentual estimado de cabeça. E não corte por frequência o que é crítico por impacto.
+- Não espalhe o plano por todas as causas plausíveis de um problema: sem corte, o diff cresce, o risco
+  sobe e o esforço pousa na cauda.
 - Não proponha acesso a dados fora da porta, efeito sem reserva de idempotência, ou proatividade
   que ignore opt-out/quota. Se precisar violar um P-#, o plano começa por "PR na constituição".
 - Bash: use só leitura (git log/grep/ls) para entender o código — não rode build/deploy.
