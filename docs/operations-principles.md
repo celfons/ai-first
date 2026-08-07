@@ -47,6 +47,7 @@ três pilares, evolutionary architecture/Ford, FinOps Foundation).
 | **Blast radius e severidade** dimensionados antes de agir; mitigação imediata ≠ prevenção durável | Incident triage |
 | Correlação ≠ causação; o sintoma que muda a cada tentativa é sinal de causa não encontrada | Causal honesty |
 | **Honestidade de acesso:** o que não deu para medir é dito, não preenchido com suposição | No fabricated data |
+| **Ranqueie antes de agir:** com sinal contável em mãos, ordene as causas por **impacto × frequência** e ataque as que dominam — o resto se declara, não se persegue em paralelo | Pareto (`engineering-principles.md` §12) |
 
 ## 3 · Auditoria & anti-drift — *fitness functions*
 
@@ -57,6 +58,8 @@ três pilares, evolutionary architecture/Ford, FinOps Foundation).
 | Dívida técnica é **visível e priorizada por risco** (o que quebra em produção), não um mural infinito | Tech debt (Cunningham) |
 | Auditoria **só levanta issue**, não conserta no mesmo passo — separação de papéis | Audit ≠ fix |
 | **Erosão não corrigida compõe:** o custo de ignorar cresce com juros | Compounding debt |
+| **Agrupe achados por CAUSA, não por sintoma:** N ocorrências de uma mesma abstração furada são **um** achado (a causa), não N | Root-cause clustering |
+| **Teto de achados é um corte de Pareto, e corte se declara:** o que ficou de fora vai no relatório (quantos + uma linha) — cap silencioso lê como "varreu tudo" | No silent caps |
 
 ## 4 · FinOps / AIOps — *custo como restrição*
 
@@ -67,6 +70,7 @@ três pilares, evolutionary architecture/Ford, FinOps Foundation).
 | **Otimize sem quebrar o piso:** override de roteamento só **sobe** piso barato-que-saiu-caro; nunca abaixa segurança/invariante (P-14) | FinOps: Optimize |
 | Teto de orçamento é **restrição real**, não sugestão; feature custosa é opt-in | Budget ceiling |
 | Trocar token por corretude (isolamento + revisão independente) é **design**, não desperdício — corta-se só o descuido | Intencionalidade de custo |
+| **O gasto se concentra:** ataque a linha que domina o burn, não a mais fácil de cortar — economia na cauda não muda a fatura | Pareto de custo (§12) |
 
 ## 5 · Observabilidade (base das quatro acima)
 

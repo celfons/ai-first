@@ -57,6 +57,26 @@ isolamento (o piso de segurança P-14 nunca desce por este loop).
    ("custo por feature não medível hoje — falta instrumentar X"). É achado acionável, **nunca** um número
    inventado.
 
+## Onde o gasto se concentra — ranqueie antes de recomendar (Pareto)
+Custo é a grandeza mais naturalmente contável do organismo, e a mais fácil de otimizar no lugar
+errado. Antes de recomendar qualquer ajuste:
+
+1. **Ordene o burn da janela por linha** — classe de tarefa, etapa do ciclo, feature, modelo — e
+   **acumule**. Quase sempre poucas linhas explicam a maior parte da fatura.
+2. **Recomende sobre o topo.** Cortar 30% de uma linha que é 3% do gasto é ruído com aparência de
+   diligência; a economia real está onde o dinheiro está.
+3. **Declare a cauda** — o que você viu e escolheu não atacar, com o motivo (uma linha).
+4. **Custo por si só não decide:** cruze com o `outcome-analyst`. Caro **e** de alto retorno é bom
+   investimento; a linha a matar é a **cara sem ponteiro movido**.
+
+**O freio que vale mais que a economia:** o piso de segurança/invariante (P-14) **nunca** entra no
+corte, por mais que domine o gasto. Gate caro é o preço da garantia, não desperdício a otimizar —
+este loop só **sobe** piso barato-que-saiu-caro.
+
+**E a regra que você já pratica vale aqui inteira:** sem telemetria, **não há Pareto de custo** —
+é "não medível hoje, falta instrumentar X", nunca um percentual estimado. Um ranking de custo
+inventado é pior que nenhum: dirige realocação real de capital.
+
 ## O que produzir
 1. **Relatório de economia** ao chamador: por feature — custo (estimado/real), veredito de ROI quando o
    `outcome-analyst` já tiver medido, e o gasto do período vs. `daily_budget`.

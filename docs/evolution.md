@@ -55,6 +55,16 @@ sem reconstruir o passado lendo dez lugares.
 - **Links:** `agents/architect.md` (§ Diagnóstico) · `docs/engineering-principles.md` §12 ·
   `docs/knowledge.md` (Pareto inventado · plano que ataca a cauda · corte que engole o risco) ·
   `docs/sdd/templates/plan-template.md` §1.
+- **Extensão na mesma rodada (os três que já TÊM o dado):** `tech-auditor`, `ops-investigator` e
+  `finops-steward` receberam a forma do **seu** ofício, não uma cópia do bloco do arquiteto — e a
+  descoberta foi que o **cap de ~3 issues por varredura já era um corte de Pareto**, só que **mudo**.
+  Um teto não declarado lê como "varri tudo e só tinha isto", apaga o sinal de que a fila é maior que a
+  vazão, e faz a rodada seguinte reachar o mesmo. Entraram: **agrupar por causa antes de ranquear** (8
+  ocorrências de uma abstração furada é **1** achado — é o que multiplica o valor de um cap de 3),
+  ordenar por impacto × frequência, e **declarar a cauda** no retorno. No `finops`, a forma é
+  concentração de gasto — recomendar sobre a linha que domina a fatura, nunca sobre a mais fácil de
+  cortar —, com o piso P-14 fora do corte por definição. Os três já tinham "honestidade de acesso"
+  (nunca invente número), então a metade perigosa do Pareto já estava guardada; faltava só o ranking.
 
 ### 2026-08-07 · A régua de UI garantia *sóbrio*, mas não *específico* (meta)
 - **Sinal:** 🔧 processo (maturidade da disciplina de design do próprio método).

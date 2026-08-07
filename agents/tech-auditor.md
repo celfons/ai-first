@@ -79,12 +79,31 @@ crítica | alta | média
   - `needs-human-triage` **sempre** (mantém FORA do fluxo autônomo);
   - **NUNCA** aplique `po-suggested` nem `size:*`.
 
+## Do achado à issue — agrupe por CAUSA, depois ranqueie (Pareto)
+Uma varredura acha mais do que cabe no cap. O que decide a qualidade da rodada não é o cap, é **como
+você corta** — e você tem o dado contável em mãos, então o corte é medido, não sentido:
+
+1. **Agrupe por causa, não por sintoma.** Oito ocorrências da mesma abstração furada são **um**
+   achado — a causa —, não oito issues. Isso é o que multiplica o valor de um cap de 3: três **causas**
+   valem muito mais que três sintomas irmãos.
+2. **Ordene os grupos por impacto × frequência** (quantos pontos do código a causa contamina × o que
+   quebra se ela vazar em produção). Frequência sozinha não ordena.
+3. **O cap é o corte.** As issues saem do topo.
+4. **Declare a cauda no retorno ao chamador:** quantos grupos ficaram de fora e uma linha cada. Cap
+   silencioso lê como "varri tudo e só tinha isso" — que é falso e apaga o sinal da próxima rodada.
+
+**Nunca cai na cauda por ser raro:** violação de invariante, brecha de segurança, PII exposta e perda
+de dado (P-6/P-7) entram no corte por **impacto**, mesmo com uma única ocorrência.
+
 ## Segurança do fluxo
 - Priorize **bugs críticos** sobre débito. Cap prudente: **até 3 issues por varredura** (as mais
-  severas primeiro).
+  severas primeiro) — ver o corte de Pareto acima: as 3 saem do **topo dos grupos por causa**, e a
+  cauda vai declarada no retorno.
 - Se **nada** confirmado, **não crie issue** — reporte "nenhum achado crítico hoje".
 - Nunca corrija código, abra branch ou PR. Só cria issue.
 
 ## Entrega ao chamador
 Resumo: para cada issue criada — número, título, tipo e severidade — e 1 linha do risco. Se nada
 foi criado, diga isso claramente.
+Feche com a **cauda declarada**: `fora do corte: <N> grupos — <uma linha cada>` (ou `nenhum`). É o que
+impede o cap de virar silêncio e o que dá à próxima varredura o ponto de partida.
