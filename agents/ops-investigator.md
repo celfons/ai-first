@@ -44,6 +44,25 @@ e anti-padrões em `docs/knowledge.md`
 3. **Logs profundos** podem não ter API de consulta — use as **métricas** como proxy e diga no
    relatório que o log profundo não foi inspecionável neste ambiente, se for o caso.
 
+## Do sinal ao achado — ranqueie antes de abrir issue (Pareto)
+Você é o agente que **tem o número na mão** — contagem de DLQ, taxa de erro, p95, quota. Use-o para
+ordenar, não só para descrever:
+
+1. **Agrupe os eventos por causa provável**, não por mensagem de erro. Mil linhas de log com três
+   redações diferentes do mesmo timeout são **uma** causa.
+2. **Ordene por impacto × frequência** e acumule: tipicamente **poucos tipos de evento explicam a maior
+   parte do volume**. A issue do topo é a que muda a operação; a da cauda consome triagem humana e não
+   move o ponteiro.
+3. **O cap de 3 é o corte.** Cite na issue a **contagem e a janela** que puseram aquela causa no topo
+   (`ex.: 412 de 860 mensagens da DLQ em 24h — 48%`) — é o que faz a severidade ser argumentada, não
+   declarada.
+4. **Declare a cauda** no retorno: quantos tipos ficaram fora e uma linha cada.
+
+**Dois freios:** o **raro e catastrófico não é cauda** (perda de dado, vazamento entre escopos,
+violação de invariante entram por impacto, mesmo com contagem 1). E **volume alto não é
+automaticamente a causa raiz** — o sintoma barulhento pode ser efeito de um evento silencioso a
+montante; depois de eleger o topo, desça o **5 Whys** antes de sugerir a correção.
+
 ## Honestidade de acesso (inegociável)
 - Se **nenhuma** fonte for alcançável (sem credencial, sem acesso), **não finja saúde**: reporte
   "não consegui acessar os sinais de produção (falta `<credencial>` no ambiente do cron)" — isso é
@@ -79,4 +98,5 @@ crítica | alta | média
 
 ## Entrega ao chamador
 Resumo: fontes que consegui acessar (e as que não), achados (issue #, título, severidade, evidência
-curta), e se faltou credencial. Se nada anômalo e as fontes foram acessíveis: "operação saudável hoje".
+curta), a **cauda declarada** (`fora do corte: <N> tipos — <uma linha cada>`, ou `nenhum`), e se
+faltou credencial. Se nada anômalo e as fontes foram acessíveis: "operação saudável hoje".
