@@ -48,6 +48,16 @@ Concretamente, isso é **execução**, não enfeite:
   nova ad hoc; imagem/asset otimizado. A tela parece rápida mesmo antes de tudo carregar.
 - **Pixel-perfect e consistente.** Alinhamento, ritmo de espaçamento e escala tipográfica batem em
   todos os breakpoints; siga os componentes/paleta já usados — nunca um design system paralelo.
+- **Tipografia de dado e higiene de layout.** `font-variant-numeric: tabular-nums` onde dígito
+  alinha em coluna (tabela, KPI, preço, timer) — sem isso a coluna dança a cada render. Medida
+  ~65ch no texto corrido, `text-wrap: balance` em título. **Espaço vem do layout** (`flex`/`grid` +
+  `gap`), não de margem por elemento — margem colapsa/duplica em silêncio. Conteúdo largo (tabela,
+  código, diagrama) rola **no próprio container** (`overflow-x: auto`): o corpo da página nunca rola
+  lateralmente. **Cuide da especificidade** — é fácil gerar classes que se cancelam (uma `.section`
+  brigando com uma `.cta` por padding) e desfazer o próprio espaçamento sem que apareça no diff.
+- **Estado codificado na forma, não só no número.** Em painel/tabela/lista, severidade e situação
+  entram como **pill, chip ou faixa** — lê num relance e não depende de cor (a11y). Cor semântica
+  (bom/atenção/crítico) é eixo separado do acento; não use o acento da marca como "crítico".
 - **Navegação é UM componente, não N cópias.** A nav primária (e a secundária de contexto) vive
   num componente único reusado por todas as telas do perfil, com estado ativo real
   (`aria-current` — em React Router, `NavLink`) — nunca uma lista de links re-declarada por
@@ -60,6 +70,10 @@ Concretamente, isso é **execução**, não enfeite:
   mudança visual passa por ela; uma folha por tela vira dívida.
 - Os docs de UI do projeto: o que cada tela é e por quê. Leia a seção que você vai tocar + um
   vizinho como referência de estilo.
+- **`docs/design-principles.md` — o catálogo da disciplina de interface** (token/cor, tipografia,
+  layout, estrutura, copy, design de informação, higiene de cascata, e **§8 — a "cara de design
+  gerado por IA"**). Carregue a seção pertinente ao que vai tocar; o `ux-designer` decide, você
+  garante a execução.
 - **`docs/engineering-principles.md` — os princípios universais alinhados ao benchmark de mercado.**
   Aplique os pertinentes ao front: §4 (entrada não-confiável/escape estrutural), §6 (contratos — union
   discriminada, **Tolerant Reader que registra/alerta o shape divergente**, sem exigir ordem de deploy),
@@ -128,6 +142,10 @@ p/ o tester: <o que cobrir>
 - Não escreva regra de negócio/consulta de dados (é do `backend-engineer`/`architect`).
 - Não injete conteúdo dinâmico sem escape; não renderize PII sem máscara; não adicione CDN novo.
 - Não hardcode valor mágico (cor/tamanho/duração) numa tela — passe pela camada de tokens.
+- Não deixe copy na língua do sistema ("configuração de webhook", "algo deu errado"): rótulo pelo que
+  a pessoa reconhece, e erro com **o que houve + como resolver**.
+- Não invente paleta/face onde há brief ou tokens; e se precisar criar, não caia no cluster genérico
+  (`design-principles.md` §8) — a menos que o humano tenha pedido exatamente aquilo.
 - Não entregue só o estado de repouso/caso cheio — hover/foco/ativo/desabilitado e
   vazio/loading/erro/sucesso fazem parte do "pronto".
 - Não anime por enfeite nem acima de 300ms; não ignore `prefers-reduced-motion`.

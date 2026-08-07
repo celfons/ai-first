@@ -32,7 +32,8 @@ nunca sobrescreve o que você já tem sem confirmar).
      `docs/evolution.md` (linha do tempo de aprendizados — nasce vazia).
    - `docs/ai-first/project.md` (o **genoma** em branco — é o que você preenche na entrevista abaixo).
    - `docs/engineering-principles.md` + os catálogos por disciplina (`product-`, `spec-`,
-     `operations-`, `delivery-principles.md`) — o piso de padrão-de-mercado que os agentes consultam.
+     `design-`, `operations-`, `delivery-principles.md`) — o piso de padrão-de-mercado que os
+     agentes consultam.
    - `docs/governance/enforcement.md` — o modelo de enforcement (o "como forçar", ADR-0006).
    - `.github/` → `pull_request_template.md`, `ISSUE_TEMPLATE.md`, `workflows/ci.yml`,
      `workflows/ai-first-cron.yml`, e o **guard de governança** `workflows/ai-first-guard.yml`
