@@ -11,3 +11,8 @@ tmp/
 
 # Saída gerada pelo conversor (scripts/export-portable.mjs) — reprodutível, não versionada
 dist/
+
+# Worktrees efêmeros dos subagentes (`isolation: "worktree"` da ferramenta Agent). São cópias de
+# trabalho criadas e removidas pela ferramenta — versioná-las empurraria o repositório para dentro
+# de si mesmo. O que o agente produz chega pela branch que ele empurra, não por aqui.
+.claude/worktrees/
