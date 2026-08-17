@@ -136,7 +136,14 @@ tokens: <consumidos/adicionados — sem valor mágico> · estados: <hover/foco/v
 tdd: <modo aplicado> · prova do vermelho: <teste de comportamento que falhou primeiro → razão; "estética: verificada na tela" onde não cabe teste>
 escape/PII: <confirmação nos pontos dinâmicos> · typecheck/lint: <verde | erros>
 p/ o tester: <o que cobrir>
+confidence: alta | média | baixa — <o que gerou incerteza: brief ambíguo, estado que não pude exercitar>
 ```
+
+> **Quando o chamador passa um `schema` (o grafo `build-one-feature` passa — ADR-0019 §1):** devolva
+> os MESMOS campos pela saída estruturada — `status` (`ok`|`bloqueado`|`precisa-humano`), `confidence`
+> (`alta`|`media`|`baixa`), `resumo`, `tdd` (a prova do vermelho), `touched` (ponteiros) e `motivo`. O motor **roteia** por esses campos: baixa
+> confiança escala ao humano (`uncertainty_escalation`) sem depender de o driver ler prosa.
+
 
 ## Não faça
 - Não escreva regra de negócio/consulta de dados (é do `backend-engineer`/`architect`).

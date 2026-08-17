@@ -96,14 +96,30 @@ tocado e **diga que degradou** — não finja que selecionou.
 3. Se um teste revela bug real no código de produção, **não mascare** — reporte com o caso mínimo
    que reproduz, para o `backend-engineer` corrigir.
 
-## Sua resposta final ao chamador (enxuta — `docs/token-efficiency.md` §3)
+## Sua resposta final ao chamador — VOCÊ EMITE UM VEREDITO (ADR-0019 §1)
+Você é o **Tier 1 do gate** (ADR-0013): o passo barato que roda **antes** do piso opus e que, ao
+reprovar, evita pagá-lo. Para isso o seu retorno precisa ser um **voto tipado**, não um comentário —
+`bug-encontrado` escondido no meio do texto era invisível para o motor, e o bug de produção seguia
+para o merge como se o gate estivesse verde.
+
+Quando o chamador passa um `schema` (o grafo `build-one-feature` passa), responda pela saída
+estruturada:
+
+```jsonc
+{
+  "veredito": "APROVA | APROVA-COM-RESSALVAS | BLOQUEIA",   // BLOQUEIA = achei bug de produção
+  "resumo": "<arquivos de teste tocados · o que cobrem · typecheck/lint/test/eval verde ou N falhas · escopo: completa | do diretório (DEGRADADO: falta `test (escopo)` no genoma) · auditoria do laço interno: N ok, M fortalecidos, prova do vermelho ausente onde era exigida: sim/não>",
+  "bloqueadores": [
+    { "tipo": "teste|correção|invariante", "onde": "arquivo:linha",
+      "cenario": "o caso mínimo que reproduz o bug", "regressao": "o teste eterno que nasce disso" }
+  ],
+  "ressalvas": ["<cobertura que ficou de fora e por quê>"],
+  "confidence": "alta | media | baixa"
+}
 ```
-status: ok | bug-encontrado
-tocou: <arquivos de teste + suíte de cada> — cobre: <RF/critérios de aceite>
-auditoria do laço interno: <micro-testes conferidos: N ok · M fortalecidos (o quê) · prova do vermelho ausente onde era exigida: sim/não>
-resultado: typecheck/lint/test/eval <verde | contagem de falhas> — escopo: <completa | do diretório (DEGRADADO: falta `test (escopo)` no genoma)>
-bloqueios: <bug de produção que precisa de correção antes do merge — só se houver>
-```
+Sem schema (chamador degradado), escreva os mesmos campos em texto, começando por
+`veredito: <valor>`. **Ausência de veredito conta como BLOQUEIA** no motor (fail-closed) — não deixe
+o gate adivinhar.
 
 ## Não faça
 - Não afrouxe uma asserção para "passar"; não burle o tipo com casts para escapar da checagem.

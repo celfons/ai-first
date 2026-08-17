@@ -253,12 +253,19 @@ dimensão externa do `pipeline()`; cada uma compõe o subgrafo contratado por
 `workflow('build-one-feature', …)` (aninhamento **pai→filho**, o único nível permitido — ADR-0010 §3):
 ```
 phase('Bundle');   bundle = await agent(deriva)        // 1x: contexto base + índice + deps + market-scan
-phase('Features'); pipeline(features, f => {           // dimensão externa: N features concorrentes
-  if (budget.remaining() < budget_per_feature) return awaitingHuman(f)   // guarda ANTES de abrir a frente
-  return workflow('build-one-feature', { ...f, fixedContext: bundle + linhaDoContextMap(f) })
-})
+phase('Plan');     parallel(features, f =>             // spec/plan só escrevem os PRÓPRIOS docs ⇒ sem
+  workflow('build-one-feature', { ...f, stage: 'plan' }))  // conflito; devolve o FOOTPRINT real (ADR-0019 §4)
+phase('Features'); for (onda of ondasDeFootprintDisjunto(features, fanOut))  // ADR-0007, agora com dado
+  await parallel(onda, f => {
+    if (budget.remaining() < budget_per_feature) return awaitingHuman(f)  // guarda ANTES de abrir a frente
+    return workflow('build-one-feature', { ...f, stage: 'build', fixedContext: bundle + linhaDoContextMap(f) })
+  })
 return { rodada, prontasParaMerge }                    // o MERGE é do driver, serializado, fora do grafo
 ```
+> **Por que o planejamento vem antes do agendamento (ADR-0019 §4):** o footprint que decide o que
+> paraleliza nasce no `plan.md`. Agendar antes de planejar era agendar às cegas — o lote saía vazio e o
+> fan-out virava "as N primeiras por prioridade". Custa uma barreira (planejar → agendar → construir);
+> paga em conflito que não acontece.
 
 Ganho: wall-clock (features concorrentes) **+** token (bundle derivado 1×, não N×) **+** contenção de
 custo justa (o teto por feature impede um runaway de queimar a rodada). Risco: médio-alto (mecânica
@@ -376,9 +383,9 @@ re-passa o estado vivo mínimo como **fato**, não como histórico. **Costuras d
 - **Entre re-runs de verificação** — o re-implement recebe **o veredito** (o que corrigir), **não** o
   contexto da tentativa falha. Ganho duplo: token **+** menos ancoragem no caminho errado.
 
-**Limiar dinâmico gated.** Com `context_clear_policy: dynamic`, ao cruzar `context_clear_threshold` (% da
-janela) a limpeza **espera a próxima costura** (hand-off durável) em vez de disparar mid-slice — escape
-valve para features gigantes, nunca faca cega. Default `seam`; `off` desliga.
+**Só duas posições (ADR-0019 §5).** `seam` (default) limpa nas costuras; `off` desliga. O antigo modo
+`dynamic` (limiar `context_clear_threshold` gated à costura) foi removido: nenhum código o lia, e um
+terceiro modo num ponto sensível é superfície sem benefício medido.
 
 Camada certa: isto é higiene da memória **working** (ADR-0005) — distinta do `/distill` (§7), que cuida
 da **episódica**. Mesma lei ("consolidar/esquecer, não inchar"), camada diferente.
@@ -417,7 +424,7 @@ O prompt cache (§1) tem TTL ~1h. Duas consequências operacionais:
    cache (~1h).
 6. **Limpa o contexto working na costura** (§8): no fim de slice/feature e **entre re-runs de
    verificação** (passa o veredito, não a tentativa falha), **preservando o prefixo fixo cacheado**.
-   `context_clear_policy: seam` (default) | `dynamic` (gated à costura) | `off`.
+   `context_clear_policy: seam` (default) | `off` (ADR-0019 §5).
 
 Itens 1–3 são puro ganho, sem trade-off. Item 4 é estrutural e opt-in. A telemetria da alavanca **5**
 (AIOps) é medida **fora da fatia** pelo `finops-steward`, numa cadência, e realimenta o roteamento —

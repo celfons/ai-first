@@ -200,22 +200,22 @@
   (default **quinzenal**, espaçado dos demais crons pesados; avaliar gasta token, piso opus/alto). Roda a
   rubrica pass/fail contra os contratos de sub-workflow (ADR-0010) com conjunto-ouro semeado.
 - **`context_clear_policy`** (higiene de contexto working, ADR-0012 · P-14): `[A DEFINIR]`
-  (`seam | dynamic | off`, default **seam**). Com `seam`, o driver limpa o **rabo variável** do contexto
-  (retornos antigos, ruído de tool-calls) nas **costuras** — fim de slice, fim de feature e **entre
-  re-runs de verificação** (passa o veredito, não a tentativa falha) — **preservando byte-a-byte o bloco
-  de contexto fixo cacheado** (`token-efficiency.md` §1/§8). `dynamic` adiciona um gatilho por limiar,
-  **sempre gated à próxima costura**; `off` desliga. Limpar ≠ fundir contexto: isolamento/verificação
-  (P-11/P-13) intactos.
-- **`context_clear_threshold`** (limiar do modo `dynamic` — % da janela antes de limpar na próxima
-  costura): `[A DEFINIR]` (default **70%**). Só vale quando `context_clear_policy: dynamic`.
-- **`verification_parallelism`** (paralelismo do gate de verificação, ADR-0013 · P-14): `[A DEFINIR]`
-  (`staged | flat`, default **staged**). Com `staged`, o gate de julgamento roda sobre o **diff congelado**
-  em dois passos: o `tester` barato **primeiro** (fail-fast — reprovou, re-implementa **sem pagar o piso
-  opus**) e, se verde, **`adversarial-reviewer` ‖ `security-reviewer` em paralelo** (ambos opus e
-  obrigatórios → sequenciar não ganharia nada). É **Pareto sobre o sequencial** (melhor em custo e tempo).
-  `flat` roda o `tester` concorrente ao tier opus — ganha mais wall-clock **pagando opus mesmo em
-  reprovação barata**; só com `daily_budget` folgado. O **track contínuo barato** (typecheck/lint) roda
-  ‖ ao implement em ambos. Piso opus/alto e isolamento (P-11/P-13/P-14) nunca relaxam.
+  (`seam | off`, default **seam**). Com `seam`, o motor limpa o **rabo variável** do contexto (retornos
+  antigos, ruído de tool-calls) nas **costuras** — fim de slice, fim de feature e **entre re-runs de
+  verificação** (passa o veredito destilado, não a tentativa falha) — **preservando byte-a-byte o bloco
+  de contexto fixo cacheado** (`token-efficiency.md` §1/§8). `off` desliga (arrasta tudo, caro). Limpar
+  ≠ fundir contexto: isolamento/verificação (P-11/P-13) intactos. *(O modo `dynamic` e o knob
+  `context_clear_threshold` foram removidos no ADR-0019 §5: nenhum código os lia — knob que não é lido
+  não é knob, é comentário.)*
+- **`verification_parallelism`** (paralelismo do gate de verificação, ADR-0013 · P-14): **`staged`**
+  (valor único desde o ADR-0019 §5). O gate de julgamento roda sobre o **diff congelado** em dois passos:
+  o `tester` barato **primeiro** (fail-fast — reprovou, re-implementa **sem pagar o piso opus**) e, se
+  verde, **`adversarial-reviewer` ‖ `security-reviewer` em paralelo** (ambos opus e obrigatórios →
+  sequenciar não ganharia nada). O **track contínuo barato** (typecheck/lint) roda ‖ ao implement. O
+  antigo `flat` (tester concorrente ao tier opus) foi descontinuado: pagava opus mesmo em reprovação
+  barata, para ganhar wall-clock, no ponto onde complexidade menos se justifica; ainda é **aceito e
+  ignorado** com log, para não quebrar genoma antigo. Piso opus/alto e isolamento (P-11/P-13/P-14) nunca
+  relaxam.
 
 ### Arquitetura cognitiva (ADR-0005 — knobs de memória e verificação)
 > Ver [`docs/ai-first/memory.md`](memory.md). Todos ajustáveis a qualquer momento (P-15); defaults conservadores.
@@ -226,7 +226,8 @@
 - **`verification_mode`** (P-11): `[single | panel]` (default **single**). **`panel`** roda o
   `adversarial-reviewer` como **N céticos de lentes distintas** (aciona automaticamente no tier 🔴 e em
   `autonomy_level: autônomo` — o ponto sem gate humano). Um `BLOQUEIA` isolado já barra; piso opus/alto
-  por membro (P-14).
+  por membro (P-14). **Lido pelo motor** desde o ADR-0019 §3 — antes o painel de 3 rodava sempre,
+  ignorando este knob, e toda feature 🟢 pagava 3× o piso opus.
 - **`adversarial_panel_size`** (nº de céticos quando `panel`): `[A DEFINIR]` (default **3**).
 - **`uncertainty_escalation`** (P-10): `[on | off]` + limiar (default **on**, limiar `confidence: baixa`).
   Etapa de **baixa confiança** escala ao humano (`awaiting-human`) **independentemente do tier de risco** —

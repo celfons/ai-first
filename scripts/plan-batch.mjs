@@ -10,8 +10,17 @@
 // que pode juntar duas que brigam pelo mesmo arquivo), pega o maior subconjunto que NÃO briga. É a
 // diferença entre "sortear tarefas" e "agrupar para ninguém ficar na mesma parede ao mesmo tempo".
 //
+// QUANDO CHAMAR (ADR-0019 §4): DEPOIS da fase PLAN das demandas da rodada — o footprint vive no
+// `plan.md`, que só existe quando o `architect` já rodou. Chamar antes (issue recém-criada pelo PO)
+// devolvia lote VAZIO e o paralelismo caía no "pega as N primeiras", justamente o que o ADR-0007 evita.
+// Por isso o grafo pai (`build-many-features.mjs`) planeja todas em paralelo e só então agenda; este
+// script continua sendo a ESPECIFICAÇÃO CANÔNICA da regra de conflito (e a checagem offline/CI dela).
+// Demanda pedida em `--only` que ainda NÃO tem `plan.md` sai em `unplanned` — sinal explícito de
+// "planeje antes", nunca omissão silenciosa.
+//
 // Formato do footprint (bloco ```footprint no plan.md, ver docs/sdd/templates/plan-template.md):
 //   ```footprint
+//   issue: 42            # opcional — permite casar --only por NÚMERO DE ISSUE, não só pelo id SDD
 //   writes:
 //     - src/api/orders/**
 //     - src/domain/order.ts
@@ -70,6 +79,7 @@ function parseFootprint(planText) {
   if (!m) return null;
   const body = m[1];
   const writes = [];
+  const issueM = /^\s*issue:\s*#?(\d+)\s*$/m.exec(body);   // casamento por nº de issue (opcional)
   let inWrites = false;
   for (const raw of body.split('\n')) {
     const line = raw.replace(/#.*$/, '').trimEnd();          // tira comentário
@@ -80,7 +90,7 @@ function parseFootprint(planText) {
       if (line.trim() && !/^\s/.test(raw)) inWrites = false;  // saiu do bloco writes
     }
   }
-  return { writes };
+  return { writes, issue: issueM ? issueM[1] : null };
 }
 
 function loadFeatures() {
@@ -92,11 +102,23 @@ function loadFeatures() {
     const plan = join(dir, 'plan.md');
     if (!statSync(dir).isDirectory() || !existsSync(plan)) continue;
     const id = (/^(\d+)/.exec(d) || [, d])[1];
-    if (ONLY.length && !ONLY.includes(id) && !ONLY.includes(d)) continue;
     const fp = parseFootprint(readFileSync(plan, 'utf8'));
-    feats.push({ id, dir: `docs/sdd/features/${d}`, writes: fp ? fp.writes : null });
+    // `--only` casa pelo id SDD, pelo nome do diretório OU pelo `issue:` declarado no footprint — o
+    // driver raciocina em número de ISSUE, o diretório é numerado por feature; sem esta ponte o filtro
+    // silenciosamente não casava nada.
+    if (ONLY.length && !ONLY.includes(id) && !ONLY.includes(d) && !(fp?.issue && ONLY.includes(fp.issue))) continue;
+    feats.push({ id, issue: fp?.issue ?? null, dir: `docs/sdd/features/${d}`, writes: fp ? fp.writes : null });
   }
   return feats.sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true }));
+}
+
+// O que o chamador pediu em `--only` e NÃO existe como plano — a demanda ainda não passou pela fase
+// PLAN. Não é "adiada por conflito": é "ainda não planejada" (ADR-0019 §4). Buckets distintos porque a
+// ação do driver é distinta — uma volta na próxima rodada, a outra precisa PLANEJAR antes.
+function unplanned(found) {
+  if (!ONLY.length) return [];
+  const known = new Set(found.flatMap((f) => [f.id, f.issue].filter(Boolean)));
+  return ONLY.filter((o) => !known.has(o));
 }
 
 // ---- agendamento: maior conjunto disjunto sob o WIP (guloso, ordem estável) ------------------------
@@ -152,9 +174,10 @@ if (argv.includes('--self-test')) selfTest();
 
 const features = loadFeatures();
 const { batch, deferred } = schedule(features, WIP);
+const naoPlanejadas = unplanned(features);
 
 if (AS_JSON) {
-  console.log(JSON.stringify({ wip: WIP, batch: batch.map((f) => f.id), deferred }, null, 2));
+  console.log(JSON.stringify({ wip: WIP, batch: batch.map((f) => f.id), deferred, unplanned: naoPlanejadas }, null, 2));
 } else {
   console.log(`== Lote paralelo (wip_limit=${WIP}) — footprints disjuntos ==`);
   if (!features.length) console.log('  (nenhuma feature com plan.md encontrada)');
@@ -163,5 +186,9 @@ if (AS_JSON) {
     console.log('\n== Adiadas para a próxima rodada ==');
     for (const d of deferred) console.log(`  ⏸ ${d.id} — ${d.reason}`);
   }
-  console.log(`\nResumo: ${batch.length} em paralelo, ${deferred.length} adiada(s).`);
+  if (naoPlanejadas.length) {
+    console.log('\nAinda SEM plano (rode a fase PLAN antes de agendar — ADR-0019 §4):');
+    for (const id of naoPlanejadas) console.log(`  ✎ ${id} — sem docs/sdd/features/*/plan.md`);
+  }
+  console.log(`\nResumo: ${batch.length} em paralelo, ${deferred.length} adiada(s), ${naoPlanejadas.length} não planejada(s).`);
 }

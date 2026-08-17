@@ -64,5 +64,6 @@ trade-off. Nesses casos, o `plan.md` da feature já basta.
 | [0016](0016-stacked-prs-nao-adotar.md) | Stacked PRs — não adotar como padrão; checkpoint incremental por sub-issue | Accepted | método (convenção de git) | P-10, P-11, P-13, P-14, P-15 |
 | [0017](0017-fan-out-por-slice-e-escopo-de-teste.md) | Fan-out por micro-slice no subgrafo contratado + escopo de teste escalado ao diff (gate sempre completo) | Accepted | método (execução da decomposição + custo do laço) | P-10, P-11, P-13, P-14, P-15 |
 | [0018](0018-workflow-nativo-como-default.md) | `Workflow` nativo como caminho **default** de orquestração (opt-in → knob) + Escala 2 (N features) no motor | Accepted | método (execução da orquestração) | P-10, P-11, P-13, P-14, P-15 |
+| [0019](0019-vereditos-estruturados-e-knobs-no-motor.md) | Vereditos estruturados, orçamento por delta e knobs ligados no motor (o grafo executa o que a doutrina promete) | Accepted | método (fidelidade motor↔doutrina) | P-3, P-10, P-11, P-13, P-14, P-15 |
 
 > Ao criar um ADR, adicione a linha aqui (o `docs-writer` fecha isso no fim da feature).
