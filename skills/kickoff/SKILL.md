@@ -71,10 +71,13 @@ Agora **puxe do board as issues que o PO escreveu** (Fase 1) e implemente o lote
   feature a partir de `develop`). Isso mantém a janela curta por feature (menos alucinação) e encurta o
   wall-clock do arranque. **Num único Workflow multi-feature — é o default (ADR-0018):**
   `Workflow({ scriptPath: '.claude/workflows/build-many-features.mjs', args: { features, fanOut,
-  budgetPerFeature, … } })` (`docs/token-efficiency.md` §4 Escala 2). Ele deriva o **bundle
-  compartilhado 1×** (contexto base + índice de repo + deps + market-scan, read-through) e aplica o
-  **teto `budget_per_feature`** antes de abrir cada frente — o arranque semeia o cache que as rodadas
-  seguintes reusam. Com `orchestration_mode: sequencial` (ou sem a ferramenta — aí **reporte**), o mesmo
+  budgetPerFeature, fastPath, verificationMode, adversarialPanelSize, uncertaintyEscalation,
+  autonomyLevel, … } })` (`docs/token-efficiency.md` §4 Escala 2). Ele deriva o **bundle compartilhado
+  1×** (contexto base + índice de repo + deps + market-scan, read-through), **planeja todas em paralelo
+  e agenda o implement por footprint disjunto** (ADR-0019 §4) e aplica o **teto `budget_per_feature`**
+  antes de abrir cada frente — o arranque semeia o cache que as rodadas seguintes reusam. Cada item de
+  `features` carrega o bloco ```routing json do `sdd-orchestrator` (`routing`, `tier`, `comportamento`,
+  `fastPathElegivel`, `uiSignificativa`) — **copiado verbatim**, não traduzido. Com `orchestration_mode: sequencial` (ou sem a ferramenta — aí **reporte**), o mesmo
   desenho vale sequencializado.
 - **O merge em `develop` é SERIALIZADO**, nunca paralelo: mergeie uma feature de cada vez (CI verde +
   veredito não-bloqueante), e antes de cada merge **rebase/atualize** a branch sobre o `develop` já

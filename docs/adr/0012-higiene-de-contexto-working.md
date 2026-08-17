@@ -46,10 +46,9 @@ Adotamos uma alavanca de **higiene de contexto working** (`docs/token-efficiency
    - **Entre re-runs de verificação (ADR-0009)** — o re-implement recebe **o veredito** (o que corrigir),
      **não** o contexto da tentativa falha. Ganho duplo: token + menos ancoragem no caminho errado.
 
-4. **Limiar dinâmico (`context_clear_policy: dynamic`) é gated à costura.** Quando o contexto acumulado
-   cruza `context_clear_threshold` (% da janela), a limpeza **não** dispara num ponto arbitrário — **espera
-   o próximo hand-off durável** (a próxima costura). Escape valve para features gigantes, nunca faca cega
-   mid-slice.
+4. ~~**Limiar dinâmico (`context_clear_policy: dynamic`) é gated à costura.**~~ **Removido pelo
+   ADR-0019 §5** (o knob nunca foi lido por código): a política tem duas posições, `seam` (default) e
+   `off`. A decisão 1–3 acima permanece vigente.
 
 ## Alternativas consideradas
 
@@ -81,6 +80,6 @@ Constituição `P-14` (custo/token), `P-11`/`P-13` (isolamento), `P-15` (knobs);
 §1 (prefixo fixo + cache — o que a limpeza preserva), §3 (retorno enxuto — o que a torna segura), §7
 (higiene de memória — a mesma lei, camada episódica), §8 (esta alavanca); ADR-0009 (loop/re-runs),
 ADR-0010 (sub-pipeline isolado por feature), ADR-0005 (as 4 camadas — working vs. episódica);
-`docs/ai-first/memory.md`; genoma §8 (`context_clear_policy`, `context_clear_threshold`);
+`docs/ai-first/memory.md`; genoma §8 (`context_clear_policy`); ADR-0019 (remove o modo `dynamic`);
 `templates/workflows/build-one-feature.mjs` (limpeza entre re-runs no esqueleto).
 </content>

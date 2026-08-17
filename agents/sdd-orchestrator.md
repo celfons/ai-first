@@ -266,11 +266,36 @@ model:<…> · effort:<…>
 
 ## Riscos/incertezas
 - <marcados como [NEEDS CLARIFICATION] para o feature-spec resolver>
+
+## Args do motor (BLOCO PARSEÁVEL — o driver copia VERBATIM para o Workflow)
+```routing json
+{
+  "routing": { "<etapa>": { "model": "sonnet", "effort": "medium" } },
+  "tier": "baixo | medio | alto",
+  "comportamento": "cria | altera | nenhum",
+  "fastPathElegivel": false,
+  "uiSignificativa": false,
+  "verificationMode": "single | panel",
+  "adversarialPanelSize": 3
+}
 ```
 > **`paralelo:sim`** marca a etapa que depende só da spec/plan (não do código) e pode rodar concorrente
-> ao implement num `Workflow` — tipicamente `bdd-author` e `ux-designer` (ver `docs/token-efficiency.md`
-> §4). O driver roda o grafo **por default** (ADR-0018 · knob `orchestration_mode: workflow`), então esta
-> marca é operante, não decorativa; só com `orchestration_mode: sequencial` ela vira informativa.
+> ao implement num `Workflow` — tipicamente o `ux-designer` (ver `docs/token-efficiency.md` §4). O driver
+> roda o grafo **por default** (ADR-0018 · knob `orchestration_mode: workflow`), então esta marca é
+> operante, não decorativa; só com `orchestration_mode: sequencial` ela vira informativa. **Exceção que
+> não é negociável (ADR-0015):** o `bdd-author` **não** é `paralelo:sim` — o laço externo tem de estar
+> vermelho ANTES de existir código, e correr concorrente ao implement torna a invariante inverificável.
+
+> **O bloco ```routing json é o CONTRATO com o motor (ADR-0019 §3).** As chaves de `routing` são nomes de
+> agente (`feature-spec`, `architect`, `task-decomposer`, `backend-engineer`, `frontend-engineer`,
+> `data-engineer`, `prompt-engineer`, `sre-engineer`, `ux-designer`, `bdd-author`, `tester`,
+> `docs-writer`, e `track` para o track contínuo barato). O driver **não traduz sua prosa** — ele copia
+> este bloco para os `args` do `Workflow`. Sem ele, todas as etapas caem no modelo default e o seu
+> roteamento vira decoração cara. `adversarial-reviewer`/`security-reviewer` **não entram no bloco**:
+> o piso opus/alto deles é fixo no motor (P-14), fora do alcance do roteamento.
+> `fastPathElegivel: true` só quando TODAS as condições do fast-path valem; `comportamento` e `tier`
+> são exatamente os que você emitiu na Classificação; `verificationMode: panel` sobe o gate (o motor já
+> sobe sozinho em tier alto e em `autonomy_level: autônomo`).
 
 ## Regras
 - **Você é o único subagente de modelo fixo (opus/alto).** Todos os outros são roteados por você — o

@@ -68,11 +68,19 @@ invoque o subgrafo contratado:
 ```
 Workflow({ scriptPath: '.claude/workflows/build-one-feature.mjs', args: {
   issue, fixedContext,            // o BLOCO FIXO que você montou em 2½ — passado read-through
-  routing,                        // {etapa: {model, effort}} do plano do orchestrator
+  ...routingBlock,                // COPIE VERBATIM o bloco ```routing json do orchestrator:
+                                  //   {routing, tier, comportamento, fastPathElegivel,
+                                  //    uiSignificativa, verificationMode, adversarialPanelSize}
   budgetPerFeature, maxRerunAttempts,
   tddMode, sliceFanout, testCmd, testScopedCmd, testScope,   // knobs do genoma §7/§8
+  fastPath, uncertaintyEscalation, autonomyLevel,            // knobs do genoma §8
 }})
 ```
+> **Copie o bloco `routing json`, não traduza a prosa (ADR-0019 §3).** As chaves de `routing` são nomes
+> de agente; sem elas todas as etapas caem no modelo default e o roteamento do orchestrator (que custou
+> opus/alto) vira decoração. Os knobs acima **são lidos pelo motor**: `fastPathElegivel` colapsa a
+> autoria de baixo risco, `comportamento: nenhum` pula o `bdd-author`, `verificationMode` escolhe entre
+> 1 cético e o painel, `uncertaintyEscalation` escala por baixa confiança.
 
 **Invocar esta skill JÁ é o opt-in** — o humano pediu `/feature`, e estas instruções mandam chamar
 `Workflow`. Não peça frase mágica. Dentro do grafo valem as mesmas regras (bloco fixo, `model`/`effort`

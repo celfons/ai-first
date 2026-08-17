@@ -59,6 +59,12 @@ p/ o architect: <o essencial para planejar>
 bloqueios: <todas as [NEEDS CLARIFICATION] que exigem decisão humana antes do PLAN>
 confidence: alta | média | baixa — <o que gerou incerteza: requisito vago, persona/valor incerto, domínio novo>
 ```
+> **Quando o chamador passa um `schema` (o grafo `build-one-feature` passa — ADR-0019 §1):** devolva
+> os MESMOS campos pela saída estruturada — `status` (`ok`|`bloqueado`|`precisa-humano`), `confidence`
+> (`alta`|`media`|`baixa`), `resumo`, `tdd` (a prova do vermelho), `touched` (ponteiros) e, quando for
+> o caso, `footprint` (superfícies de escrita) e `motivo`. O motor **roteia** por esses campos: baixa
+> confiança escala ao humano (`uncertainty_escalation`) sem depender de o driver ler prosa.
+
 > **Sinal de confiança (RF-COG-09/10):** separado do `status`. Baixa confiança **roteia** a decisão ao
 > humano (`awaiting-human`) por **incerteza**, mesmo que o tier de risco seja baixo — ver
 > `uncertainty_escalation` no genoma. Não confunda com `[NEEDS CLARIFICATION]` (pergunta pontual): a
