@@ -270,11 +270,12 @@ model:<…> · effort:<…>
 ## Args do motor (BLOCO PARSEÁVEL — o driver copia VERBATIM para o Workflow)
 ```routing json
 {
-  "routing": { "<etapa>": { "model": "sonnet", "effort": "medium" } },
+  "routing": { "<etapa>": { "model": "sonnet", "effort": "médio" } },
   "tier": "baixo | medio | alto",
   "comportamento": "cria | altera | nenhum",
   "fastPathElegivel": false,
   "uiSignificativa": false,
+  "efeitoDeAltoValor": false,
   "verificationMode": "single | panel",
   "adversarialPanelSize": 3
 }
@@ -296,6 +297,17 @@ model:<…> · effort:<…>
 > `fastPathElegivel: true` só quando TODAS as condições do fast-path valem; `comportamento` e `tier`
 > são exatamente os que você emitiu na Classificação; `verificationMode: panel` sobe o gate (o motor já
 > sobe sozinho em tier alto e em `autonomy_level: autônomo`).
+>
+> **Esforço: escreva no seu vocabulário.** `baixo|médio|alto|extra` são traduzidos pelo motor para
+> `low|medium|high|xhigh` (o inglês também é aceito). Valor irreconhecível **não** vira esforço inválido:
+> cai no fallback da etapa **com log** — mas aí o seu roteamento não valeu, então escreva um dos oito.
+> Chave de `routing` fora da lista de etapas roteáveis é **ignorada com log** — nada de rota silenciosa
+> que não se aplica.
+>
+> **`efeitoDeAltoValor: true` é como você sobe o gate ao teto.** O piso do `adversarial-reviewer`/
+> `security-reviewer` é opus/alto e não é roteável (P-14) — mas a sua instrução de subir a **opus/extra**
+> em dinheiro/dado/segurança, nova dependência/authz/PII agora **executa**: com esta flag (ou em tier 🔴)
+> o motor roda o gate em `xhigh`. Sem ela, o gate fica no piso. Piso é piso, não teto.
 
 ## Regras
 - **Você é o único subagente de modelo fixo (opus/alto).** Todos os outros são roteados por você — o

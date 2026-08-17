@@ -147,8 +147,8 @@ branch `claude/<slug>` por feature a partir de `develop`). **Faça-o num único 
 
 ```
 Workflow({ scriptPath: '.claude/workflows/build-many-features.mjs', args: {
-  features,                 // [{issue, contextMapLine, routing, tier, comportamento,
-                            //   fastPathElegivel, uiSignificativa}] — vindos do bloco ```routing json
+  features,                 // [{issue, contextMapLine, routing, tier, comportamento, fastPathElegivel,
+                            //   uiSignificativa, efeitoDeAltoValor}] — vindos do bloco ```routing json
                             //   que o sdd-orchestrator emitiu por feature (copie VERBATIM)
   fanOut,                   // min(parallelism, wip_limit, floor(budget.remaining()/budget_per_feature))
   budgetPerFeature, dailyBudget, maxRerunAttempts,
@@ -166,7 +166,9 @@ cada frente** — a feature que estoura **para sozinha** (as vizinhas seguem). O
 > autoria de baixo risco; `comportamento: nenhum` pula o `bdd-author`; `verificationMode`/
 > `adversarialPanelSize` decidem entre 1 cético (default) e N lentes; `uncertaintyEscalation` escala ao
 > humano por baixa confiança. Omiti-los faz toda feature pagar a cerimônia máxima — era o comportamento
-> anterior, quando esses knobs só existiam na prosa desta skill. Com
+> anterior, quando esses knobs só existiam na prosa desta skill. O **esforço** roteado pode vir em
+> português (o motor traduz para o vocabulário do runtime); `efeitoDeAltoValor: true` sobe o gate ao
+> teto (**opus/extra**) em dinheiro/dado/segurança — sem a flag ele fica no piso opus/alto. Com
 `orchestration_mode: sequencial` — ou se `Workflow` não estiver disponível (aí **reporte a degradação**)
 — o mesmo desenho vale sequencializado. Mas **o merge em `develop` é SERIALIZADO** em qualquer caso: mergeie uma
 de cada vez (Fase 5) e **rebase/atualize** cada branch sobre o `develop` já avançado antes do merge —

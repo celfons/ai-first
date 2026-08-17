@@ -170,6 +170,7 @@ const { issue, fixedContext, routing = {}, budgetPerFeature = null, maxRerunAtte
         fastPath = 'on', fastPathElegivel = false, comportamento = 'cria',
         verificationMode = 'single', adversarialPanelSize = 3, uncertaintyEscalation = 'on',
         tier = 'medio', autonomyLevel = 'conservador', uiSignificativa = false,
+        efeitoDeAltoValor = false,
         implementerDefault = 'backend-engineer', stage = 'full',
         verificationParallelism = 'staged' } = args ?? {}
 
@@ -191,7 +192,44 @@ const TDD = tddMode === 'off'
   : `tdd_mode: ${tddMode} — rode o laço interno VERMELHO → VERDE → REFATORAR por comportamento${tddMode === 'pragmatico' ? ' (obrigatório em invariante/dinheiro/PII/efeito e em TODA correção de bug)' : ''}. Devolva a PROVA DO VERMELHO no campo \`tdd\`: qual teste falhou primeiro e por quê.`
 // Helper: prefixa SEMPRE o bloco de contexto fixo (idêntico, primeiro) para cache de prompt (§1).
 const withContext = (role, body) => `${fixedContext ?? ''}\n\n## Papel: ${role}\n${body}`
-const route = (etapa, fallback) => routing[etapa] ?? fallback
+
+// ── VOCABULÁRIO DE ESFORÇO (ADR-0019 emenda 4.5.1) ──────────────────────────────────────────────────
+// O método fala português (`baixo|médio|alto|extra` — é o que o sdd-orchestrator emite no plano e nas
+// tabelas de custo-benefício); o runtime fala `low|medium|high|xhigh`. Sem esta tradução o esforço
+// roteado chegava INVÁLIDO e caía no default da sessão em silêncio: o `model` do arquiteto era honrado
+// e o `effort` não — justo o eixo que ele usa para calibrar ambiguidade e risco.
+const EFFORT = {
+  baixo: 'low', 'médio': 'medium', medio: 'medium', alto: 'high', extra: 'xhigh',
+  low: 'low', medium: 'medium', high: 'high', xhigh: 'xhigh', max: 'max',
+}
+const normEffort = (e, fallback) => {
+  if (e == null) return fallback
+  const v = EFFORT[String(e).trim().toLowerCase()]
+  if (v) return v
+  log(`routing: esforço "${e}" não reconhecido — usando "${fallback}" (válidos: baixo/médio/alto/extra ou low/medium/high/xhigh)`)
+  return fallback
+}
+// Etapas que o roteamento alcança. `adversarial-reviewer`/`security-reviewer` NÃO estão aqui de
+// propósito: o piso deles é do motor (P-14), fora do alcance do plano.
+const ETAPAS_ROTEAVEIS = new Set(['feature-spec', 'architect', 'ux-designer', 'task-decomposer', 'bdd-author',
+  'backend-engineer', 'frontend-engineer', 'data-engineer', 'prompt-engineer', 'sre-engineer', 'tester',
+  'docs-writer', 'track'])
+for (const k of Object.keys(routing)) {
+  if (!ETAPAS_ROTEAVEIS.has(k)) log(`routing: chave "${k}" não é etapa roteável e será IGNORADA — a etapa correspondente roda no fallback (roteáveis: ${[...ETAPAS_ROTEAVEIS].join(', ')})`)
+}
+// Rota ausente ou parcial cai no fallback CAMPO A CAMPO — nunca silenciosamente inteira.
+const route = (etapa, fallback) => {
+  const r = routing[etapa]
+  if (!r) return fallback
+  return { model: r.model ?? fallback.model, effort: normEffort(r.effort, fallback.effort) }
+}
+
+// ── PISO É PISO, NÃO TETO (P-14 · ADR-0019 emenda 4.5.1) ────────────────────────────────────────────
+// O `sdd-orchestrator` manda subir `adversarial-reviewer`/`security-reviewer` a **opus/extra** em efeito
+// de alto valor (dinheiro/dado/segurança, nova dependência/authz/PII). O motor cravava 'high' e a
+// instrução de subir nunca executava — "nunca abaixo de opus/alto" virava "sempre exatamente
+// opus/alto". Aqui o piso continua garantido e o teto passa a existir.
+const GATE_EFFORT = (efeitoDeAltoValor === true || RISCO_ALTO) ? 'xhigh' : 'high'
 
 // ── GUARDA DE BORDA DE ORÇAMENTO (ADR-0019 §2) ──────────────────────────────────────────────────────
 // `budget.spent()` conta o TURNO inteiro — main loop + todos os workflows. Medimos o DELTA desde a
@@ -379,14 +417,15 @@ const opusGate = (diffDigest) => parallel([
   ...(USA_PAINEL
     ? LENTES.slice(0, nPainel).map(lente => () =>
         agent(withContext('adversarial-reviewer', `Tente QUEBRAR a mudança pela lente "${lente}". Diff: ${diffDigest}. Conclua sozinho — não negocie com os outros membros do painel.`),
-          { phase: 'Verify', label: `adversarial:${lente}`, schema: VERDICT_SCHEMA, model: 'opus', effort: 'high' }))
+          { phase: 'Verify', label: `adversarial:${lente}`, schema: VERDICT_SCHEMA, model: 'opus', effort: GATE_EFFORT }))
     : [() => agent(withContext('adversarial-reviewer', `Tente QUEBRAR a mudança pelas lentes ${LENTES.slice(0, 3).join(' · ')}. Diff: ${diffDigest}.`),
-          { phase: 'Verify', label: 'adversarial:single', schema: VERDICT_SCHEMA, model: 'opus', effort: 'high' })]),
+          { phase: 'Verify', label: 'adversarial:single', schema: VERDICT_SCHEMA, model: 'opus', effort: GATE_EFFORT })]),
   // Security ‖ adversarial — gate mandatório independente; sequenciar não ganharia nada (ADR-0013).
   () => agent(withContext('security-reviewer', `Gate de segurança do diff: threat model, authz/escopo, injeção, segredo/PII, CVE. Diff: ${diffDigest}.`),
-    { phase: 'Verify', label: 'security', schema: VERDICT_SCHEMA, model: 'opus', effort: 'high' }),
+    { phase: 'Verify', label: 'security', schema: VERDICT_SCHEMA, model: 'opus', effort: GATE_EFFORT }),
 ])
 if (USA_PAINEL) log(`verificação em PAINEL — ${nPainel} céticos + security (motivo: ${verificationMode === 'panel' ? 'verification_mode: panel' : RISCO_ALTO ? 'tier de risco 🔴' : 'autonomy_level: autônomo'})`)
+log(`gate de julgamento: opus/${GATE_EFFORT}${GATE_EFFORT === 'xhigh' ? ` (subiu ao teto: ${efeitoDeAltoValor ? 'efeito de alto valor' : 'tier de risco 🔴'})` : ''}`)
 
 const promptTester = `Ligue os cenários ao runner + testes/evals (integração/invariante/runtime/regressão). AUDITE o laço interno: os micro-testes falhariam se o código regredisse? A prova do vermelho está declarada? ESCOPO AQUI É COMPLETO (ADR-0017): rode ${SUITE_COMPLETA} — o escopo estreito serve o laço, nunca o gate.${FAST ? ' FAST-PATH: não houve fase BDD — cubra a demanda com teste de REGRESSÃO (ADR-0008).' : ''} Devolva \`veredito: BLOQUEIA\` se achou bug de produção — é o seu voto no gate, não um comentário.`
 let attempt = 0
