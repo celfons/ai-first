@@ -38,6 +38,28 @@ sem reconstruir o passado lendo dez lugares.
 
 ## Linha do tempo
 
+### 2026-08-17 · A doutrina virou documentação em vez de virar código (meta · ADR-0019)
+- **Sinal:** 🔧 processo (fidelidade motor↔método).
+- **Aprendizado:** uma auditoria da esteira encontrou o método com ~11.700 linhas de markdown, 18 ADRs
+  e ~35 knobs governando um motor de 429 linhas que conhecia **9 dos 27 agentes** e lia **7 knobs**. Não
+  era só excesso: em três pontos o grafo **contradizia** o texto em silêncio. O gate lia veredito por
+  regex em prosa — e o regex casava com o cabeçalho `## Bloqueadores` de um **APROVA** (toda feature
+  virava re-run até `awaiting-human`) enquanto não casava com o `tester`, cujo contrato não tem a
+  palavra (bug de produção passava como não-bloqueante). O teto por feature comparava o **contador
+  global do turno**, então a 2ª feature em diante abortava antes da spec. E `fast_path`,
+  `verification_mode` e `comportamento:nenhum` só existiam na prosa: toda feature — inclusive um ajuste
+  de cópia — pagava 12 invocações e **4 opus**. O agendador ciente de conflito lia o footprint do
+  `plan.md` **antes** da fase PLAN existir, então devolvia lote vazio e o paralelismo caía no "pega as
+  N primeiras", justamente o que o ADR-0007 evita.
+- **O que fica como regra:** (1) **gate é campo tipado, nunca palavra em texto** — e ausente conta como
+  BLOQUEIA (fail-closed); (2) **knob novo nasce lido pelo motor** — se o grafo não o consulta, é
+  comentário, não configuração; (3) **medida de orçamento é delta, não contador compartilhado**;
+  (4) prosa de agente não é interface entre etapas: o `sdd-orchestrator` passou a emitir um bloco
+  ` ```routing json ` que o driver copia verbatim. O sintoma a vigiar é o mesmo que gerou tudo isto —
+  **doc novo escrito antes do código que o executa**.
+- **Links:** ADR-0019 · ADR-0007/0008/0012/0013/0015/0017/0018 · `.claude/workflows/*.mjs` ·
+  `scripts/plan-batch.mjs`
+
 ### 2026-08-07 · O arquiteto sabia projetar solução, não diagnosticar problema (meta)
 - **Sinal:** 🔧 processo (maturidade da fase PLAN).
 - **Aprendizado:** o `architect` tinha régua para **desenhar** (5 lentes, portas, footprint, ADR) e

@@ -62,7 +62,22 @@ alvo natural do `adversarial-reviewer` sobre o agregado.
 ## Entrega
 Escreva/atualize `docs/sdd/features/NNN-slug/tasks.md` no formato de **grafo de execução** (ver
 `docs/sdd/templates/tasks-template.md`): para cada slice — id, título, **arquivos/contexto**,
-**depende de**, **paralelizável? (s/n)**, **done + teste**, **RF**, e como **mantém a árvore verde**.
+**depende de**, **paralelizável? (s/n)**, **done + teste**, **RF**, o **papel** que a implementa, e como
+**mantém a árvore verde**.
+
+### O `papel` de cada slice (ADR-0019 §6) — quem tem o ofício
+Declare em toda slice qual implementador a executa: **`backend`** (regra/efeito/porta) · **`frontend`**
+(interface) · **`data`** (migração/esquema/instrumentação) · **`prompt`** (camada de IA do produto, P-4)
+· **`sre`** (IaC/deploy/flag/SLO). O motor roteia a invocação por esse campo. Sem ele, **toda** slice
+caía no `backend-engineer` — inclusive UI e migração, escritas pelo agente com o system prompt errado.
+Na dúvida entre dois ofícios, **refatie**: uma slice que precisa de dois papéis normalmente é duas.
+
+### Quando o chamador passa `schema` (o grafo `build-one-feature` passa)
+Devolva o mesmo grafo como **dado**, não prosa: `status` (`decomposto`|`nao-decomposto`) e, por slice,
+`id`, `titulo`, `arquivos` (o **footprint** — é o que decide o que roda em paralelo), `dependeDe`,
+`doneTest`, `papel`, `rf`, `integracao: true` na slice de agregação e `escopoDeTeste: "full"` quando o
+diff dela toca migration/esquema/config/DI/fixture. O `tasks.md` continua sendo escrito — o dado é o
+que o motor executa, o arquivo é o que o humano lê.
 Feche com a **slice de integração** e o gate de merge da feature inteira.
 
 ## O contrato estruturado (ADR-0017 — é ele que faz a decomposição ser EXECUTADA)

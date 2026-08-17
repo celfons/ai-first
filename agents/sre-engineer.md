@@ -75,6 +75,12 @@ p/ o ops-investigator: <o sinal/alerta novo e onde observá-lo>
 bloqueios: <credencial/permissão ausente — nome da env var, nunca o valor — só se houver>
 confidence: alta | média | baixa — <o que gerou incerteza: infra que não pude exercitar, dependência de cloud>
 ```
+> **Quando o chamador passa um `schema` (o grafo `build-one-feature` passa — ADR-0019 §1):** devolva
+> os MESMOS campos pela saída estruturada — `status` (`ok`|`bloqueado`|`precisa-humano`), `confidence`
+> (`alta`|`media`|`baixa`), `resumo`, `tdd` (a prova do vermelho), `touched` (ponteiros) e, quando for
+> o caso, `footprint` (superfícies de escrita) e `motivo`. O motor **roteia** por esses campos: baixa
+> confiança escala ao humano (`uncertainty_escalation`) sem depender de o driver ler prosa.
+
 
 ## Não faça
 - Não faça deploy sem caminho de rollback; não amarre deploy a migração irreversível.

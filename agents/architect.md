@@ -149,6 +149,12 @@ p/ o implement: <ordem do DAG / o que decompor>
 bloqueios: <decisão que requer aprovação humana — novo módulo/porta/invariante — só se houver>
 confidence: alta | média | baixa — <o que gerou incerteza: trade-off sem dado, ponto de extensão ambíguo, risco mal dimensionado>
 ```
+> **Quando o chamador passa um `schema` (o grafo `build-one-feature` passa — ADR-0019 §1):** devolva
+> os MESMOS campos pela saída estruturada — `status` (`ok`|`bloqueado`|`precisa-humano`), `confidence`
+> (`alta`|`media`|`baixa`), `resumo`, `tdd` (a prova do vermelho), `touched` (ponteiros) e, quando for
+> o caso, `footprint` (superfícies de escrita) e `motivo`. O motor **roteia** por esses campos: baixa
+> confiança escala ao humano (`uncertainty_escalation`) sem depender de o driver ler prosa.
+
 > **Sinal de confiança (RF-COG-09/10):** separado do `status`. Baixa confiança **roteia** ao humano
 > (`awaiting-human`) por **incerteza**, independentemente do tier de risco — ver `uncertainty_escalation`
 > no genoma e o `sdd-orchestrator`. Um plano de baixa confiança que segue autônomo é o pior caso: erra cedo

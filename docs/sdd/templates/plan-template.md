@@ -38,6 +38,8 @@ demais só cai para o merge serializado (rede de segurança), nunca corrompe `de
 
 ```footprint
 # Superfícies de ESCRITA desta feature. Um caminho por linha sob `writes:`. Globs: `dir/**`, `dir/*`.
+issue: <nº da issue>   # opcional, recomendado — casa o agendamento por NÚMERO DE ISSUE (ADR-0019 §4);
+                       # sem ele o `--only` do plan-batch só casa pelo id do diretório SDD.
 writes:
   - <caminho ou glob>
   - <caminho ou glob>

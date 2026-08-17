@@ -125,6 +125,12 @@ p/ o tester: <o que cobrir — efeitos/idempotência/invariantes; o que os meus 
 bloqueios: <dívida deixada / requisito ausente — só se houver>
 confidence: alta | média | baixa — <o que gerou incerteza: spec ambígua, área que não domino, teste que quase não fechou>
 ```
+> **Quando o chamador passa um `schema` (o grafo `build-one-feature` passa — ADR-0019 §1):** devolva
+> os MESMOS campos pela saída estruturada — `status` (`ok`|`bloqueado`|`precisa-humano`), `confidence`
+> (`alta`|`media`|`baixa`), `resumo`, `tdd` (a prova do vermelho), `touched` (ponteiros) e, quando for
+> o caso, `footprint` (superfícies de escrita) e `motivo`. O motor **roteia** por esses campos: baixa
+> confiança escala ao humano (`uncertainty_escalation`) sem depender de o driver ler prosa.
+
 > **Sinal de confiança (RF-COG-09/10):** separado do `status`. `status` diz *se terminou*; `confidence`
 > diz *quão seguro você está do que entregou*. Baixa confiança **não** bloqueia por si — ela **roteia**:
 > o driver escala ao humano (`awaiting-human`) por **incerteza**, independentemente do tier de risco

@@ -19,7 +19,7 @@ saudável, sustentável, auditável, uniforme e coesa.
 | 1 | **Bootstrap de sessão** | injeta o bloco fixo + a pipeline no turno 0 de toda sessão | **força** | `hooks/session-start.sh` |
 | 2 | **Guarda de ação** | barra push/commit direto em main/develop antes de acontecer | **força** | `hooks/pre-tool-guard.sh` |
 | 3 | **Gate no servidor** | recusa o merge sem CI verde + disciplina de fluxo | **força** | `ai-first-guard.yml` + branch protection |
-| 4 | **Fitness functions** | build quebra quando a arquitetura/invariante desvia | **força** | `scripts/ai-first-fitness.mjs` (por repo) |
+| 4 | **Fitness functions** | build quebra quando a arquitetura/invariante desvia | **força** | `scripts/ai-first-fitness.mjs` + `scripts/check-workflows.mjs` (comportamento dos grafos, ADR-0019) |
 | 5 | **Guia e uniformidade** | orientam o raciocínio, dão forma idêntica em todo repo | **guia** | `CLAUDE.md`, `agents/`, `*-principles.md`, templates |
 | 6 | **Retroalimentação** | consolida e **poda** a memória; o método melhora com o uso | **loop** | `/distill`, `/daily-outcome`, ADRs, `evolution.md` |
 

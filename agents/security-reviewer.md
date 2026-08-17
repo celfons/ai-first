@@ -68,19 +68,25 @@ veredito; na dúvida entre média e alta, o gate pesa a favor de barrar.
 > **Assimetria de verbosidade (`docs/token-efficiency.md` §3):** **APROVA**/**APROVA-COM-RESSALVAS** é
 > enxuto (veredito + ressalva em 1 linha cada). **BLOQUEIA carrega o detalhe** — o vetor que justifica
 > parar o merge: `arquivo:linha`, como se explora, o dano, e a correção sugerida.
+**O veredito é DADO, não prosa (ADR-0019 §1)** — mesmo contrato do `adversarial-reviewer`. O grafo te
+invoca com schema; o gate lê o campo `veredito`, sem caçar palavra em texto livre.
+
+```jsonc
+{
+  "veredito": "APROVA | APROVA-COM-RESSALVAS | BLOQUEIA",
+  "resumo": "<1 frase — inclua aqui as dependências novas e se o auditor rodou>",
+  "bloqueadores": [                       // preencha SÓ quando BLOQUEIA
+    { "tipo": "segurança",
+      "onde": "arquivo:linha",
+      "cenario": "vetor concreto: atacante faz X → dano Y (severidade crítica|alta|média)",
+      "regressao": "o teste que falharia se o vetor voltasse" }
+  ],
+  "ressalvas": ["<endurecimento recomendado / dívida de segurança menor>"],
+  "confidence": "alta | media | baixa"
+}
 ```
-## Veredito de segurança: APROVA | APROVA-COM-RESSALVAS | BLOQUEIA
-<1 frase>
-
-## Vulnerabilidades (se houver — impedem o auto-merge)
-- [authz|injeção|segredo|pii|ia|dependência|config] `arquivo:linha` — vetor concreto (atacante faz X → dano Y). Correção sugerida: <o quê>. Severidade: crítica|alta|média.
-
-## Ressalvas (não bloqueiam, mas registre)
-- <endurecimento recomendado / dívida de segurança menor>
-
-## Dependências
-Novas: <lista + veredito de cada>. Auditor rodado? <sim: resultado | não: por quê>.
-```
+Sem schema (chamador degradado), escreva o mesmo conteúdo em markdown começando por
+`## Veredito de segurança: <valor>` — e use o token `BLOQUEIA` **só** para o veredito.
 
 ## Regras
 - **BLOQUEIA** se: authz ausente/fail-open, vazamento de escopo/PII, injeção explorável, segredo em

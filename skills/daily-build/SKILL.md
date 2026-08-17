@@ -66,7 +66,8 @@ como oráculo) → `security-reviewer` (gate de segurança) → `docs-writer`.
 > o laço e nunca substitui o gate. Diff em migration/config/DI/fixture, ou que toque invariante ⇒ escopo
 > completo já no laço. Sem o comando declarado, o retorno diz **degradado** — trate como sinal, não ruído.
 
-> **Fast-path de baixo risco (ADR-0008 — só se `fast_path: on`).** Se o `sdd-orchestrator` classificou a
+> **Fast-path de baixo risco (ADR-0008 — só se `fast_path: on`; aplicado PELO MOTOR desde o ADR-0019 §3:
+> passe `fastPathElegivel` nos args e o grafo colapsa a autoria sozinho).** Se o `sdd-orchestrator` classificou a
 > demanda como elegível (marca `fast-path`: `size:trivial` **e** risco 🟢 — só texto/UI/leitura, sem
 > dinheiro/PII/idempotência/efeito/invariante/dependência nova — **e** confiança alta, sem comportamento
 > novo), **colapse as fases de autoria**: pule `feature-spec`, `architect`/ADR, `task-decomposer` e
@@ -100,16 +101,22 @@ como oráculo) → `security-reviewer` (gate de segurança) → `docs-writer`.
   `backend-engineer` (só o contexto da slice → janela menor, menos alucinação), **árvore verde ao fim
   de cada slice** (parcial atrás de flag), e a **slice de integração** por último. Verifique cada slice
   e faça o `adversarial-reviewer` sobre o **agregado**.
-**Escalonamento por WIP + footprint de conflito (ADR-0007).** Antes de fanar out, **rode o agendador
-determinístico** em vez de decidir no olho:
+**Escalonamento por WIP + footprint de conflito (ADR-0007 · agendamento em DUAS ETAPAS, ADR-0019 §4).**
+O footprint vive no `plan.md`, que só existe **depois** da fase PLAN — então o agendamento não pode
+preceder o planejamento. Quem resolve isso é o motor: `build-many-features.mjs` **planeja todas as
+features da rodada em paralelo** (spec/plan escrevem só nos próprios docs ⇒ sem conflito de superfície),
+**colhe o footprint real** de cada plano e só então agenda o implement em **ondas de footprint disjunto**.
+Você não precisa fazer nada — é o comportamento default do grafo.
+
+Para demandas que **já têm plano** (retomadas, ou quando você quer conferir o agendamento antes de
+disparar), o agendador determinístico continua disponível e é a **especificação canônica** da regra:
 
 ```
-node scripts/plan-batch.mjs --wip <wip_limit> --only <ids po-suggested da rodada> --json
+node scripts/plan-batch.mjs --wip <wip_limit> --only <issues ou ids SDD da rodada> --json
 ```
 
-Ele lê o **footprint de escrita** (bloco ` ```footprint ` do `plan.md` de cada demanda) e devolve o
-**maior lote de footprints disjuntos** (`batch`) que podem rodar em paralelo + as `deferred` (adiadas por
-sobreposição ou WIP cheio). Fane out **exatamente o `batch`**; as `deferred` voltam à próxima rodada.
+Ele devolve o **maior lote de footprints disjuntos** (`batch`), as `deferred` (adiadas por sobreposição
+ou WIP cheio) e as **`unplanned`** (ainda sem `plan.md` — precisam PLANEJAR antes, não são "adiadas").
 É a diferença entre pegar as N primeiras por prioridade (que pode juntar duas que brigam pelo mesmo
 arquivo) e **agrupar para ninguém ficar na mesma parede ao mesmo tempo**. Regra que o script aplica:
 - **Etapas de planejamento** (`feature-spec`, `architect`, `task-decomposer`, `bdd-author`) escrevem só
@@ -140,16 +147,26 @@ branch `claude/<slug>` por feature a partir de `develop`). **Faça-o num único 
 
 ```
 Workflow({ scriptPath: '.claude/workflows/build-many-features.mjs', args: {
-  features,                 // o `batch` que o plan-batch.mjs devolveu (footprints disjuntos)
+  features,                 // [{issue, contextMapLine, routing, tier, comportamento,
+                            //   fastPathElegivel, uiSignificativa}] — vindos do bloco ```routing json
+                            //   que o sdd-orchestrator emitiu por feature (copie VERBATIM)
   fanOut,                   // min(parallelism, wip_limit, floor(budget.remaining()/budget_per_feature))
   budgetPerFeature, dailyBudget, maxRerunAttempts,
   tddMode, sliceFanout, testCmd, testScopedCmd, testScope,
+  fastPath, verificationMode, adversarialPanelSize, uncertaintyEscalation, autonomyLevel,  // genoma §7/§8
 }})
 ```
 
-Ele deriva o **bundle compartilhado 1×**, compõe `build-one-feature` por feature e aplica o teto
-**antes de abrir cada frente** — a feature que estoura **para sozinha** (as vizinhas seguem). O retorno
-(`rodada`, `prontasParaMerge`) é **fato validado**: você decide o merge a partir dele. Com
+Ele deriva o **bundle compartilhado 1×**, **planeja todas em paralelo**, agenda o implement por
+footprint disjunto (ADR-0019 §4), compõe `build-one-feature` por feature e aplica o teto **antes de abrir
+cada frente** — a feature que estoura **para sozinha** (as vizinhas seguem). O retorno (`rodada`,
+`prontasParaMerge`) é **fato validado**: você decide o merge a partir dele.
+
+> **Passe os knobs — eles são LIDOS pelo motor (ADR-0019 §3).** `fastPath`+`fastPathElegivel` colapsam a
+> autoria de baixo risco; `comportamento: nenhum` pula o `bdd-author`; `verificationMode`/
+> `adversarialPanelSize` decidem entre 1 cético (default) e N lentes; `uncertaintyEscalation` escala ao
+> humano por baixa confiança. Omiti-los faz toda feature pagar a cerimônia máxima — era o comportamento
+> anterior, quando esses knobs só existiam na prosa desta skill. Com
 `orchestration_mode: sequencial` — ou se `Workflow` não estiver disponível (aí **reporte a degradação**)
 — o mesmo desenho vale sequencializado. Mas **o merge em `develop` é SERIALIZADO** em qualquer caso: mergeie uma
 de cada vez (Fase 5) e **rebase/atualize** cada branch sobre o `develop` já avançado antes do merge —
@@ -167,6 +184,12 @@ Sem parar nos gates de spec/plan, MAS:
 - Abra o PR **contra `develop`** com `Closes #NNN`.
 
 ## Fase 3 · Verificação independente (gate — pode BLOQUEAR)
+> **No modo `workflow` (default), este gate JÁ RODOU dentro do `build-one-feature`** — sobre o diff
+> congelado, com o veredito tipado no retorno (`status: merged-ready` só sai com adversarial + security
+> não-bloqueantes). **Não reinvoque:** seria pagar o piso opus duas vezes pela mesma feature. Leia o
+> veredito do retorno e siga para a Fase 4. As instruções abaixo valem para `orchestration_mode:
+> sequencial` ou quando o `Workflow` não está disponível (aí você é o motor).
+
 Para cada feature, invoque o subagente **`adversarial-reviewer`** (que **não** escreveu o código):
 ele tenta quebrar a mudança (correção vs. spec, invariantes, segurança) e, em efeito de alto valor,
 **dirige a feature no runtime real**. Veredito:
@@ -175,6 +198,9 @@ ele tenta quebrar a mudança (correção vs. spec, invariantes, segurança) e, e
 - **APROVA / APROVA-COM-RESSALVAS** → segue. Registre as ressalvas no corpo do PR.
 
 ## Fase 3½ · Gate de segurança (gate obrigatório — pode BLOQUEAR)
+> **Idem à Fase 3: no modo `workflow` o `security-reviewer` já rodou dentro do grafo**, em paralelo ao
+> adversarial, sobre o mesmo diff congelado. Não reinvoque — use o veredito do retorno.
+
 Para cada feature, invoque o subagente **`security-reviewer`** (modelo fixo **opus/alto** — P-14,
 nunca abaixe). Independente do `adversarial-reviewer`: ele pergunta "é **seguro**?" (authz/escopo,
 injeção, segredo/PII, saída de IA não validada, dependência nova/CVE, config perigosa). É o **gate de

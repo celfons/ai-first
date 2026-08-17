@@ -44,9 +44,10 @@ Adotamos **validação em dois tiers** com estratégia **`staged` fail-fast** co
    - **`staged`** (default) — o fluxo acima. Fail-fast onde protege token, paralelo onde é grátis. É
      **Pareto sobre o sequencial de hoje**: melhor em custo (fail-fast mantido) **e** em tempo
      (`tester + max(painel, security)` vs. a soma dos três).
-   - **`flat`** — o `tester` também concorre com o tier opus. Ganha o último naco de wall-clock **pagando
-     opus mesmo quando o tester reprovaria**. Só se justifica em build autônomo de alta vazão com
-     `daily_budget` folgado.
+   - ~~**`flat`**~~ — **descontinuado pelo ADR-0019 §5.** Pagava opus mesmo quando o `tester` reprovaria,
+     para ganhar o último naco de wall-clock, num caminho alternativo dentro do gate mais crítico do
+     método. O valor é aceito e **ignorado** (com log) para não quebrar genoma antigo. `staged` é o
+     comportamento único.
 
 ## Alternativas consideradas
 
@@ -55,7 +56,8 @@ Adotamos **validação em dois tiers** com estratégia **`staged` fail-fast** co
   de dado.
 - **Manter tudo sequencial (status quo)** — deixa wall-clock na mesa sem ganho de custo. O `staged` domina.
 - **Só `flat` (tudo paralelo no diff congelado)** — perde o fail-fast do `tester`; paga opus em toda
-  reprovação barata. Mantido como **opção** (urgência > custo), não default.
+  reprovação barata. Foi mantido como opção por uma versão e **removido no ADR-0019 §5**: ninguém o ligou,
+  e ele duplicava o caminho do gate.
 - **Paralelizar security e painel sequencialmente por "prudência"** — falso: ambos são gates
   mandatórios independentes; a ordem não muda o resultado, só o relógio. Paralelizados.
 
@@ -65,12 +67,15 @@ Adotamos **validação em dois tiers** com estratégia **`staged` fail-fast** co
   (economiza, até — o fail-fast do `tester` segue barrando antes do opus); o track contínuo encurta o
   loop de correção durante o implement. Ganho de wall-clock **e** custo — Pareto, não trade-off.
 - **Custos/limites:** o track contínuo exige que o projeto tenha typecheck/lint rápidos (senão Tier 1 é
-  no-op — reporte, não finja); `flat` é trade-off explícito (mais tempo-ganho, mais token) e só deve
-  ligar com orçamento folgado. Congelar o diff antes do Tier 2 é obrigatório — verificar alvo móvel é bug.
+  no-op — reporte, não finja). Congelar o diff antes do Tier 2 é obrigatório — verificar alvo móvel é bug.
 - **Restrições futuras:** todo gate de julgamento (Tier 2) roda sobre **diff congelado**, nunca alvo em
   movimento; dentro do Tier 2, gates **caros e obrigatórios** paralelizam entre si e o **barato** vem
-  antes (fail-fast) salvo `flat`; o piso opus/alto e o isolamento (P-11/P-13/P-14) nunca são relaxados
+  antes (fail-fast); o piso opus/alto e o isolamento (P-11/P-13/P-14) nunca são relaxados
   pela paralelização. Read-only justifica paralelizar **por segurança**, a estabilidade do input **ordena**.
+
+> **Emenda do ADR-0019 §1:** o Tier 1 (`tester`) passa a emitir um **veredito tipado** (schema), não um
+> texto que o driver interpreta. O fail-fast só funciona se o voto do passo barato for legível pelo
+> motor — antes, `status: bug-encontrado` era invisível ao gate e o bug seguia para o merge.
 
 ## Relacionados
 

@@ -88,23 +88,35 @@ deploy). Eleva o teto — não afrouxa invariante, gate nem veredito; na dúvida
 > é enxuto (o veredito + ressalvas em 1 linha cada). **BLOQUEIA é a exceção que carrega o detalhe** —
 > aqui a verificação que achou o bug justifica o custo: cenário concreto, `arquivo:linha`, como
 > reproduzir e a regressão sugerida. Detalhe onde é acionável, não por rotina.
+**O veredito é DADO, não prosa (ADR-0019 §1).** Quando o chamador é o grafo contratado
+(`build-one-feature`), ele te invoca com um **schema** e você responde pela ferramenta de saída
+estruturada — o gate lê o campo `veredito`, nunca procura a palavra no seu texto. (O motor antigo
+casava a palavra "Bloqueadores" do seu próprio cabeçalho e barrava um **APROVA**; e não achava
+bloqueio nenhum no `tester`, cujo texto não tem a palavra. Campo tipado mata os dois erros.)
+
+```jsonc
+{
+  "veredito": "APROVA | APROVA-COM-RESSALVAS | BLOQUEIA",
+  "resumo": "<1 frase>",
+  "bloqueadores": [                       // preencha SÓ quando BLOQUEIA — é o detalhe acionável
+    { "tipo": "correção|segurança|invariante|teste|runtime",
+      "onde": "arquivo:linha",
+      "cenario": "entrada concreta → saída errada/efeito indevido",
+      "regressao": "o teste que deve nascer para isso nunca voltar" }
+  ],
+  "ressalvas": ["<dívida/risco menor — não bloqueia, mas registre>"],
+  "confidence": "alta | media | baixa"    // baixa = você não conseguiu verificar o que importava
+}
 ```
-## Veredito: APROVA | APROVA-COM-RESSALVAS | BLOQUEIA
-<1 frase>
-
-## Bloqueadores (se houver — impedem o auto-merge)
-- [correção|segurança|invariante] `arquivo:linha` — cenário concreto → por que quebra. Regressão sugerida: <qual teste>.
-
-## Ressalvas (não bloqueiam, mas registre)
-- <dívida/risco menor>
-
-## Runtime
-Dirigi a feature? <sim: o que observei | não: por quê e o que ficou não verificado>
-```
+No campo `resumo`, diga também se **dirigiu a feature no runtime** (sim: o que observou · não: por quê
+e o que ficou não verificado). Sem schema (chamador em modo degradado), escreva o mesmo conteúdo em
+markdown começando por `## Veredito: <valor>` — e use o token `BLOQUEIA` **só** para o veredito.
 
 ## Modo de verificação: `single` vs. `painel` (knob `verification_mode`, RF-COG-07/08)
 
-O **driver** (skill), não você, decide o modo — pelo knob `verification_mode` do genoma e pelo risco:
+O **motor** (`build-one-feature`, ADR-0019 §3), não você, decide o modo — pelo knob `verification_mode`
+do genoma, pelo tier de risco e pelo `autonomy_level`. Antes o painel de 3 céticos rodava **sempre**,
+ignorando o knob: toda feature 🟢 pagava 3× o piso opus. Hoje o default é `single`:
 - **`single` (default):** uma invocação sua julga com **todas** as lentes. É o fluxo de sempre.
 - **`painel`:** acionado automaticamente no **tier de risco 🔴** e em **`autonomy_level: autônomo`** (o
   ponto onde o gate humano some) — ou à força pelo knob. O driver dispara **N invocações independentes**

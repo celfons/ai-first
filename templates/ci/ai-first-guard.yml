@@ -65,6 +65,8 @@ jobs:
           set -euo pipefail
           if [ -f scripts/ai-first-fitness.mjs ]; then
             node scripts/ai-first-fitness.mjs
+            # Comportamento dos grafos contratados (ADR-0019) — o caminho quente do método tem teste.
+            [ -f scripts/check-workflows.mjs ] && node scripts/check-workflows.mjs || true
           else
             echo "Sem scripts/ai-first-fitness.mjs ainda — invariantes checadas pela suíte de testes do repo (ci.yml)."
             echo "Próxima fatia do enforcement: materializar as fitness functions (ver docs/governance/enforcement.md)."

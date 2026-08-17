@@ -206,14 +206,25 @@ reserva de idempotência, laço da fila, chamada de LLM com timeout+validação+
 - **Qualidade da autoria de teste** é knob do genoma: `bdd_style` (formato do laço externo) e
   **`tdd_mode`** (disciplina do laço interno — ADR-0015), ajustáveis a qualquer momento (P-15).
 - **O grafo é o caminho default, e é código (ADR-0018).** Os drivers não "descrevem" a orquestração —
-  eles **rodam** `.claude/workflows/build-one-feature.mjs` (uma feature: spec→plan→decompose→implement→
-  verify→docs, com fan-out por slice e staged fail-fast) e `.claude/workflows/build-many-features.mjs`
-  (a rodada: bundle compartilhado derivado 1× + uma composição de `build-one-feature` por feature +
+  eles **rodam** `.claude/workflows/build-one-feature.mjs` (uma feature: spec→plan→decompose→acceptance→
+  implement→verify→docs, com fan-out por slice e staged fail-fast) e
+  `.claude/workflows/build-many-features.mjs` (a rodada: bundle compartilhado derivado 1× + planejamento
+  paralelo + agendamento por footprint disjunto + uma composição de `build-one-feature` por feature +
   teto por feature; o **merge em `develop` continua serializado pelo driver**). **Invocar a skill é o
   opt-in** — não há frase mágica, e continua não havendo disparo de `Workflow` fora de skill. Knob
   `orchestration_mode` (`workflow` default · `sequencial`); sem a ferramenta, o driver **degrada e
   reporta**, não simula. Os gates humanos (P-10) ficam **fora** do grafo — o grafo acelera o que já foi
   aprovado, não atropela aprovação.
+- **O motor executa a doutrina — knob que o grafo não lê não existe (ADR-0019).** Três contratos que
+  valem para toda evolução do método: (1) **veredito é dado tipado**, nunca texto parseado por regex —
+  `tester`, `adversarial-reviewer` e `security-reviewer` respondem por schema e o gate é **fail-closed**
+  (verificador sem retorno = BLOQUEIA); (2) **o teto por feature é medido por delta** do gasto dentro do
+  subgrafo, não pelo contador global do turno; (3) **cerimônia escala ao risco de verdade** — `fast_path`,
+  `comportamento:<cria|altera|nenhum>`, `verification_mode`/`adversarial_panel_size` e
+  `uncertainty_escalation` são lidos pelo grafo, e o `sdd-orchestrator` os entrega num bloco
+  ` ```routing json ` que o driver copia **verbatim** (fim da tradução de prosa). A slice declara o
+  **`papel`** e é implementada pelo ofício certo (`backend`/`frontend`/`data`/`prompt`/`sre`); o
+  `bdd-author` roda **antes** do implement, nunca concorrente (ADR-0015).
 - **Cadência/paralelismo/autonomia/orçamento** são knobs do genoma (`features_per_day`, `parallelism`,
   `wip_limit` — teto de WIP + serialização por footprint de conflito, ADR-0007;
   `fast_path` — cerimônia escalada ao risco: baixo risco pula a autoria, os gates permanecem, ADR-0008;
