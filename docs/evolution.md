@@ -57,6 +57,13 @@ sem reconstruir o passado lendo dez lugares.
   (4) prosa de agente não é interface entre etapas: o `sdd-orchestrator` passou a emitir um bloco
   ` ```routing json ` que o driver copia verbatim. O sintoma a vigiar é o mesmo que gerou tudo isto —
   **doc novo escrito antes do código que o executa**.
+- **Recaída na mesma família, no mesmo dia (4.5.1):** ligar o roteamento não bastou. O método fala
+  `baixo|médio|alto|extra` e o runtime fala `low|medium|high|xhigh`; sem tradução, o **modelo** do
+  arquiteto era honrado e o **esforço** caía no default da sessão em silêncio. E o gate estava cravado em
+  `opus/high`, então "nunca abaixo de opus/alto" (P-14) virou "sempre exatamente opus/alto" — a
+  instrução de subir a `opus/extra` em dinheiro/dado/segurança nunca executava. **Regra nova:**
+  interface entre etapas não é só tipada, é **traduzida numa fronteira única e explícita**; e todo piso
+  declarado precisa de um teto declarado junto, senão o piso vira gabarito.
 - **Links:** ADR-0019 · ADR-0007/0008/0012/0013/0015/0017/0018 · `.claude/workflows/*.mjs` ·
   `scripts/plan-batch.mjs`
 

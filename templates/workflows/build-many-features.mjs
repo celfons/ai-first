@@ -22,7 +22,7 @@
 // CONTRATO
 //   Entrada (args): {
 //     features: [{ issue, contextMapLine?, routing?, footprint?, fastPathElegivel?, comportamento?,
-//                  tier?, uiSignificativa? }],
+//                  tier?, uiSignificativa?, efeitoDeAltoValor? }],
 //     sharedBundle?, fanOut?, budgetPerFeature?, dailyBudget?, maxRerunAttempts?,
 //     contextClearPolicy?, tddMode?, sliceFanout?, testCmd?, testScopedCmd?, testScope?,
 //     fastPath?, verificationMode?, adversarialPanelSize?, uncertaintyEscalation?, autonomyLevel?,
@@ -120,6 +120,7 @@ const filhoArgs = (f) => ({
   verificationMode, adversarialPanelSize, uncertaintyEscalation, autonomyLevel,
   tier: f.tier ?? 'medio',
   uiSignificativa: f.uiSignificativa ?? false,
+  efeitoDeAltoValor: f.efeitoDeAltoValor ?? false,
 })
 
 // ── 1 · PRÉ-FASE: bundle de recursos compartilhado, derivado UMA vez ────────────────────────────────
