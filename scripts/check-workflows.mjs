@@ -36,7 +36,7 @@ const mk = (cfg) => {
   const agent = async (prompt, opts = {}) => {
     spent += cfg.cost ?? 10;
     const label = opts.label || (/## Papel: ([a-z-]+)/.exec(prompt)?.[1]) || 'anon';
-    calls.push({ label, model: opts.model, schema: !!opts.schema });
+    calls.push({ label, model: opts.model, effort: opts.effort, schema: !!opts.schema });
     return cfg.reply(label, prompt, opts);
   };
   const parallel = (thunks) => Promise.all(thunks.map(t => t().catch(() => null)));
@@ -139,6 +139,41 @@ const labels = calls.map(c => c.label);
 check('slice de dado → data-engineer', labels.includes('data-engineer:s1'), labels.join(','));
 check('slice de UI → frontend-engineer', labels.includes('frontend-engineer:s2'));
 check('ux-designer entra quando há UI significativa', labels.includes('ux-designer'));
+
+// ── R1 · Roteamento do arquiteto REALMENTE aplicado: modelo E esforço (emenda 4.5.1) ──────────────
+// O método fala `baixo|médio|alto|extra`; o runtime, `low|medium|high|xhigh`. Sem tradução o esforço
+// roteado caía no default da sessão em silêncio — o modelo era honrado e o esforço não.
+spent = 0; calls = [];
+rt = mk({ reply: (label) => {
+  if (label === 'task-decomposer') return { status: 'nao-decomposto', slices: [] };
+  if (['tester','security'].includes(label) || label.startsWith('adversarial')) return { veredito: 'APROVA', resumo: 'ok' };
+  return { status: 'ok', confidence: 'alta' };
+}});
+r = await one({ issue: 30, routing: {
+  'feature-spec': { model: 'opus', effort: 'alto' },        // vocabulário do plano (português)
+  'docs-writer':  { model: 'haiku', effort: 'baixo' },
+  'tester':       { model: 'sonnet', effort: 'extra' },
+  'architect':    { model: 'opus', effort: 'turbo' },        // inválido → cai no fallback, com log
+  'inexistente':  { model: 'opus', effort: 'alto' },         // chave não roteável → ignorada
+} }, rt.budget, rt.agent, rt.parallel, rt.pipeline, rt.log, rt.phase);
+const rota = (l) => calls.find((c) => c.label === l) || {};
+check('esforço em português é traduzido (alto → high)', rota('feature-spec').effort === 'high', JSON.stringify(rota('feature-spec')));
+check('esforço `baixo` → low', rota('docs-writer').effort === 'low');
+check('esforço `extra` → xhigh', rota('tester').effort === 'xhigh');
+check('modelo roteado é aplicado', rota('feature-spec').model === 'opus');
+check('esforço irreconhecível cai no fallback (não vira valor inválido)', rota('architect').effort === 'high', JSON.stringify(rota('architect')));
+
+// ── R2 · Piso opus/alto é PISO, não teto: efeito de alto valor e tier 🔴 sobem a `extra` ───────────
+spent = 0; calls = [];
+r = await one({ issue: 31 }, rt.budget, rt.agent, rt.parallel, rt.pipeline, rt.log, rt.phase);
+check('gate roda no piso opus/high quando o risco é comum', rota('adversarial:single').effort === 'high' && rota('security').effort === 'high');
+spent = 0; calls = [];
+r = await one({ issue: 32, efeitoDeAltoValor: true }, rt.budget, rt.agent, rt.parallel, rt.pipeline, rt.log, rt.phase);
+check('efeito de alto valor sobe o gate a opus/xhigh', rota('adversarial:single').effort === 'xhigh' && rota('security').effort === 'xhigh', JSON.stringify(rota('security')));
+spent = 0; calls = [];
+r = await one({ issue: 33, tier: 'alto' }, rt.budget, rt.agent, rt.parallel, rt.pipeline, rt.log, rt.phase);
+check('tier 🔴 sobe o gate a opus/xhigh (e vira painel)', calls.filter((c) => c.label.startsWith('adversarial:')).every((c) => c.effort === 'xhigh'));
+check('o gate NUNCA é roteável pelo plano (piso P-14 fora do alcance)', calls.filter((c) => c.label.startsWith('adversarial') || c.label === 'security').every((c) => c.model === 'opus'));
 
 // ── 4 · pai: planeja em paralelo, agenda por footprint disjunto, serializa quem colide ─────────────
 spent = 0; calls = [];

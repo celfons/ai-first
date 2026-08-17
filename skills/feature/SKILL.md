@@ -70,7 +70,8 @@ Workflow({ scriptPath: '.claude/workflows/build-one-feature.mjs', args: {
   issue, fixedContext,            // o BLOCO FIXO que você montou em 2½ — passado read-through
   ...routingBlock,                // COPIE VERBATIM o bloco ```routing json do orchestrator:
                                   //   {routing, tier, comportamento, fastPathElegivel,
-                                  //    uiSignificativa, verificationMode, adversarialPanelSize}
+                                  //    uiSignificativa, efeitoDeAltoValor, verificationMode,
+                                  //    adversarialPanelSize}
   budgetPerFeature, maxRerunAttempts,
   tddMode, sliceFanout, testCmd, testScopedCmd, testScope,   // knobs do genoma §7/§8
   fastPath, uncertaintyEscalation, autonomyLevel,            // knobs do genoma §8
@@ -80,7 +81,10 @@ Workflow({ scriptPath: '.claude/workflows/build-one-feature.mjs', args: {
 > de agente; sem elas todas as etapas caem no modelo default e o roteamento do orchestrator (que custou
 > opus/alto) vira decoração. Os knobs acima **são lidos pelo motor**: `fastPathElegivel` colapsa a
 > autoria de baixo risco, `comportamento: nenhum` pula o `bdd-author`, `verificationMode` escolhe entre
-> 1 cético e o painel, `uncertaintyEscalation` escala por baixa confiança.
+> 1 cético e o painel, `uncertaintyEscalation` escala por baixa confiança. O **esforço** do plano pode
+> vir em português (`baixo|médio|alto|extra`) — o motor traduz; e `efeitoDeAltoValor: true` sobe o gate
+> de opus/alto (piso, P-14) para **opus/extra**, que é como a instrução do orquestrador de subir em
+> dinheiro/dado/segurança de fato executa.
 
 **Invocar esta skill JÁ é o opt-in** — o humano pediu `/feature`, e estas instruções mandam chamar
 `Workflow`. Não peça frase mágica. Dentro do grafo valem as mesmas regras (bloco fixo, `model`/`effort`

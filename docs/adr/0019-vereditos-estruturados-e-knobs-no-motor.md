@@ -102,6 +102,27 @@ ele roda **antes**, porque o laço externo tem de estar vermelho antes de existi
   volta a ser `paralelo:sim`; (d) o piso opus/alto de `adversarial-reviewer`/`security-reviewer` segue
   fora do alcance de `routing` (P-14).
 
+## Emenda 2026-08-17 (4.5.1) — o roteamento chegava pela metade
+
+A primeira entrega ligou o `routing` ao motor, mas deixou dois vazamentos no mesmo eixo:
+
+- **Vocabulário de esforço.** O método fala `baixo|médio|alto|extra` (é o que este ADR mandou o
+  `sdd-orchestrator` emitir, e o que suas tabelas de custo-benefício usam); o runtime fala
+  `low|medium|high|xhigh`. Ninguém traduzia: o `model` do plano era honrado e o `effort` caía no default
+  da sessão **em silêncio** — justo o eixo que calibra ambiguidade e risco. Agora `route()` normaliza
+  (os dois vocabulários), e valor irreconhecível cai no fallback **com log**, nunca como valor inválido.
+- **Piso virado teto.** O `adversarial-reviewer`/`security-reviewer` estavam cravados em `opus/high`.
+  A instrução do orquestrador de subir a **opus/extra** em efeito de alto valor nunca executava: "nunca
+  abaixo de opus/alto" (P-14) tinha virado "sempre exatamente opus/alto". O gate passa a rodar em
+  `xhigh` quando a feature é marcada `efeitoDeAltoValor` ou o tier é 🔴 — o piso segue garantido e fora
+  do alcance do `routing`, mas o teto passa a existir.
+- Menor, mesma família: chave de `routing` desconhecida caía no fallback sem sinal. Agora é **ignorada
+  com log**, listando as etapas roteáveis.
+
+**A restrição (c) deste ADR ganha um irmão:** interface entre etapas não é só *tipada*, é *traduzida na
+fronteira*. Vocabulário de domínio (português, do método) e vocabulário de runtime (inglês, da
+ferramenta) se encontram num ponto único e explícito — nunca por coincidência de string.
+
 ## Relacionados
 
 Constituição P-3/P-10/P-11/P-13/P-14/P-15 · ADR-0003 (teto por feature) · ADR-0005 (painel + incerteza)
