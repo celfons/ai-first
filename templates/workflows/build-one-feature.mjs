@@ -178,8 +178,7 @@ const { issue, fixedContext, routing = {}, budgetPerFeature = null, maxRerunAtte
 if (verificationParallelism === 'flat') log('verification_parallelism: `flat` descontinuado (ADR-0019) — rodando `staged`')
 
 const FAST = fastPath === 'on' && fastPathElegivel === true
-const PLANEJA = stage === 'full' || stage === 'plan'
-const CONSTROI = stage === 'full' || stage === 'build'
+const PLANEJA = stage === 'full' || stage === 'plan'   // 'build' entra direto na decomposição/implement
 // Piso de risco: 🔴 e o modo sem gate humano forçam painel, mesmo com `verification_mode: single`.
 const RISCO_ALTO = ['alto', '🔴', 'red'].includes(String(tier).toLowerCase())
 const USA_PAINEL = verificationMode === 'panel' || RISCO_ALTO || autonomyLevel === 'autônomo' || autonomyLevel === 'autonomo'
