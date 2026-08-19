@@ -1,0 +1,12 @@
+{
+  "schema": "ai-first/policy-lock@1",
+  "doc": "Mutação: digest selado que NÃO corresponde mais ao arquivo em disco — a F7 tem de acusar.",
+  "sealed_at": "2026-01-01",
+  "patterns": ["hooks/*.sh"],
+  "checks": [],
+  "knobs": {},
+  "surfaces": {
+    "hooks/session-start.sh": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+  },
+  "loosenings": []
+}

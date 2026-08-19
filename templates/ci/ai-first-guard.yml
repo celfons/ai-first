@@ -64,10 +64,57 @@ jobs:
         run: |
           set -euo pipefail
           if [ -f scripts/ai-first-fitness.mjs ]; then
+            # PROVA DE MUTAÇÃO ANTES DO CHECK (ADR-0020): primeiro se prova que a régua MEDE (cada
+            # regra dispara contra o menor repo que a viola), só então se mede. Invertido, um regex
+            # furado passaria em silêncio verde e o gate viraria teatro.
+            node scripts/ai-first-fitness.mjs --verify
             node scripts/ai-first-fitness.mjs
             # Comportamento dos grafos contratados (ADR-0019) — o caminho quente do método tem teste.
             [ -f scripts/check-workflows.mjs ] && node scripts/check-workflows.mjs || true
           else
             echo "Sem scripts/ai-first-fitness.mjs ainda — invariantes checadas pela suíte de testes do repo (ci.yml)."
             echo "Próxima fatia do enforcement: materializar as fitness functions (ver docs/governance/enforcement.md)."
+          fi
+
+  # Trava de política (ADR-0020) — o freio contra o caminho mais barato até o verde: BAIXAR A RÉGUA.
+  # Duas checagens distintas: (a) a régua não derivou nem afrouxou; (b) se o PR toca governança, isso
+  # está DECLARADO. Marque este job como required check junto com `git-flow` e `fitness`.
+  policy-lock:
+    name: Trava de política (só aperta)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # precisa da base para comparar o diff do PR
+
+      - name: Integridade da trava (digest selado + knobs que só apertam)
+        run: |
+          set -euo pipefail
+          if [ -f scripts/policy-lock.mjs ]; then
+            node scripts/policy-lock.mjs
+          else
+            echo "Sem scripts/policy-lock.mjs — trava não instalada (ver docs/governance/enforcement.md §4b)."
+          fi
+
+      - name: Mudança de régua tem de ser DECLARADA
+        env:
+          BASE: ${{ github.event.pull_request.base.ref }}
+          BODY: ${{ github.event.pull_request.body }}
+          LABELS: ${{ join(github.event.pull_request.labels.*.name, ',') }}
+        run: |
+          set -euo pipefail
+          git fetch --no-tags --quiet origin "+refs/heads/$BASE:refs/remotes/origin/$BASE" || true
+          CHANGED=$(git diff --name-only "origin/$BASE...HEAD" || true)
+          PROTEGIDO=$(echo "$CHANGED" | grep -E '^(\.github/workflows/|\.github/CODEOWNERS|hooks/|\.ai-first/hooks/|scripts/(ai-first-fitness|policy-lock|check-coherence|check-workflows)\.mjs|scripts/fitness-fixtures/|docs/governance/|docs/sdd/constitution\.md|\.claude/workflows/|\.claude/settings\.json)' || true)
+          if [ -z "$PROTEGIDO" ]; then
+            echo "PR não toca superfície de governança — nada a declarar."
+            exit 0
+          fi
+          echo "Superfícies de governança tocadas:"; echo "$PROTEGIDO" | sed 's/^/  · /'
+          if echo ",$LABELS," | grep -qi ',policy-change,' || echo "${BODY:-}" | grep -qiE '^Policy-Change:'; then
+            echo "OK: mudança de régua declarada (label \`policy-change\` ou linha \`Policy-Change:\` no corpo)."
+            echo "::warning::Este PR altera a RÉGUA. Exige revisão humana nomeada (CODEOWNERS) mesmo em autonomy_level autônomo."
+          else
+            echo "::error::PR altera superfície de governança sem declarar. Adicione a label \`policy-change\` OU a linha \`Policy-Change: <motivo>\` no corpo do PR, e rode \`node scripts/policy-lock.mjs --seal\`."
+            exit 1
           fi

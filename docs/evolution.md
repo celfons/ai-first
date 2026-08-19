@@ -38,6 +38,30 @@ sem reconstruir o passado lendo dez lugares.
 
 ## Linha do tempo
 
+### 2026-08-19 · Ninguém guardava a régua — e nenhuma checagem provava que dispara (meta · ADR-0020)
+- **Sinal:** 🔧 processo (integridade do gate).
+- **Aprendizado:** um benchmarking do `nicolasmelo1/software-factory` expôs dois furos que o método
+  tinha por construção. **(1)** As camadas 1–3 do enforcement dizem *onde* o commit pode cair e a 4 diz
+  *o que* o código pode fazer — nenhuma impedia o movimento mais barato de um agente que escreve **e**
+  mergeia: **baixar a própria régua**. Esvaziar uma fitness function, trocar `tdd_mode: estrito` por
+  `off`, editar o `ci.yml` que decide o verde. Todos mais baratos que consertar o código, e todos
+  silenciosos. **(2)** As fitness functions F1–F6 **nunca tinham sido vistas falhando**: um regex furado,
+  um glob que não casa nada ou uma guarda de aplicabilidade invertida passavam em *silêncio verde*. O
+  método exigia a **prova do vermelho** do código de produto (ADR-0015) e não exigia nada do próprio gate.
+- **O que fica como regra:** (1) **a checagem que nunca falhou não é uma checagem** — toda fitness
+  function nasce com a sua **mutação** (`scripts/fitness-fixtures/<id>/`) e o CI roda `--verify` **antes**
+  do `--check`; check sem fixture reprova por "regra não provada"; quando o verify acusa, conserta-se a
+  **regra**, nunca a fixture. (2) **Régua só aperta:** superfícies de governança seladas por digest e
+  knobs de rigor com escala ordinal — afrouxar exige `--allow-loosening="motivo"` + revisão humana
+  nomeada (CODEOWNERS), **em qualquer `autonomy_level`, inclusive `autônomo`**. Autonomia total é sobre
+  construir o produto, não sobre reescrever o critério de aprovação. (3) O corolário para o loop de
+  memória: **anti-padrão recorrente vira check + fixture**, não só prosa — prosa orienta, fitness
+  function impede.
+- **O que ficou de fora, de propósito:** o binário Rust do `software-factory` (amarraria o método a
+  py/ts/go/rust, contra a agnosticidade de stack) e o **ratchet** de violações herdadas com `review_by`
+  — boa ideia, adiada para o seu próprio ADR, onde o valor é a adoção *brownfield* do `/migrate`.
+- **Links:** ADR-0020 · ADR-0006 (camada 4) · ADR-0015 (prova do vermelho) · `docs/governance/enforcement.md` §4/§4b.
+
 ### 2026-08-17 · A doutrina virou documentação em vez de virar código (meta · ADR-0019)
 - **Sinal:** 🔧 processo (fidelidade motor↔método).
 - **Aprendizado:** uma auditoria da esteira encontrou o método com ~11.700 linhas de markdown, 18 ADRs
