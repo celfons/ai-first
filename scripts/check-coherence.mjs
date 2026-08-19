@@ -31,7 +31,9 @@ const CRITICAL_KNOBS = [
 // ---- coleta de markdown (exclui dist/, node_modules, .git) ----------------------------------------
 function walk(dir, acc = []) {
   for (const e of readdirSync(dir)) {
-    if (e === 'node_modules' || e === '.git' || e === 'dist') continue;
+    // `fitness-fixtures/` são MUTAÇÕES deliberadamente quebradas (ADR-0020) — docs de mentira por
+    // construção. Varrê-las aqui produziria falso-positivo de coerência.
+    if (e === 'node_modules' || e === '.git' || e === 'dist' || e === 'fitness-fixtures') continue;
     const p = join(dir, e);
     const st = statSync(p);
     if (st.isDirectory()) walk(p, acc);

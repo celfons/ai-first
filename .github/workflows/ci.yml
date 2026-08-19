@@ -56,7 +56,11 @@ jobs:
             echo "→ Sem package.json: repo do método/plugin. Gate = validação do plugin + coerência + fitness + grafos."
             node scripts/validate-plugin.mjs
             node scripts/check-coherence.mjs
+            # ADR-0020 — a prova vem ANTES da medição: `--verify` mostra cada fitness function
+            # DISPARANDO contra o menor repo que a viola; só então elas medem este repo.
+            node scripts/ai-first-fitness.mjs --verify
             node scripts/ai-first-fitness.mjs
+            node scripts/policy-lock.mjs
             node scripts/check-workflows.mjs
           fi
 

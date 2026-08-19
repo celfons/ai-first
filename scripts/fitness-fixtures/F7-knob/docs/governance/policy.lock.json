@@ -1,0 +1,10 @@
+{
+  "schema": "ai-first/policy-lock@1",
+  "doc": "Mutação: knob de rigor travado em `conservador` e afrouxado para `autônomo` no genoma.",
+  "sealed_at": "2026-01-01",
+  "patterns": ["hooks/*.sh"],
+  "checks": [],
+  "knobs": { "autonomy_level": "conservador" },
+  "surfaces": {},
+  "loosenings": []
+}
