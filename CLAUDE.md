@@ -225,6 +225,17 @@ reserva de idempotência, laço da fila, chamada de LLM com timeout+validação+
   ` ```routing json ` que o driver copia **verbatim** (fim da tradução de prosa). A slice declara o
   **`papel`** e é implementada pelo ofício certo (`backend`/`frontend`/`data`/`prompt`/`sre`); o
   `bdd-author` roda **antes** do implement, nunca concorrente (ADR-0015).
+- **Cerimônia que ninguém escolheu é imposto, não rigor (ADR-0021).** Três cortes no custo do próprio
+  aparato, sem tocar em gate nenhum: (1) **o roteador é triado** — `scripts/router-tier.mjs` decide se o
+  `sdd-orchestrator` roda em opus/alto (🔴, efeito de alto valor, comportamento novo em classe sem custo
+  aprendido, ambiguidade, migração) ou sonnet/médio na feature repetitiva, em que os defaults por fase do
+  grafo já cobrem o roteamento (knob `router_escalation`; **na dúvida escala**); (2) **o painel
+  adversarial aciona por RISCO** (🔴 **ou** efeito de alto valor), **nunca** por `autonomy_level` — quem
+  aprova a promoção (P-10) e quantos céticos julgam o diff (P-11) são eixos distintos, e o eixo de risco
+  ficou mais preciso, não menor; (3) **a decomposição tem piso** (`slice_min_files`, default 2): slice
+  abaixo do piso é fundida **no motor** com uma irmã equivalente (mesmo `papel`, mesmas dependências,
+  não-integração), nunca através de ofício nem além do dobro do piso. O piso opus/alto do
+  `adversarial-reviewer`/`security-reviewer` (P-14) segue cravado no motor, intocado.
 - **A régua não se baixa em silêncio (ADR-0020).** Duas travas executáveis fecham o ponto cego de um
   agente que escreve **e** mergeia: (1) **prova de mutação** — toda fitness function declara a sua
   mutação em `scripts/fitness-fixtures/<id>/` e `node scripts/ai-first-fitness.mjs --verify` exige que

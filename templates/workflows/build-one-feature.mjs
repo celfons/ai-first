@@ -18,6 +18,9 @@
 //                           teto é medido aqui como DELTA desde a entrada do subgrafo (ADR-0019 §2):
 //                           `budget.spent()` é o gasto do TURNO inteiro (todas as features), e compará-lo
 //                           direto ao teto abortaria a 2ª feature em diante.
+//     · sliceMinFiles     — PISO de granularidade da decomposição (ADR-0021 §4 · knob `slice_min_files`).
+//                           Slice abaixo do piso é fundida com uma irmã equivalente: cada slice custa um
+//                           setup ~fixo, então fatiar demais compra hop, não isolamento. `1` desliga.
 //     · maxRerunAttempts  — teto de re-run do loop de verificação (ADR-0009). Terminação explícita.
 //     · contextClearPolicy — higiene de contexto working (ADR-0012 §8): 'seam' (default) limpa o rabo
 //                           variável nas costuras (fim de slice/feature, entre re-runs → passa só o
@@ -165,7 +168,7 @@ const SLICES_SCHEMA = {
 
 const { issue, fixedContext, routing = {}, budgetPerFeature = null, maxRerunAttempts = 2,
         contextClearPolicy = 'seam', tddMode = 'estrito',
-        sliceFanout = 'on', testCmd = null, testScopedCmd = null, testScope = 'impacted',
+        sliceFanout = 'on', sliceMinFiles = 2, testCmd = null, testScopedCmd = null, testScope = 'impacted',
         // knobs ligados no motor (ADR-0019 §3)
         fastPath = 'on', fastPathElegivel = false, comportamento = 'cria',
         verificationMode = 'single', adversarialPanelSize = 3, uncertaintyEscalation = 'on',
@@ -180,9 +183,19 @@ if (verificationParallelism === 'flat') log('verification_parallelism: `flat` de
 
 const FAST = fastPath === 'on' && fastPathElegivel === true
 const PLANEJA = stage === 'full' || stage === 'plan'   // 'build' entra direto na decomposição/implement
-// Piso de risco: 🔴 e o modo sem gate humano forçam painel, mesmo com `verification_mode: single`.
+// Piso de risco: 🔴 e EFEITO DE ALTO VALOR (dinheiro/PII/authz/dependência nova) forçam painel, mesmo
+// com `verification_mode: single`.
+//
+// ADR-0021 §2 — AUTONOMIA NÃO É LARGURA DE VERIFICAÇÃO. Antes, `autonomy_level: autônomo` ligava o
+// painel sozinho: uma feature 🟢 sem efeito de valor pagava N céticos opus + security opus só porque
+// o projeto não tem gate humano na promoção. São dois eixos distintos — QUEM APROVA (P-10) e QUANTOS
+// CÉTICOS JULGAM (P-11) — e acoplá-los multiplicava o piso opus por N onde não havia risco. O eixo de
+// risco continua inteiro e ficou MAIS preciso: `efeitoDeAltoValor` (que já elevava o GATE_EFFORT a
+// `xhigh`) agora também liga o painel, então dinheiro/PII/authz em 🟡 passou a ser julgado em painel —
+// coisa que o acoplamento antigo não garantia. Quem quiser painel por autonomia declara
+// `verification_mode: panel` no genoma: explícito, selado pela trava de política, não implícito.
 const RISCO_ALTO = ['alto', '🔴', 'red'].includes(String(tier).toLowerCase())
-const USA_PAINEL = verificationMode === 'panel' || RISCO_ALTO || autonomyLevel === 'autônomo' || autonomyLevel === 'autonomo'
+const USA_PAINEL = verificationMode === 'panel' || RISCO_ALTO || efeitoDeAltoValor === true
 // `fast_path` implica `comportamento: nenhum` por definição de elegibilidade (ADR-0008).
 const RODA_BDD = !FAST && (comportamento === 'cria' || comportamento === 'altera')
 
@@ -259,6 +272,63 @@ const testeDaSlice = (slice) => {
 // INDEPENDENTEMENTE do tier — rebaixa a 🟢 que o pipeline "quase não entendeu".
 const incerta = (r) => uncertaintyEscalation === 'on' && r && (r.confidence === 'baixa' || r.status === 'precisa-humano')
 
+// ── PISO DE GRANULARIDADE DE SLICE (ADR-0021 §4 · knob `slice_min_files`) ──────────────────────────
+// Cada slice é UMA invocação com contexto próprio: prefixo fixo + plano + instrução de TDD/escopo. Esse
+// setup é ~constante, então uma slice de 1 arquivo trivial paga quase o mesmo overhead de uma slice
+// real — o fan-out deixa de comprar isolamento e passa a comprar só hop. O piso é o freio: slice ABAIXO
+// do piso é FUNDIDA com uma irmã EQUIVALENTE — mesmo `papel`, mesmas dependências, nenhuma delas de
+// integração. "Equivalente" é a condição que preserva o DAG: irmãs de mesmo `dependeDe` estão na mesma
+// onda por construção, logo fundir não cria aresta nova nem serializa nada que era paralelo.
+//
+// O que o piso NÃO faz (de propósito): não funde através de `papel` (perderia o roteamento por ofício,
+// ADR-0019 §6), não funde a slice de integração (ela agrega a feature e é a última por contrato), e
+// não funde nada quando o resultado ficaria maior que o dobro do piso — fundir demais recria a janela
+// larga que a decomposição existe para evitar. `slice_min_files: 1` desliga o piso.
+const coalesceSlices = (slices, minFiles) => {
+  if (!(minFiles > 1) || slices.length < 2) return { slices, fusoes: [] }
+  const chave = (s) => `${s.papel ?? '-'}::${[...(s.dependeDe ?? [])].sort().join(',')}`
+  const nArquivos = (s) => (s.arquivos ?? []).length
+  const TETO = minFiles * 2
+  const fundida = new Map()          // id antigo → id da slice que o absorveu
+  const out = []
+  const grupos = new Map()
+  for (const s of slices) {
+    if (s.integracao) { out.push(s); continue }
+    const k = chave(s)
+    if (!grupos.has(k)) grupos.set(k, [])
+    grupos.get(k).push(s)
+  }
+  for (const [, grupo] of grupos) {
+    let acc = null
+    const fecha = () => { if (acc) { out.push(acc); acc = null } }
+    for (const s of grupo) {
+      // Slice já no piso passa intacta — o piso corta o excesso de fan-out, não redesenha o plano.
+      if (nArquivos(s) >= minFiles) { fecha(); out.push(s); continue }
+      if (!acc) { acc = { ...s, arquivos: [...(s.arquivos ?? [])] }; continue }
+      if (nArquivos(acc) + nArquivos(s) > TETO) { fecha(); acc = { ...s, arquivos: [...(s.arquivos ?? [])] }; continue }
+      fundida.set(s.id, acc.id)
+      acc.titulo = `${acc.titulo} + ${s.titulo}`
+      acc.arquivos = [...new Set([...acc.arquivos, ...(s.arquivos ?? [])])]
+      acc.doneTest = `${acc.doneTest} E ${s.doneTest}`
+      if (s.escopoDeTeste === 'full') acc.escopoDeTeste = 'full'
+      if (nArquivos(acc) >= minFiles) fecha()
+    }
+    fecha()
+  }
+  if (!fundida.size) return { slices, fusoes: [] }
+  // Reaponta quem dependia de um id absorvido (o alvo pode ele mesmo ter sido absorvido: siga a cadeia).
+  const destino = (id) => { let cur = id, guard = 0; while (fundida.has(cur) && guard++ < 100) cur = fundida.get(cur); return cur }
+  const vivos = new Set(out.map(s => s.id))
+  const remapeadas = out.map(s => ({
+    ...s,
+    dependeDe: [...new Set((s.dependeDe ?? []).map(destino))].filter(d => d !== s.id && vivos.has(d)),
+  }))
+  // Ordem estável do plano original — o agendador é guloso e a ordem é parte do contrato de leitura.
+  const pos = new Map(slices.map((s, i) => [s.id, i]))
+  remapeadas.sort((a, b) => (pos.get(a.id) ?? 0) - (pos.get(b.id) ?? 0))
+  return { slices: remapeadas, fusoes: [...fundida.entries()].map(([de, para]) => `${de}→${para}`) }
+}
+
 // ── ONDAS DE EXECUÇÃO DO DAG DE SLICES (ADR-0017 §B) ────────────────────────────────────────────────
 const planWaves = (slices) => {
   const fechadas = new Set()
@@ -334,10 +404,14 @@ if (FAST) log(`fast_path (ADR-0008): autoria colapsada (spec/plan/decompose/BDD)
 phase('Decompose')
 if (overBudget()) return stop('budget-exceeded', 'teto por feature atingido antes da decomposição')
 const decomp = (sliceFanout === 'on' && !FAST)
-  ? await agent(withContext('task-decomposer', `Quebre o plano num GRAFO de micro-slices. Para CADA slice declare o footprint (\`arquivos\` — é o que decide o que paraleliza), \`dependeDe\`, o \`doneTest\` (o teste que falha HOJE e passa ao fim dela), o \`papel\` do implementador (\`backend\`|\`frontend\`|\`data\`|\`prompt\`|\`sre\` — quem tem o ofício da slice) e \`escopoDeTeste: full\` se o diff dela toca migration/esquema/config/DI/fixture. Marque \`integracao: true\` na slice que agrega o valor da feature. Feature pequena ⇒ status \`nao-decomposto\`.`),
+  ? await agent(withContext('task-decomposer', `Quebre o plano num GRAFO de micro-slices. Para CADA slice declare o footprint (\`arquivos\` — é o que decide o que paraleliza), \`dependeDe\`, o \`doneTest\` (o teste que falha HOJE e passa ao fim dela), o \`papel\` do implementador (\`backend\`|\`frontend\`|\`data\`|\`prompt\`|\`sre\` — quem tem o ofício da slice) e \`escopoDeTeste: full\` se o diff dela toca migration/esquema/config/DI/fixture. Marque \`integracao: true\` na slice que agrega o valor da feature. Feature pequena ⇒ status \`nao-decomposto\`. PISO DE GRANULARIDADE (ADR-0021): cada slice é uma invocação com contexto próprio e custo de setup ~fixo — NÃO fatie abaixo de ${sliceMinFiles} arquivo(s) de footprint; slice trivial vai JUNTO com a irmã do mesmo \`papel\` e mesmas dependências. Fatie por COMPORTAMENTO verificável, nunca por arquivo.`),
       { phase: 'Decompose', schema: SLICES_SCHEMA, ...route('task-decomposer', { model: 'sonnet', effort: 'high' }) })
   : null
-const slices = decomp?.status === 'decomposto' ? (decomp.slices ?? []) : []
+const slicesBrutas = decomp?.status === 'decomposto' ? (decomp.slices ?? []) : []
+// O piso é aplicado no MOTOR, não só pedido no prompt: pedir no prompt é sugestão, aplicar aqui é regra
+// (ADR-0019 — knob que o grafo não lê não existe).
+const { slices, fusoes } = coalesceSlices(slicesBrutas, sliceMinFiles)
+if (fusoes.length) log(`piso de granularidade (slice_min_files: ${sliceMinFiles}): ${slicesBrutas.length} → ${slices.length} slices — fundidas ${fusoes.join(' · ')}`)
 
 // ═══ 3 · ACCEPTANCE (BDD — laço EXTERNO) ════════════════════════════════════════════════════════════
 // ADR-0015: o cenário nasce VERMELHO, ANTES do código. Rodá-lo concorrente ao implement (como antes)
@@ -424,7 +498,7 @@ const opusGate = (diffDigest) => parallel([
   () => agent(withContext('security-reviewer', `Gate de segurança do diff: threat model, authz/escopo, injeção, segredo/PII, CVE. Diff: ${diffDigest}.`),
     { phase: 'Verify', label: 'security', schema: VERDICT_SCHEMA, model: 'opus', effort: GATE_EFFORT }),
 ])
-if (USA_PAINEL) log(`verificação em PAINEL — ${nPainel} céticos + security (motivo: ${verificationMode === 'panel' ? 'verification_mode: panel' : RISCO_ALTO ? 'tier de risco 🔴' : 'autonomy_level: autônomo'})`)
+if (USA_PAINEL) log(`verificação em PAINEL — ${nPainel} céticos + security (motivo: ${verificationMode === 'panel' ? 'verification_mode: panel' : RISCO_ALTO ? 'tier de risco 🔴' : 'efeito de alto valor'})`)
 log(`gate de julgamento: opus/${GATE_EFFORT}${GATE_EFFORT === 'xhigh' ? ` (subiu ao teto: ${efeitoDeAltoValor ? 'efeito de alto valor' : 'tier de risco 🔴'})` : ''}`)
 
 const promptTester = `Ligue os cenários ao runner + testes/evals (integração/invariante/runtime/regressão). AUDITE o laço interno: os micro-testes falhariam se o código regredisse? A prova do vermelho está declarada? ESCOPO AQUI É COMPLETO (ADR-0017): rode ${SUITE_COMPLETA} — o escopo estreito serve o laço, nunca o gate.${FAST ? ' FAST-PATH: não houve fase BDD — cubra a demanda com teste de REGRESSÃO (ADR-0008).' : ''} Devolva \`veredito: BLOQUEIA\` se achou bug de produção — é o seu voto no gate, não um comentário.`

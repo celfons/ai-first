@@ -1,7 +1,7 @@
 {
   "schema": "ai-first/policy-lock@1",
   "doc": "Trava de política (ADR-0020) — superfícies de governança seladas + knobs de rigor que SÓ APERTAM. Regenerado por `node scripts/policy-lock.mjs --seal`; toda mudança aqui é diff revisável.",
-  "sealed_at": "2026-08-19",
+  "sealed_at": "2026-08-21",
   "patterns": [
     "hooks/*.sh",
     "hooks/hooks.json",
@@ -28,20 +28,26 @@
   ],
   "knobs": {},
   "surfaces": {
-    ".claude/workflows/build-many-features.mjs": "sha256:1e0ca69b48a0e116654e4a3ae9efb2a7c664ec62cd9a0f3817e341a0f1395c66",
-    ".claude/workflows/build-one-feature.mjs": "sha256:94661652a3c8aa87404448e2a326633be8f1888cd74f37e281299cb844ef8036",
+    ".claude/workflows/build-many-features.mjs": "sha256:c9e4b696f9c1110a6f0c19d134c6161fbaf52290f1f0e92ef6c90ef7736720ef",
+    ".claude/workflows/build-one-feature.mjs": "sha256:65600e4fa91140074170157c72293a68aa434e0feaab3018744c5a87c2a68b4e",
     ".github/workflows/ci.yml": "sha256:7aa7f2d8dff8b4f3bc51e411d854364a6e039406d7afb5e8bf1bd1bb0d32c15d",
     "hooks/hooks.json": "sha256:00ff282b33226943690526054617668132de4778daa16f5fd5a8e29bd83e8101",
     "hooks/pre-tool-guard.sh": "sha256:b0fcfb1c74f604168f886902ac36af872f4aa0944115c8c4c17942df1bfcb232",
     "hooks/session-start.sh": "sha256:e360d1199697ebab42bb931ec0d9ab1eb901df415c255a92cdbb13df3c829d92",
     "scripts/ai-first-fitness.mjs": "sha256:4111862a3106565f19ad87c6f9046df6bc36661d0b72c1d7265999f90fd2ecf9",
     "scripts/check-coherence.mjs": "sha256:362d8c92ccc548f9e7178bf134e1d9cead1827b63917d7c02442dbcb8b78f130",
-    "scripts/check-workflows.mjs": "sha256:462f16519a12ff0d8a67bcb5c07d86818237d81ec910a58d1430573fc5f724c1",
+    "scripts/check-workflows.mjs": "sha256:3f8f819c7d2ae3bb6096bf47c63b0f17a05ca31d134f0ec38b73f8620949e35c",
     "scripts/policy-lock.mjs": "sha256:c1a0cbdb924717681b6758dcba9ec3163efb3ca34f07c908d06082fc412f26e5",
     "scripts/validate-plugin.mjs": "sha256:a6cb7edd12b9633c38e399f05c78f129ad7b4dff3e7f67eaf03b723b47ef4b99",
     "templates/ci/ai-first-guard.yml": "sha256:b829e667e636846342d898cfd24909a72cb1e5826e0bf2513bb6e65ce0d124f7",
-    "templates/workflows/build-many-features.mjs": "sha256:1e0ca69b48a0e116654e4a3ae9efb2a7c664ec62cd9a0f3817e341a0f1395c66",
-    "templates/workflows/build-one-feature.mjs": "sha256:94661652a3c8aa87404448e2a326633be8f1888cd74f37e281299cb844ef8036"
+    "templates/workflows/build-many-features.mjs": "sha256:c9e4b696f9c1110a6f0c19d134c6161fbaf52290f1f0e92ef6c90ef7736720ef",
+    "templates/workflows/build-one-feature.mjs": "sha256:65600e4fa91140074170157c72293a68aa434e0feaab3018744c5a87c2a68b4e"
   },
-  "loosenings": []
+  "loosenings": [
+    {
+      "data": "2026-08-21",
+      "motivo": "ADR-0021 §2: o painel adversarial deixa de ser acionado por autonomy_level (autônomo) e passa a ser acionado por RISCO — tier 🔴 OU efeito de alto valor. É um afrouxamento declarado num gatilho (feature 🟢 em projeto autônomo passa de painel para single) e um APERTO em outro (dinheiro/PII/authz em tier 🟡 passa a rodar painel, o que o acoplamento antigo não garantia). Piso opus/alto do adversarial-reviewer/security-reviewer (P-14) intocado. Recuperação = verification_mode: panel no genoma.",
+      "itens": []
+    }
+  ]
 }

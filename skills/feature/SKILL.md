@@ -40,8 +40,12 @@ gates mesmo se o usuário pediu autônomo — confirme antes de implementar.
 2. Se a issue já tiver uma branch/PR aberto, retome em vez de recriar.
 
 ### 2 · Plano de delegação + roteamento (orchestrator)
-Invoque o subagente **`sdd-orchestrator`** (que roda fixo em **opus/alto** — o único assim) passando o
-resumo da issue. Ele devolve: classificação de tamanho, o **contexto fixo da fatia** (linhas do
+**Trie o roteador antes de invocá-lo (ADR-0021 §1):** rode
+`node scripts/router-tier.mjs --tier=<baixo|medio|alto> --comportamento=<cria|altera|nenhum> --classeConhecida=<true|false> --efeitoDeAltoValor=<true|false> --quiet`
+(`classeConhecida: true` = a classe da feature já tem linha vigente em `docs/ai-first/routing-policy.md`)
+e invoque o **`sdd-orchestrator`** com o `model`/`effort` que ele devolver — `opus/alto` na decisão
+difícil, `sonnet/médio` na feature repetitiva. Sem sinal confiável, **escala** (é o default do script).
+Invoque então o subagente **`sdd-orchestrator`** passando o resumo da issue. Ele devolve: classificação de tamanho, o **contexto fixo da fatia** (linhas do
 `context-map`), princípios tocados, a **tag de roteamento** (`model:*`/`effort:*`, que ele aplica na
 issue), e o plano de delegação parseável **com modelo, esforço e `paralelo:` por etapa**. Use esse
 plano como roteiro — **trivial** pula spec/plan e vai direto a `backend-engineer` → `tester`.
