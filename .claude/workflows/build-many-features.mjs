@@ -24,7 +24,7 @@
 //     features: [{ issue, contextMapLine?, routing?, footprint?, fastPathElegivel?, comportamento?,
 //                  tier?, uiSignificativa?, efeitoDeAltoValor? }],
 //     sharedBundle?, fanOut?, budgetPerFeature?, dailyBudget?, maxRerunAttempts?,
-//     contextClearPolicy?, tddMode?, sliceFanout?, testCmd?, testScopedCmd?, testScope?,
+//     contextClearPolicy?, tddMode?, sliceFanout?, sliceMinFiles?, testCmd?, testScopedCmd?, testScope?,
 //     fastPath?, verificationMode?, adversarialPanelSize?, uncertaintyEscalation?, autonomyLevel?,
 //     schedule?,               // 'two-stage' (default) | 'off' (footprints já vêm prontos no args)
 //   }
@@ -55,6 +55,7 @@ const {
   contextClearPolicy = 'seam',
   tddMode = 'estrito',
   sliceFanout = 'on',
+  sliceMinFiles = 2,
   testCmd = null,
   testScopedCmd = null,
   testScope = 'impacted',
@@ -113,7 +114,7 @@ const filhoArgs = (f) => ({
   issue: f.issue,
   fixedContext: `${typeof bundle === 'string' ? bundle : JSON.stringify(bundle)}\n\n## Contexto do domínio desta feature\n${f.contextMapLine ?? '(o orchestrator não citou linha — carregue a linha do context-map que casa por tag)'}`,
   routing: f.routing ?? {},
-  budgetPerFeature, maxRerunAttempts, contextClearPolicy, tddMode, sliceFanout,
+  budgetPerFeature, maxRerunAttempts, contextClearPolicy, tddMode, sliceFanout, sliceMinFiles,
   testCmd, testScopedCmd, testScope,
   fastPath, fastPathElegivel: f.fastPathElegivel ?? false,
   comportamento: f.comportamento ?? 'cria',

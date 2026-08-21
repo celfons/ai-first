@@ -407,6 +407,39 @@ O prompt cache (§1) tem TTL ~1h. Duas consequências operacionais:
 
 ---
 
+## 9 · Custo da própria ORQUESTRAÇÃO — cerimônia que ninguém escolheu (ADR-0021)
+
+**O problema.** As alavancas 1–8 barateiam **o trabalho**. Sobrava o custo do **aparato**: gasto que o
+motor executa toda rodada sem que ninguém tenha escolhido pagá-lo. Três focos, medidos numa auditoria do
+pipeline: (a) o `sdd-orchestrator` era o único agente de **modelo fixo** — opus/alto, o prompt mais longo
+do roster, **uma invocação por feature** — mesmo quando o grafo contratado já traz um default para cada
+fase e a `routing-policy.md` está vazia (paga-se o modelo mais caro para reproduzir o default que já está
+no código); (b) `autonomy_level: autônomo` **ligava o painel adversarial sozinho**, então uma feature 🟢
+sem efeito de valor pagava N céticos opus + security opus por causa de uma decisão sobre **quem aprova**;
+(c) o fan-out por slice **não tinha piso**, e uma slice de um arquivo trivial paga quase o mesmo setup
+~fixo de uma slice real.
+
+**A distinção que a política assume.** Isolamento e verificação independente são a premissa e não se
+tocam. O que se corta aqui é **cerimônia sem escolha**: custo que não escala com risco nem com trabalho,
+só com o fato de o pipeline existir.
+
+**A regra.**
+- **Trie o roteador** (`node scripts/router-tier.mjs`, knob `router_escalation`): opus/alto onde a decisão
+  é difícil (🔴, efeito de alto valor, comportamento novo sem custo aprendido, ambiguidade, migração);
+  sonnet/médio na feature repetitiva. **Na dúvida, escala.**
+- **Painel por RISCO, não por autonomia:** `verification_mode: panel` **ou** 🔴 **ou** efeito de alto
+  valor. Autonomia (quem aprova, P-10) e largura de verificação (quantos julgam, P-11) são eixos
+  distintos. O eixo de risco não encolheu — ficou mais preciso (dinheiro/PII/authz em 🟡 agora **entra**
+  no painel).
+- **Piso de granularidade de slice** (`slice_min_files`, default 2): slice abaixo do piso é fundida com
+  uma irmã equivalente (mesmo `papel`, mesmas dependências, não-integração) — **no motor**, não no prompt.
+
+Ganho: alto e por rodada (corta o custo fixo por feature). Risco: baixo, com a direção do erro sempre em
+escalar. Toca corretude: **não** — o piso opus/alto do `adversarial-reviewer`/`security-reviewer` (P-14)
+vive no motor, fora do plano de delegação e fora da triagem.
+
+---
+
 ## Resumo operacional (o que o driver faz em toda fatia)
 
 1. **Monta o BLOCO DE CONTEXTO FIXO uma vez** (CLAUDE.md + constitution + linha(s) do context-map que o
@@ -425,6 +458,10 @@ O prompt cache (§1) tem TTL ~1h. Duas consequências operacionais:
 6. **Limpa o contexto working na costura** (§8): no fim de slice/feature e **entre re-runs de
    verificação** (passa o veredito, não a tentativa falha), **preservando o prefixo fixo cacheado**.
    `context_clear_policy: seam` (default) | `off` (ADR-0019 §5).
+
+7. **Não paga cerimônia que ninguém escolheu** (§9): tria o modelo do **próprio roteador**
+   (`scripts/router-tier.mjs`), aciona o painel adversarial por **risco** (🔴 ou efeito de alto valor) e
+   nunca por `autonomy_level`, e respeita o **piso de granularidade de slice** (`slice_min_files`).
 
 Itens 1–3 são puro ganho, sem trade-off. Item 4 é estrutural e opt-in. A telemetria da alavanca **5**
 (AIOps) é medida **fora da fatia** pelo `finops-steward`, numa cadência, e realimenta o roteamento —

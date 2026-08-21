@@ -44,7 +44,8 @@ sinal de que o `/daily-backlog` pode ter falhado ou o board está seco. **Avise*
 ## Fase 2 · Implementar cada issue (fluxo /feature autônomo)
 Para **cada** issue selecionada, rode o **fluxo `/feature`** em **modo autônomo** (branch
 `claude/<slug>` a partir de `develop`; uma issue = uma branch = um `Closes #NNN`):
-`sdd-orchestrator` (fixo opus/alto — roteia o resto) → `feature-spec` → `architect` →
+`sdd-orchestrator` (**modelo triado por `scripts/router-tier.mjs`** — opus/alto na decisão difícil,
+sonnet/médio na repetitiva; ADR-0021 §1 — roteia o resto) → `feature-spec` → `architect` →
 **`task-decomposer` (se grande/complexa)** → **`bdd-author` (laço EXTERNO — cenários de aceitação
 **antes** do implement; SÓ se o `sdd-orchestrator` classificou `comportamento:cria|altera`; pule em
 `comportamento:nenhum`; formato pelo `bdd_style`)** → `backend-engineer` (+ `prompt-engineer` se usa LLM em

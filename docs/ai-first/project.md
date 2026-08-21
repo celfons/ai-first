@@ -125,6 +125,14 @@
 - **`proposal_ttl`** (validade de uma proposta `growth-proposed` não priorizada, antes de ser podada;
   ADR-0007): `[A DEFINIR]` (default **= 3 ciclos**). O PO **fecha** (com motivo, para o ledger) as
   propostas que não ganharam vaga por `proposal_ttl` ciclos — o board de propostas não incha indefinidamente.
+- **`router_escalation`** (a que modelo o **próprio roteador** roda — ADR-0021 §1): `[on | off]`
+  (default **on**). Com `on`, o driver tria o `sdd-orchestrator` por `node scripts/router-tier.mjs`
+  antes de invocá-lo: **opus/alto** onde a decisão é difícil (tier 🔴, efeito de alto valor,
+  `comportamento: cria` em classe **sem** linha vigente na `routing-policy.md`, ambiguidade declarada,
+  migração) e **sonnet/médio** na feature repetitiva, em que os defaults por fase do grafo contratado já
+  cobrem o roteamento. **Na dúvida escala** (sinal ausente/ilegível ⇒ opus/alto). Não toca gate algum: o
+  piso P-14 do `adversarial-reviewer`/`security-reviewer` vive no motor, fora do plano de delegação.
+  `off` = comportamento legado (roteador sempre opus/alto).
 - **`orchestration_mode`** (como o driver EXECUTA o grafo — ADR-0018): `[workflow | sequencial]`
   (default **workflow**). Com `workflow`, os drivers (`/feature`, `/daily-build`, `/kickoff`, `/migrate`)
   rodam o subgrafo contratado `.claude/workflows/build-one-feature.mjs` **nativamente** — e a rodada
@@ -144,6 +152,15 @@
   o `fast_path` de baixo risco não decompõe. **O gate de julgamento não é fatiado:** painel adversarial +
   `security-reviewer` rodam **uma vez por feature**, sobre o diff agregado e congelado (fatiar o Tier 2
   multiplicaria o piso opus por N — P-14). `off` = comportamento anterior (invocação única).
+- **`slice_min_files`** (PISO de granularidade da decomposição — ADR-0021 §4): `[A DEFINIR]`
+  (default **2**). Cada slice é **uma invocação com contexto próprio** e um custo de setup ~fixo (prefixo
+  de contexto + plano + instrução de TDD/escopo), então fatiar abaixo de um mínimo compra **hop**, não
+  isolamento. Slice cujo footprint fica **abaixo do piso** é **fundida no motor** com uma irmã
+  **equivalente** — mesmo `papel`, mesmas dependências, nenhuma de integração —, o que preserva o DAG
+  por construção (irmãs de mesmo `dependeDe` já estavam na mesma onda). O motor **não** funde através de
+  ofício (perderia o roteamento do ADR-0019 §6), **não** funde a slice de integração e **não** deixa uma
+  fusão passar do **dobro** do piso (fundir demais recria a janela larga que a decomposição existe para
+  evitar). `1` desliga o piso.
 - **`fast_path`** (cerimônia escalada ao risco — ADR-0008): `[on | off]` (default **on**). Quando `on`,
   uma demanda **de baixo risco** pula as fases de **autoria** (spec/plan/ADR/decomposição/BDD) e vai
   direto a implementação → `tester` (com regressão) → gates. **Elegibilidade (TODAS):** `size:trivial`
@@ -224,10 +241,13 @@
 - **`distill_cadence`** (cadência do cron `/distill` — consolida episódico→semantic + poda): `[A DEFINIR]`
   (default **semanal**, espaçado dos demais crons).
 - **`verification_mode`** (P-11): `[single | panel]` (default **single**). **`panel`** roda o
-  `adversarial-reviewer` como **N céticos de lentes distintas** (aciona automaticamente no tier 🔴 e em
-  `autonomy_level: autônomo` — o ponto sem gate humano). Um `BLOQUEIA` isolado já barra; piso opus/alto
-  por membro (P-14). **Lido pelo motor** desde o ADR-0019 §3 — antes o painel de 3 rodava sempre,
-  ignorando este knob, e toda feature 🟢 pagava 3× o piso opus.
+  `adversarial-reviewer` como **N céticos de lentes distintas**. Aciona automaticamente por **RISCO** —
+  tier 🔴 **ou efeito de alto valor** (dinheiro/PII/authz/dependência nova) —, nunca por autonomia
+  (**ADR-0021 §2**: `autonomy_level: autônomo` **não liga mais o painel sozinho**; quem aprova a
+  promoção e quantos céticos julgam o diff são eixos distintos, e acoplá-los multiplicava o piso opus
+  por N em features 🟢 sem risco. Quem quiser painel por autonomia declara `panel` aqui — explícito e
+  selado pela trava de política). Um `BLOQUEIA` isolado já barra; piso opus/alto por membro (P-14).
+  **Lido pelo motor** desde o ADR-0019 §3.
 - **`adversarial_panel_size`** (nº de céticos quando `panel`): `[A DEFINIR]` (default **3**).
 - **`uncertainty_escalation`** (P-10): `[on | off]` + limiar (default **on**, limiar `confidence: baixa`).
   Etapa de **baixa confiança** escala ao humano (`awaiting-human`) **independentemente do tier de risco** —

@@ -169,11 +169,77 @@ r = await one({ issue: 31 }, rt.budget, rt.agent, rt.parallel, rt.pipeline, rt.l
 check('gate roda no piso opus/high quando o risco é comum', rota('adversarial:single').effort === 'high' && rota('security').effort === 'high');
 spent = 0; calls = [];
 r = await one({ issue: 32, efeitoDeAltoValor: true }, rt.budget, rt.agent, rt.parallel, rt.pipeline, rt.log, rt.phase);
-check('efeito de alto valor sobe o gate a opus/xhigh', rota('adversarial:single').effort === 'xhigh' && rota('security').effort === 'xhigh', JSON.stringify(rota('security')));
+// ADR-0021 §2: efeito de alto valor passou a ligar TAMBÉM o painel (antes só subia o esforço), então
+// aqui o cético vem rotulado por lente, não como `adversarial:single`.
+check('efeito de alto valor sobe o gate a opus/xhigh', calls.filter((c) => c.label.startsWith('adversarial:')).every((c) => c.effort === 'xhigh') && rota('security').effort === 'xhigh', JSON.stringify(rota('security')));
 spent = 0; calls = [];
 r = await one({ issue: 33, tier: 'alto' }, rt.budget, rt.agent, rt.parallel, rt.pipeline, rt.log, rt.phase);
 check('tier 🔴 sobe o gate a opus/xhigh (e vira painel)', calls.filter((c) => c.label.startsWith('adversarial:')).every((c) => c.effort === 'xhigh'));
 check('o gate NUNCA é roteável pelo plano (piso P-14 fora do alcance)', calls.filter((c) => c.label.startsWith('adversarial') || c.label === 'security').every((c) => c.model === 'opus'));
+
+// ── R3 · ADR-0021 §2: painel aciona por RISCO, nunca por AUTONOMIA ────────────────────────────────
+// O bug de custo: `autonomy_level: autônomo` ligava o painel sozinho, então toda feature 🟢 de um
+// projeto sem gate humano pagava N céticos opus + security opus por uma decisão sobre QUEM APROVA.
+spent = 0; calls = [];
+r = await one({ issue: 34, autonomyLevel: 'autônomo' }, rt.budget, rt.agent, rt.parallel, rt.pipeline, rt.log, rt.phase);
+check('autonomy_level: autônomo NÃO liga o painel sozinho (risco ≠ autonomia)', calls.filter((c) => c.label.startsWith('adversarial:')).length === 1 && !!rota('adversarial:single').model, calls.filter((c) => c.label.startsWith('adversarial')).map((c) => c.label).join(','));
+check('mas o gate continua no piso opus (P-14 intocado)', rota('adversarial:single').model === 'opus' && rota('security').model === 'opus');
+spent = 0; calls = [];
+r = await one({ issue: 35, autonomyLevel: 'autônomo', verificationMode: 'panel' }, rt.budget, rt.agent, rt.parallel, rt.pipeline, rt.log, rt.phase);
+check('quem quer painel em autônomo declara verification_mode: panel', calls.filter((c) => c.label.startsWith('adversarial:')).length === 3);
+spent = 0; calls = [];
+r = await one({ issue: 36, tier: 'medio', efeitoDeAltoValor: true }, rt.budget, rt.agent, rt.parallel, rt.pipeline, rt.log, rt.phase);
+check('efeito de alto valor em 🟡 ENTRA no painel (o eixo de risco ficou mais preciso)', calls.filter((c) => c.label.startsWith('adversarial:')).length === 3);
+
+// ── R4 · ADR-0021 §4: piso de granularidade de slice (slice_min_files) ────────────────────────────
+// Cada slice é uma invocação com setup ~fixo: abaixo do piso, fatiar compra hop, não isolamento.
+spent = 0; calls = [];
+rt = mk({ reply: (label) => {
+  if (label === 'task-decomposer') return { status: 'decomposto', slices: [
+    { id: 'a', titulo: 'trivial 1', arquivos: ['src/a.ts'], dependeDe: [], doneTest: 'ta', papel: 'backend' },
+    { id: 'b', titulo: 'trivial 2', arquivos: ['src/b.ts'], dependeDe: [], doneTest: 'tb', papel: 'backend' },
+    { id: 'c', titulo: 'ui', arquivos: ['web/c.tsx'], dependeDe: [], doneTest: 'tc', papel: 'frontend' },
+    { id: 'd', titulo: 'real', arquivos: ['src/d.ts','src/e.ts'], dependeDe: ['a','b'], doneTest: 'td', papel: 'backend' } ] };
+  if (['tester','security'].includes(label) || label.startsWith('adversarial')) return { veredito: 'APROVA', resumo: 'ok' };
+  return { status: 'ok', confidence: 'alta' };
+}});
+r = await one({ issue: 37 }, rt.budget, rt.agent, rt.parallel, rt.pipeline, rt.log, rt.phase);
+let impl = calls.filter((c) => /:(a|b|c|d)$/.test(c.label)).map((c) => c.label);
+check('slices irmãs abaixo do piso são fundidas numa invocação', !impl.includes('backend-engineer:b') && impl.includes('backend-engineer:a'), impl.join(','));
+check('a fusão não atravessa ofício (o roteamento por papel sobrevive)', impl.includes('frontend-engineer:c'));
+check('a slice dependente roda depois e não some', impl.includes('backend-engineer:d'), impl.join(','));
+check('resultado final continua verde (DAG remapeado é válido)', r.status === 'merged-ready', r.status + ' ' + (r.reason ?? ''));
+spent = 0; calls = [];
+r = await one({ issue: 38, sliceMinFiles: 1 }, rt.budget, rt.agent, rt.parallel, rt.pipeline, rt.log, rt.phase);
+impl = calls.filter((c) => /:(a|b|c|d)$/.test(c.label)).map((c) => c.label);
+check('slice_min_files: 1 desliga o piso (nada é fundido)', impl.includes('backend-engineer:b'), impl.join(','));
+
+// ── R5 · ADR-0021 §1: triagem do ROTEADOR (scripts/router-tier.mjs) ───────────────────────────────
+// O `sdd-orchestrator` era o único agente de modelo fixo (opus/alto, uma invocação por feature) —
+// caro justamente na feature repetitiva, em que os defaults por fase do grafo já respondem. A triagem
+// é determinística e a direção do erro é ESCALAR.
+const { routerTier } = await import(join(ROOT, 'scripts/router-tier.mjs'));
+const rr = (sinais) => { const x = routerTier(sinais); return `${x.model}/${x.effort}`; };
+check('feature repetitiva de baixo risco desce o roteador a sonnet/médio',
+  rr({ tier: 'baixo', comportamento: 'altera', classeConhecida: true }) === 'sonnet/médio');
+check('tier 🔴 mantém o roteador em opus/alto', rr({ tier: 'alto' }) === 'opus/alto');
+check('efeito de alto valor mantém o roteador em opus/alto',
+  rr({ tier: 'medio', comportamento: 'altera', classeConhecida: true, efeitoDeAltoValor: true }) === 'opus/alto');
+check('comportamento novo em classe sem custo aprendido escala',
+  rr({ tier: 'medio', comportamento: 'cria', classeConhecida: false }) === 'opus/alto');
+check('ambiguidade declarada escala',
+  rr({ tier: 'baixo', comportamento: 'altera', classeConhecida: true, confidence: 'baixa' }) === 'opus/alto');
+check('migração escala (ADR-0002)',
+  rr({ tier: 'baixo', comportamento: 'altera', classeConhecida: true, migracao: true }) === 'opus/alto');
+check('NA DÚVIDA ESCALA: entrada vazia cai em opus/alto', rr({}) === 'opus/alto');
+check('tier fora do vocabulário escala (sinal não entendido ≠ sinal baixo)',
+  rr({ tier: 'urgentíssimo', comportamento: 'altera', classeConhecida: true }) === 'opus/alto');
+check('sinal que LANÇA ao ser lido escala em vez de baixar',
+  rr({ tier: { get length() { throw new Error('x') }, toString() { throw new Error('x') } }, comportamento: 'altera', classeConhecida: true }) === 'opus/alto');
+check('tier ausente vale 🟡 e não escala sozinho',
+  rr({ comportamento: 'altera', classeConhecida: true }) === 'sonnet/médio');
+check('router_escalation: off volta ao piso legado',
+  rr({ tier: 'baixo', comportamento: 'altera', classeConhecida: true, routerEscalation: 'off' }) === 'opus/alto');
 
 // ── 4 · pai: planeja em paralelo, agenda por footprint disjunto, serializa quem colide ─────────────
 spent = 0; calls = [];

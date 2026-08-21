@@ -52,7 +52,9 @@ ou corrigir? — cada decisão vira ADR) e o **código morto** (não migrar). Pe
 antes de gastar em arquitetura. `[NEEDS CLARIFICATION]` bloqueante para aqui.
 
 ### 3 · Roteamento + plano — `sdd-orchestrator`
-Invoque **`sdd-orchestrator`** (fixo opus/alto) com o resumo da caracterização + mapa. Ele classifica
+Invoque **`sdd-orchestrator`** com o resumo da caracterização + mapa — em migração a triagem do
+`scripts/router-tier.mjs` sempre devolve **opus/alto** (`--migracao=true`: o roteamento por
+equivalência é justamente o trabalho difícil; ADR-0021 §1). Ele classifica
 tamanho/risco, roteia **modelo+esforço por etapa** (custo-benefício) e devolve o plano de delegação.
 Invoque cada subagente seguinte com o `model`/`effort` roteado; **nunca** sub-provisione o
 `adversarial-reviewer` nem etapas de invariante/segurança (mínimo opus/alto).

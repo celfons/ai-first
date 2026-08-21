@@ -38,6 +38,27 @@ sem reconstruir o passado lendo dez lugares.
 
 ## Linha do tempo
 
+### 2026-08-21 · O aparato cobrava pedágio — cerimônia que ninguém escolheu (meta · ADR-0021)
+- **Sinal:** 🔧 processo (custo da própria orquestração), levantado por auditoria de gasto do pipeline.
+- **Aprendizado:** o ADR-0019 ensinou que *knob que o grafo não lê não existe*. A auditoria mostrou a
+  simétrica, e ela dói mais: **cerimônia que o motor executa sem ninguém ter escolhido também não é
+  decisão — é imposto**. Três achados, todos com a mesma assinatura (custo que não escala com risco nem
+  com trabalho, só com o pipeline existir). (1) O **roteador** era o único agente de modelo fixo —
+  opus/alto, o prompt mais longo do roster, uma invocação por feature — enquanto o grafo já trazia
+  default por fase e a `routing-policy.md` nascia vazia: pagava-se o modelo mais caro do método para
+  reproduzir o default que já estava no código. Virou triagem determinística (`scripts/router-tier.mjs`),
+  com a direção do erro em **escalar**. (2) `autonomy_level: autônomo` **ligava o painel adversarial
+  sozinho** — uma decisão sobre *quem aprova a promoção* (P-10) cobrando N céticos opus sobre *quem julga
+  o diff* (P-11), em feature 🟢 sem risco. Desacoplado; e o eixo de risco **ficou maior, não menor**:
+  efeito de alto valor (dinheiro/PII/authz) agora liga o painel também em 🟡, coisa que o acoplamento
+  antigo não garantia. (3) O **fan-out por slice não tinha piso**, e slice de um arquivo trivial paga
+  quase o mesmo setup ~fixo de uma slice real — abaixo de certo tamanho, fatiar compra hop, não
+  isolamento. A regra que fechou os três: **o que não se paga em risco, não se paga em cerimônia** — e
+  nada disso encosta no piso opus/alto do gate (P-14), que continua cravado no motor, fora do alcance do
+  plano de delegação. O item (2) é um afrouxamento honesto e foi selado como tal na trava de política.
+- **Links:** ADR-0021 · `scripts/router-tier.mjs` · `token-efficiency.md` §9 · genoma §8
+  (`router_escalation`, `slice_min_files`, `verification_mode`) · `templates/workflows/build-one-feature.mjs`.
+
 ### 2026-08-19 · Ninguém guardava a régua — e nenhuma checagem provava que dispara (meta · ADR-0020)
 - **Sinal:** 🔧 processo (integridade do gate).
 - **Aprendizado:** um benchmarking do `nicolasmelo1/software-factory` expôs dois furos que o método

@@ -67,4 +67,6 @@ trade-off. Nesses casos, o `plan.md` da feature já basta.
 | [0019](0019-vereditos-estruturados-e-knobs-no-motor.md) | Vereditos estruturados, orçamento por delta e knobs ligados no motor (o grafo executa o que a doutrina promete) | Accepted | método (fidelidade motor↔doutrina) | P-3, P-10, P-11, P-13, P-14, P-15 |
 | [0020](0020-trava-de-politica-e-prova-de-mutacao.md) | Trava de política (só aperta) + prova de mutação das fitness functions | Accepted | governança do método (fecha o ponto cego do ADR-0006) | P-10, P-11, P-13, P-14, P-15 |
 
+| [0021](0021-custo-de-orquestracao-triagem-do-roteador.md) | Custo de orquestração: triagem do roteador, painel por risco (não por autonomia) e piso de granularidade de slice | Accepted | método (economia de token da orquestração) | P-10, P-11, P-13, P-14, P-15 |
+
 > Ao criar um ADR, adicione a linha aqui (o `docs-writer` fecha isso no fim da feature).
