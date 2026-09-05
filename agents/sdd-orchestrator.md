@@ -163,6 +163,9 @@ Guia por papel (ponto de partida — ajuste ao caso):
 - `tester`: **sonnet/médio** (invariante crítica → **opus/alto**). Ele **não** reescreve o laço interno —
   liga a aceitação ao runner, cobre integração/invariante/runtime/regressão e **audita** os micro-testes.
 - `docs-writer`: **haiku/baixo-médio**.
+- `bulk-reader` / `code-writer`: **haiku/baixo, fixos** (ADR-0022) — são o barato por definição; não
+  roteie para cima. Se a tarefa "precisa" de mais modelo, ela não era leitura/replicação — era julgamento,
+  e volta ao agente de ofício (`backend-engineer`, `tester`…) com o trecho certo no contexto.
 - **`adversarial-reviewer`: nunca sub-provisione (é a rede de segurança, P-11).** Mínimo **opus/alto**;
   efeito de alto valor (dinheiro/dado/segurança) → **opus/extra**. Custo-benefício otimiza o mecânico,
   **não** a verificação independente nem o que toca invariante/segurança.

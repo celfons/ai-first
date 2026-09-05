@@ -1,0 +1,5 @@
+{
+  "name": "mutante",
+  "description": "Mutação: repo de plugin com o script do roteador presente mas NÃO registrado em hooks.json — a F8 tem de acusar.",
+  "version": "0.0.1"
+}

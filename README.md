@@ -346,6 +346,20 @@ O que faz cada feature decidir **à luz das anteriores**, em vez de do zero:
   regressão **e** anti-padrão; o `adversarial-reviewer` usa a lista como checklist.
 - **Evolução** ([`docs/evolution.md`](docs/evolution.md)) — a **linha do tempo de aprendizados**: o que
   mudou e o que o uso real ensinou, costurando ADRs + rejeições + resultado numa narrativa única.
+- **Enforcement executável** ([`docs/governance/enforcement.md`](docs/governance/enforcement.md)) —
+  documento **orienta**, hook/CI **força**: bootstrap de sessão, guard de git, gate no servidor e
+  **fitness functions** (invariante = teste que quebra o build). Duas travas fecham o ponto cego de um
+  agente que escreve *e* mergeia (ADR-0020): a **prova de mutação** (`--verify`: cada regra tem de
+  disparar contra o menor repo que a viola — checagem que nunca falhou não é checagem) e a **trava de
+  política** (superfícies de governança seladas por digest + knobs de rigor que **só apertam**).
+  Baixar a régua para chegar ao verde deixa de ser um caminho silencioso — **em qualquer
+  `autonomy_level`, inclusive `autônomo`**.
+- **Roteador de leitura** ([`docs/token-efficiency.md` §9](docs/token-efficiency.md), ADR-0022) — mover
+  texto não é raciocínio e não é cobrado como tal: um hook `PreToolUse` **barra** a leitura de arquivo
+  grande no modelo caro e nomeia a rota barata — leitura dirigida (`offset`+`limit`) para editar, ou o
+  worker `bulk-reader` (haiku, só bullets voltam) para entender; o `code-writer` escreve o código
+  repetitivo direto no disco a partir de um irmão de referência. A regra em prosa era sugestão; o hook
+  é a única camada que diz não. Julgamento nunca é delegado; gates intactos.
 - **Resultado real** (`outcome-analyst`) — o uso mostra o que funcionou; o PO dobra no que deu certo e
   itera/para no que não deu. É a retroalimentação mais valiosa e a mais esquecida em automação.
 

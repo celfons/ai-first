@@ -1,0 +1,31 @@
+# ai-first · CODEOWNERS — a metade "força" da trava de política (ADR-0020)
+#
+# TEMPLATE — o /ai-first:ai-first-init copia para `.github/CODEOWNERS` do repo que adota o método e
+# troca `@SEU-USUARIO-OU-TIME` pelo dono humano (ou time) responsável pela régua.
+#
+# Por que isto existe: `scripts/policy-lock.mjs` torna o afrouxamento da régua VISÍVEL (digest selado +
+# knobs que só apertam). Quem o torna impossível de MERGEAR é o servidor. Com "Require review from
+# Code Owners" ligado na branch protection de `develop` e `main`, todo PR que toca uma superfície de
+# governança para até um humano nomeado aprovar — inclusive (e principalmente) em
+# `autonomy_level: autônomo`. Mudança de régua é a ÚNICA classe de mudança que sempre volta ao humano:
+# a autonomia é sobre construir o produto, não sobre reescrever o próprio critério de aprovação.
+#
+# Ligue em Settings → Branches → Branch protection rule → "Require review from Code Owners".
+
+# --- o gate e quem o executa ---------------------------------------------------------------------
+/.github/workflows/            @SEU-USUARIO-OU-TIME
+/.github/CODEOWNERS            @SEU-USUARIO-OU-TIME
+/hooks/                        @SEU-USUARIO-OU-TIME
+/.ai-first/hooks/              @SEU-USUARIO-OU-TIME
+/scripts/ai-first-fitness.mjs  @SEU-USUARIO-OU-TIME
+/scripts/policy-lock.mjs       @SEU-USUARIO-OU-TIME
+/scripts/check-coherence.mjs   @SEU-USUARIO-OU-TIME
+/scripts/check-workflows.mjs   @SEU-USUARIO-OU-TIME
+/scripts/fitness-fixtures/     @SEU-USUARIO-OU-TIME
+
+# --- a régua selada e a doutrina que ela materializa ----------------------------------------------
+/docs/governance/              @SEU-USUARIO-OU-TIME
+/docs/sdd/constitution.md      @SEU-USUARIO-OU-TIME
+/docs/ai-first/project.md      @SEU-USUARIO-OU-TIME
+/.claude/workflows/            @SEU-USUARIO-OU-TIME
+/.claude/settings.json         @SEU-USUARIO-OU-TIME

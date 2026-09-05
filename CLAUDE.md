@@ -225,6 +225,30 @@ reserva de idempotência, laço da fila, chamada de LLM com timeout+validação+
   ` ```routing json ` que o driver copia **verbatim** (fim da tradução de prosa). A slice declara o
   **`papel`** e é implementada pelo ofício certo (`backend`/`frontend`/`data`/`prompt`/`sre`); o
   `bdd-author` roda **antes** do implement, nunca concorrente (ADR-0015).
+- **A régua não se baixa em silêncio (ADR-0020).** Duas travas executáveis fecham o ponto cego de um
+  agente que escreve **e** mergeia: (1) **prova de mutação** — toda fitness function declara a sua
+  mutação em `scripts/fitness-fixtures/<id>/` e `node scripts/ai-first-fitness.mjs --verify` exige que
+  ela **dispare**; regra que passa em silêncio contra a própria mutação está inerte e reprova (check sem
+  fixture = regra não provada). É a *prova do vermelho* do ADR-0015 aplicada ao gate. (2) **trava de
+  política** — `scripts/policy-lock.mjs` sela por digest as superfícies de governança (hooks, `ci.yml`,
+  guard, scripts de gate, grafos contratados) e aplica **só aperta** aos knobs de rigor
+  (`autonomy_level`, `tdd_mode`, `fast_path`, `verification_mode`, `uncertainty_escalation`, `eval_gate`,
+  `adversarial_panel_size`, `external_action_cap`): apertar passa com `--seal`; **afrouxar é bloqueio** e
+  só sela com `--allow-loosening="motivo"`, que deixa trilha append-only. **Mudança de régua sempre volta
+  ao humano** (CODEOWNERS + job `policy-lock`), **inclusive em `autonomy_level: autônomo`** — a autonomia
+  é sobre construir o produto, não sobre reescrever o próprio critério de aprovação. Ver
+  `docs/governance/enforcement.md` §4/§4b.
+- **A leitura cara é barrada, e o barato lê (ADR-0022).** Mover texto não é raciocínio e não é cobrado
+  como tal: o hook `PreToolUse` `hooks/pre-tool-read-router.sh` **bloqueia** `Read`/`cat`/`head`/`tail`/
+  `sed -n` de arquivo acima de `read_router_threshold` linhas (default 350) sem leitura dirigida
+  (`offset`+`limit`) e nomeia a alternativa: quer **entender** o arquivo → worker `bulk-reader` (haiku,
+  `/bulk-read` — só bullets `caminho:linha` voltam, o arquivo nunca entra no contexto); vai **editar** →
+  leitura dirigida (passa pelo hook — editar precisa do arquivo real). Código que **replica** um irmão
+  (o 21º teste igual aos 20) vai ao `code-writer` (haiku, `/code-write`: referência obrigatória, escreve
+  direto no disco, só código; quem chamou **roda o teste**, não lê). Fronteiras declaradas: **julgamento
+  nunca é delegado** (bug, arquitetura, segurança ficam no modelo forte), o pequeno não é barrado, os
+  gates não mudam. Regra escrita era sugestão e o modelo a ignorava — o hook é a única camada que diz não
+  (F8 prova que está registrado). Knobs `read_router`/`read_router_threshold` (genoma §8, economia, não rigor).
 - **Cadência/paralelismo/autonomia/orçamento** são knobs do genoma (`features_per_day`, `parallelism`,
   `wip_limit` — teto de WIP + serialização por footprint de conflito, ADR-0007;
   `fast_path` — cerimônia escalada ao risco: baixo risco pula a autoria, os gates permanecem, ADR-0008;
