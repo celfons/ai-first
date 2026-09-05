@@ -217,7 +217,7 @@
   ignorado** com log, para não quebrar genoma antigo. Piso opus/alto e isolamento (P-11/P-13/P-14) nunca
   relaxam.
 
-- **`read_router`** (roteador de leitura — o hook que barra a leitura cara, ADR-0021): `on` (default **on**;
+- **`read_router`** (roteador de leitura — o hook que barra a leitura cara, ADR-0022): `on` (default **on**;
   ver `token-efficiency.md` §9). Com `on`, `hooks/pre-tool-read-router.sh` **bloqueia** `Read`/`cat`/`head`/
   `tail`/`sed -n` de arquivo acima de `read_router_threshold` linhas sem leitura dirigida (`offset`+`limit`)
   e **nomeia a rota barata**: o worker `bulk-reader` (haiku, só bullets voltam ao contexto). Leitura

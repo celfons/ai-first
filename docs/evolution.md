@@ -38,7 +38,7 @@ sem reconstruir o passado lendo dez lugares.
 
 ## Linha do tempo
 
-### 2026-09-05 · A leitura cara passou a ser barrada, e o barato lê (meta · ADR-0021)
+### 2026-09-05 · A leitura cara passou a ser barrada, e o barato lê (meta · ADR-0022)
 - **Sinal:** 🔧 processo (economia de token — o ganho real é medido pelo `finops-steward`).
 - **Aprendizado:** a política de token (§1–§8) cortava o desperdício **entre** etapas e não olhava para
   **dentro** delas — onde a maior parte do trabalho de um agente é **mover texto**, não raciocinar: abrir o
@@ -57,7 +57,7 @@ sem reconstruir o passado lendo dez lugares.
   haiku com contrato fechado + skills advisory `/bulk-read`/`/code-write`; **F8** prova que o hook está
   registrado (script sem registro é a "primeira versão que falhou"); knobs de **economia**, fora da trava
   "só aperta"; **gates intactos** — o worker tira do caro a digitação e a leitura, nunca a responsabilidade.
-- **Links:** ADR-0021 · `docs/token-efficiency.md` §9 · `docs/governance/enforcement.md` §2b ·
+- **Links:** ADR-0022 · `docs/token-efficiency.md` §9 · `docs/governance/enforcement.md` §2b ·
   `hooks/pre-tool-read-router.sh` · `agents/bulk-reader.md` · `agents/code-writer.md`.
 
 ### 2026-08-19 · Ninguém guardava a régua — e nenhuma checagem provava que dispara (meta · ADR-0020)

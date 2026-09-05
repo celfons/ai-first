@@ -238,7 +238,7 @@ reserva de idempotência, laço da fila, chamada de LLM com timeout+validação+
   ao humano** (CODEOWNERS + job `policy-lock`), **inclusive em `autonomy_level: autônomo`** — a autonomia
   é sobre construir o produto, não sobre reescrever o próprio critério de aprovação. Ver
   `docs/governance/enforcement.md` §4/§4b.
-- **A leitura cara é barrada, e o barato lê (ADR-0021).** Mover texto não é raciocínio e não é cobrado
+- **A leitura cara é barrada, e o barato lê (ADR-0022).** Mover texto não é raciocínio e não é cobrado
   como tal: o hook `PreToolUse` `hooks/pre-tool-read-router.sh` **bloqueia** `Read`/`cat`/`head`/`tail`/
   `sed -n` de arquivo acima de `read_router_threshold` linhas (default 350) sem leitura dirigida
   (`offset`+`limit`) e nomeia a alternativa: quer **entender** o arquivo → worker `bulk-reader` (haiku,

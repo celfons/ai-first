@@ -354,7 +354,7 @@ O que faz cada feature decidir **à luz das anteriores**, em vez de do zero:
   política** (superfícies de governança seladas por digest + knobs de rigor que **só apertam**).
   Baixar a régua para chegar ao verde deixa de ser um caminho silencioso — **em qualquer
   `autonomy_level`, inclusive `autônomo`**.
-- **Roteador de leitura** ([`docs/token-efficiency.md` §9](docs/token-efficiency.md), ADR-0021) — mover
+- **Roteador de leitura** ([`docs/token-efficiency.md` §9](docs/token-efficiency.md), ADR-0022) — mover
   texto não é raciocínio e não é cobrado como tal: um hook `PreToolUse` **barra** a leitura de arquivo
   grande no modelo caro e nomeia a rota barata — leitura dirigida (`offset`+`limit`) para editar, ou o
   worker `bulk-reader` (haiku, só bullets voltam) para entender; o `code-writer` escreve o código

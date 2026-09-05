@@ -395,7 +395,7 @@ limpeza mal-feita perde eficiência. Toca corretude: não (isolamento/verificaç
 
 ---
 
-## 9 · Roteador de leitura — a leitura cara é barrada, e o barato lê (ADR-0021)
+## 9 · Roteador de leitura — a leitura cara é barrada, e o barato lê (ADR-0022)
 
 **O problema.** As alavancas 1–8 cortam o desperdício **entre** etapas. Nenhuma olhava para **dentro**
 de uma etapa — e lá, a maior parte do que um agente faz **não é raciocínio, é mover texto**: abre cinco

@@ -18,7 +18,7 @@ saudável, sustentável, auditável, uniforme e coesa.
 |---|---|---|---|---|
 | 1 | **Bootstrap de sessão** | injeta o bloco fixo + a pipeline no turno 0 de toda sessão | **força** | `hooks/session-start.sh` |
 | 2 | **Guarda de ação** | barra push/commit direto em main/develop antes de acontecer | **força** | `hooks/pre-tool-guard.sh` |
-| 2b | **Roteador de leitura** | barra a leitura **cara** (arquivo grande inteiro no modelo forte) e nomeia a rota barata — leitura dirigida ou worker `bulk-reader` | **força** | `hooks/pre-tool-read-router.sh` (ADR-0021) |
+| 2b | **Roteador de leitura** | barra a leitura **cara** (arquivo grande inteiro no modelo forte) e nomeia a rota barata — leitura dirigida ou worker `bulk-reader` | **força** | `hooks/pre-tool-read-router.sh` (ADR-0022) |
 | 3 | **Gate no servidor** | recusa o merge sem CI verde + disciplina de fluxo | **força** | `ai-first-guard.yml` + branch protection |
 | 4 | **Fitness functions** | build quebra quando a arquitetura/invariante desvia — e cada regra **prova que dispara** | **força** | `scripts/ai-first-fitness.mjs` (+ `--verify` sobre `scripts/fitness-fixtures/`) + `scripts/check-workflows.mjs` (comportamento dos grafos, ADR-0019) |
 | 4b | **Trava de política** | a régua não pode ser baixada em silêncio: superfícies seladas por digest + knobs de rigor que **só apertam** | **força** | `scripts/policy-lock.mjs` + `docs/governance/policy.lock.json` + `templates/governance/CODEOWNERS` (ADR-0020) |
@@ -87,7 +87,7 @@ dirigida (editar precisa do arquivo real), o pequeno, o pipado/redirecionado, o 
 **bloco de contexto fixo** (lê-los inteiro é o desenho — são o prefixo cacheado). **Fail-open** no que não
 entende. Knobs `read_router`/`read_router_threshold` (genoma §8) — knobs de **economia**, fora da trava
 "só aperta" (não é régua de qualidade); o hook em si é superfície **selada** (§4b) e a fitness **F8**
-prova que está **registrado** para `Read`. Ver ADR-0021 e `docs/token-efficiency.md` §9.
+prova que está **registrado** para `Read`. Ver ADR-0022 e `docs/token-efficiency.md` §9.
 
 ## 3 · Gate no servidor (o "forçar" que ninguém fura)
 Hooks protegem a **sessão**; a branch protection protege o **repositório** — inclusive contra um humano

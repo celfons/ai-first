@@ -5,7 +5,7 @@ description: Delega a LEITURA de arquivos grandes ao worker barato `bulk-reader`
 
 # /bulk-read — abrir o arquivo grande com o modelo barato, ficar só com a resposta
 
-A camada **advisory** do roteador de leitura (ADR-0021 · `docs/token-efficiency.md` §9). O hook
+A camada **advisory** do roteador de leitura (ADR-0022 · `docs/token-efficiency.md` §9). O hook
 `hooks/pre-tool-read-router.sh` é quem **força** (barra a leitura cara e nomeia esta rota); esta skill
 só torna o redirecionamento **suave em vez de brusco** — o método degrada com elegância se ela não for
 lida, porque o bloqueio já acontece sem ela.

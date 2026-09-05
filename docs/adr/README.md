@@ -66,6 +66,6 @@ trade-off. Nesses casos, o `plan.md` da feature já basta.
 | [0018](0018-workflow-nativo-como-default.md) | `Workflow` nativo como caminho **default** de orquestração (opt-in → knob) + Escala 2 (N features) no motor | Accepted | método (execução da orquestração) | P-10, P-11, P-13, P-14, P-15 |
 | [0019](0019-vereditos-estruturados-e-knobs-no-motor.md) | Vereditos estruturados, orçamento por delta e knobs ligados no motor (o grafo executa o que a doutrina promete) | Accepted | método (fidelidade motor↔doutrina) | P-3, P-10, P-11, P-13, P-14, P-15 |
 | [0020](0020-trava-de-politica-e-prova-de-mutacao.md) | Trava de política (só aperta) + prova de mutação das fitness functions | Accepted | governança do método (fecha o ponto cego do ADR-0006) | P-10, P-11, P-13, P-14, P-15 |
-| [0021](0021-roteador-de-leitura-e-workers-baratos.md) | Roteador de leitura (hook barra a leitura cara e nomeia a alternativa) + workers baratos `bulk-reader`/`code-writer` (só-bullets · só-código, direto no disco) | Accepted | método (economia de token — alavanca 9) | P-11, P-13, P-14, P-15 |
+| [0022](0022-roteador-de-leitura-e-workers-baratos.md) | Roteador de leitura (hook barra a leitura cara e nomeia a alternativa) + workers baratos `bulk-reader`/`code-writer` (só-bullets · só-código, direto no disco) | Accepted | método (economia de token — alavanca 9) | P-11, P-13, P-14, P-15 |
 
 > Ao criar um ADR, adicione a linha aqui (o `docs-writer` fecha isso no fim da feature).

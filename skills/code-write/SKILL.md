@@ -5,7 +5,7 @@ description: Delega a ESCRITA de código repetitivo ao worker barato `code-write
 
 # /code-write — o código que copia um padrão é escrito pelo modelo barato, direto no disco
 
-A segunda rota do ADR-0021 (`docs/token-efficiency.md` §9). Diferente do `/bulk-read`, aqui **não há
+A segunda rota do ADR-0022 (`docs/token-efficiency.md` §9). Diferente do `/bulk-read`, aqui **não há
 gate**: nenhum hook obriga a delegar a escrita — a skill é chamada por quem implementa quando reconhece
 que o que vai digitar é **replicação**, não decisão. É advisory por desenho.
 

@@ -6,7 +6,7 @@
 # Abrir um arquivo de 2.000 linhas para responder uma pergunta sobre 20 delas custa o arquivo INTEIRO
 # na tarifa do modelo caro, e ele fica no contexto (re-cobrado) em todo turno seguinte. A regra
 # escrita ("prefira leituras dirigidas") já existia e o modelo a ignorava. Regra escrita é sugestão;
-# hook é bloqueio. Esta é a única camada com autoridade para dizer NÃO (ADR-0021).
+# hook é bloqueio. Esta é a única camada com autoridade para dizer NÃO (ADR-0022).
 #
 # O que faz:
 #   • `Read` de arquivo com MAIS de `read_router_threshold` linhas (default 350) sem `limit` ≤ limiar
@@ -102,7 +102,7 @@ block() {
   cat >&2 <<EOF
 [ai-first · READ-ROUTER] BLOQUEADO: $via despejaria $n linhas de '$file' no contexto (limiar: $threshold).
 Leitura em massa não é raciocínio — é mover texto na tarifa do modelo caro, e o arquivo inteiro seria
-re-cobrado em TODO turno seguinte. Escolha uma das duas rotas (ADR-0021 · token-efficiency.md §9):
+re-cobrado em TODO turno seguinte. Escolha uma das duas rotas (ADR-0022 · token-efficiency.md §9):
   1. LEITURA DIRIGIDA — você já sabe qual trecho precisa (vai editar, checar uma função):
        Read(file_path, offset=<linha>, limit=<= $threshold>)   ou   sed -n '<a>,<b>p' (b-a < $threshold)
        Use Grep primeiro para achar a linha; edição continua precisando do arquivo real — este caminho existe para isso.

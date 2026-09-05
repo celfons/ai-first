@@ -54,7 +54,7 @@ nunca sobrescreve o que você já tem sem confirmar).
      de leitura, apontando para `$CLAUDE_PROJECT_DIR/.ai-first/hooks/…`) — o snippet exato está em
      `docs/governance/enforcement.md §2`. Isso força os fundamentos, barra push/commit direto em
      main/develop e **barra a leitura cara** (arquivo acima de `read_router_threshold` linhas inteiro no
-     modelo forte — ADR-0021) **por construção**, mesmo numa sessão que não instalou o plugin nativamente.
+     modelo forte — ADR-0022) **por construção**, mesmo numa sessão que não instalou o plugin nativamente.
      A fitness F8 confere o registro do roteador no repo armado (ou `read_router: off` declarado no genoma).
    - Copie `scripts/ai-first-fitness.mjs`, `scripts/policy-lock.mjs` e `scripts/fitness-fixtures/` para
      o repo-alvo (camada 4 + 4b, ADR-0020) e **sele a trava**: `node scripts/policy-lock.mjs --seal`.

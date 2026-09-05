@@ -1,4 +1,4 @@
-# ADR-0021: Roteador de leitura (hook que barra a leitura cara) + workers baratos de leitura e escrita mecânica
+# ADR-0022: Roteador de leitura (hook que barra a leitura cara) + workers baratos de leitura e escrita mecânica
 
 > Status: Accepted · Data: 2026-09-05
 > Feature/Issue: método (economia de token — a alavanca 9 do `token-efficiency.md`) · Princípios tocados: P-11, P-13, P-14, P-15 · Supersede: —
