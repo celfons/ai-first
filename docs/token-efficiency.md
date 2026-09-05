@@ -395,6 +395,58 @@ limpeza mal-feita perde eficiência. Toca corretude: não (isolamento/verificaç
 
 ---
 
+## 9 · Roteador de leitura — a leitura cara é barrada, e o barato lê (ADR-0022)
+
+**O problema.** As alavancas 1–8 cortam o desperdício **entre** etapas. Nenhuma olhava para **dentro**
+de uma etapa — e lá, a maior parte do que um agente faz **não é raciocínio, é mover texto**: abre cinco
+arquivos para responder sobre um, abre o de 2.000 linhas inteiro para checar 20, digita o 21º teste igual
+aos 20 vizinhos. Trabalho enorme, quase nenhum julgamento, tudo na tarifa do modelo forte — e o arquivo
+aberto **fica no contexto, re-cobrado em todo turno seguinte**. Pior: a regra "prefira leituras dirigidas"
+já existia como prosa e o modelo a ignorava quando convinha. A lição do relato da Spotify Engineering
+(set/2026, ~90% de economia em leituras em massa, medido pelo autor): **regra escrita é sugestão; hook é
+bloqueio**. A primeira versão deles morou num `CLAUDE.md` e falhou; virou real quando um `PreToolUse`
+passou a **recusar** a leitura e nomear a alternativa.
+
+**A regra — três camadas, e só uma pode dizer não.**
+- **Hook (força) — `hooks/pre-tool-read-router.sh`, `PreToolUse` em `Read|Bash`.** Arquivo com mais de
+  **`read_router_threshold`** linhas (default **350**) lido sem `limit ≤ limiar` — via `Read`, `cat`,
+  `head`/`tail -n N`, `sed -n A,Bp` — é **bloqueado**, e a mensagem nomeia as duas rotas. **Passa:** a
+  leitura **dirigida** (`offset`+`limit`; editar precisa do arquivo real, e este caminho existe para isso),
+  o arquivo pequeno (abaixo do limiar a ida-e-volta custa mais que economiza), a saída pipada/redirecionada,
+  binário, e **os arquivos do bloco de contexto fixo** (§1 — lê-los inteiro é o desenho: são o prefixo
+  cacheado). Fail-open no que não entende. Knobs `read_router`/`read_router_threshold` (genoma §8).
+- **Workers (o barato por definição) — `bulk-reader` e `code-writer`, fixos em haiku.** O leitor recebe
+  caminhos + **a pergunta exata** e devolve **só bullets** (`caminho:linha · fato`, ≤ 25) — os arquivos
+  **nunca entram** no contexto de quem chamou; ele lê paginado, então passa pelo hook pela regra. O
+  escritor recebe spec + **referência obrigatória** + destino e escreve **direto no disco**, só código, sem
+  cerca nem comentário; devolve caminho + contagem, **nenhum código** — quem chamou não lê, **roda o teste**.
+- **Skills (advisory) — `/bulk-read`, `/code-write`.** Tornam o redirecionamento suave. Se não forem
+  lidas, o hook barra mesmo assim: o método degrada com elegância em vez de falhar.
+
+**As fronteiras (declaradas antes, não descobertas depois).** **Editar** não é delegado (o resumo não
+traz linha confiável). **Raciocínio** não é delegado — o worker acha padrão de superfície e **perdeu um
+bug de thread-safety** que o modelo forte viu em segundos com o contexto certo; bug, arquitetura e
+segurança ficam no caro. **O pequeno** não é delegado. E **os gates não mudam**: `tester`,
+`adversarial-reviewer` (piso opus/alto, P-14) e `security-reviewer` julgam o diff agregado, código do
+worker incluído. O worker tira do modelo caro a **digitação e a leitura**, nunca a **responsabilidade**.
+
+**A instrução que mais economiza** é a que fecha o formato da saída: *só bullets* / *só código, sem cerca,
+sem comentário*. Sem ela o worker embrulha a resposta em prosa e formatação, o modelo caro tem de ler e
+limpar, e o payload inteiro volta ao contexto que o roteamento existe para proteger. É o §3 (retorno
+enxuto) levado ao extremo onde ele vale mais.
+
+**Isolamento intacto.** O retorno do `bulk-reader` é **fato de leitura datado**, não raciocínio (§6): pode
+ser compartilhado entre etapas de uma fatia; quem revisa continua cego a quem escreveu. A fitness **F8**
+prova que o hook está **registrado** para `Read` (script no disco sem registro é a "primeira versão que
+falhou"); o hook é superfície selada pela trava de política (ADR-0020). O `finops-steward` mede o ganho
+real (§5) — o 90% é do relato; e a taxa de "delegação que precisou reabrir o arquivo" é o sinal de que o
+limiar ou o contrato do worker estão errados.
+
+Ganho: alto e **composto** (cada arquivo que não entra deixa de ser re-cobrado em todos os turnos
+seguintes). Risco: baixo (fail-open; fronteiras declaradas; gates intactos). Toca corretude: não.
+
+---
+
 ## Consciência de janela de cache (afinação do agendamento)
 
 O prompt cache (§1) tem TTL ~1h. Duas consequências operacionais:
@@ -426,7 +478,12 @@ O prompt cache (§1) tem TTL ~1h. Duas consequências operacionais:
    verificação** (passa o veredito, não a tentativa falha), **preservando o prefixo fixo cacheado**.
    `context_clear_policy: seam` (default) | `off` (ADR-0019 §5).
 
-Itens 1–3 são puro ganho, sem trade-off. Item 4 é estrutural e opt-in. A telemetria da alavanca **5**
+7. **Não abre arquivo grande no modelo caro** (§9): o hook barra `Read`/`cat` acima de
+   `read_router_threshold`; quem quer **entender** delega ao `bulk-reader` (só bullets voltam), quem vai
+   **editar** lê dirigido (`offset`+`limit`), e o que é **replicação** de um irmão vai ao `code-writer`
+   (direto no disco; roda-se o teste, não se lê o arquivo). Julgamento nunca é delegado.
+
+Itens 1–3 e 7 são puro ganho, sem trade-off. Item 4 é estrutural e opt-in. A telemetria da alavanca **5**
 (AIOps) é medida **fora da fatia** pelo `finops-steward`, numa cadência, e realimenta o roteamento —
 puro ganho (só mede e sugere).
 </content>

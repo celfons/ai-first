@@ -53,6 +53,8 @@ custo-benefício empurre para baixo.
 | `growth-analyst` | (resultado · GROWTH) | irmão do outcome pela lente de **coorte/funil**: mede o experimento (§8) sem ferir as `guardrail_metrics` e decide **escalar (subir %) / iterar / matar**; grava o que pagou no `growth-playbook.md`. Nunca sobe % sozinho |
 | `finops-steward` | (economia · AIOps/FinOps) | mede o **custo** do pipeline (tokens/etapa, custo por feature mergeada, re-run do modelo barato, cache-hit) + runtime/cloud; cruza com o `outcome-analyst` (ROI) e **realimenta o roteamento** do `sdd-orchestrator`. Só mede/sugere |
 | `evaluator` | (avaliação · quality-rubrics) | mede o **pipeline** (não uma feature): roda **rubricas pass/fail** contra a saída **contratada** de um sub-workflow (ADR-0010) sobre um **conjunto-ouro**, emite scorecard (por critério + regressões vs. baseline) e é o **gate do upgrade de modelo** (re-baseline obrigatório, ADR-0011). Só mede; piso opus/alto; isolado. Roda na cadência `/eval` |
+| `bulk-reader` | (worker · custo — qualquer fase) | **leitor barato** (haiku fixo, ADR-0022): recebe caminhos + a pergunta exata e devolve **só bullets** `caminho:linha · fato` — o arquivo grande nunca entra no contexto de quem chamou. É o destino que o hook `pre-tool-read-router.sh` nomeia ao barrar a leitura cara. Só reporta; não julga (bug/arquitetura/segurança ficam no modelo forte) |
+| `code-writer` | (worker · custo — IMPLEMENT mecânico) | **escritor barato** (haiku fixo, ADR-0022): spec curta + **arquivo de referência obrigatório** → escreve o arquivo **direto no disco**, só código, imitando o irmão; retorno = caminho + contagem, nenhum código. Para replicação (o 21º teste igual aos 20), nunca para julgamento; quem chamou **roda o teste**, não lê |
 | `knowledge-curator` | (memória · higiene) | jardineiro da memória (ADR-0005): **destila** o episódico recorrente em padrões/anti-padrões (`knowledge.md`), **poda** para `archive/` datado, audita o índice `context-map.md` e propõe **procedimento → skill**. Roda na cadência `/distill`, sob gate PR+validate. Só escreve docs/skills de memória |
 
 ## Times (squads) — o eixo de paralelismo
@@ -71,6 +73,7 @@ o isolamento nem a separação de papéis (P-13): quem constrói nunca é quem a
 | **Qualidade & Gate** | provar que presta (independente) | `bdd-author` · `tester` · `adversarial-reviewer` · `security-reviewer` · `evaluator` | é **barreira** por design — não paraleliza com o próprio build que julga; entre features, sim |
 | **Plataforma & Confiabilidade** | manter no ar, reversível, observável | `sre-engineer` · `ops-investigator` · `tech-auditor` | crons/auditoria, fora do caminho do build |
 | **Resultado & Economia** | medir se moveu o ponteiro e a que custo | `outcome-analyst` · `growth-analyst` · `finops-steward` · `release-manager` | pós-merge, assíncrono ao build |
+| **Operários de custo** | mover texto sem pagar a tarifa forte (ADR-0022) | `bulk-reader` · `code-writer` | são chamados **por** qualquer agente de qualquer time, na mesma fatia; não têm fase própria nem voto no gate |
 | **Memória** | consolidar o saber-fazer e podar | `knowledge-curator` | cadência isolada (`/distill`) |
 
 > **Onde o paralelismo real acontece:** (1) **entre features** — o `sdd-orchestrator` define, por

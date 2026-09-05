@@ -1,0 +1,8 @@
+{
+  "//": "Mutação: PreToolUse só com o guard de git — o roteador de leitura (ADR-0022) não está registrado para `Read`.",
+  "hooks": {
+    "PreToolUse": [
+      { "matcher": "Bash", "hooks": [ { "type": "command", "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/pre-tool-guard.sh" } ] }
+    ]
+  }
+}
