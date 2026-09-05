@@ -48,11 +48,14 @@ nunca sobrescreve o que você já tem sem confirmar).
    - **NÃO** copie `docs/sdd/features/001-exemplo-*` (é demonstração), nem `agents/`, `skills/`,
      `.claude-plugin/` (esses vivem no plugin, não no repo-alvo).
 4b. **Instale o COMPLIANCE KIT (enforcement — ADR-0006, ver `docs/governance/enforcement.md`):**
-   - Copie `hooks/session-start.sh` e `hooks/pre-tool-guard.sh` do plugin para `.ai-first/hooks/` do
-     repo-alvo e registre-os no `.claude/settings.json` do projeto (`SessionStart` + `PreToolUse`
-     matcher `Bash`, apontando para `$CLAUDE_PROJECT_DIR/.ai-first/hooks/…`) — o snippet exato está em
-     `docs/governance/enforcement.md §2`. Isso força os fundamentos e barra push/commit direto em
-     main/develop **por construção**, mesmo numa sessão que não instalou o plugin nativamente.
+   - Copie `hooks/session-start.sh`, `hooks/pre-tool-guard.sh` e `hooks/pre-tool-read-router.sh` do
+     plugin para `.ai-first/hooks/` do repo-alvo e registre-os no `.claude/settings.json` do projeto
+     (`SessionStart` + `PreToolUse` matcher `Bash` para o guard **e** matcher `Read|Bash` para o roteador
+     de leitura, apontando para `$CLAUDE_PROJECT_DIR/.ai-first/hooks/…`) — o snippet exato está em
+     `docs/governance/enforcement.md §2`. Isso força os fundamentos, barra push/commit direto em
+     main/develop e **barra a leitura cara** (arquivo acima de `read_router_threshold` linhas inteiro no
+     modelo forte — ADR-0021) **por construção**, mesmo numa sessão que não instalou o plugin nativamente.
+     A fitness F8 confere o registro do roteador no repo armado (ou `read_router: off` declarado no genoma).
    - Copie `scripts/ai-first-fitness.mjs`, `scripts/policy-lock.mjs` e `scripts/fitness-fixtures/` para
      o repo-alvo (camada 4 + 4b, ADR-0020) e **sele a trava**: `node scripts/policy-lock.mjs --seal`.
      Copie `templates/governance/CODEOWNERS` para `.github/CODEOWNERS`, trocando `@SEU-USUARIO-OU-TIME`

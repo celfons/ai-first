@@ -217,6 +217,20 @@
   ignorado** com log, para não quebrar genoma antigo. Piso opus/alto e isolamento (P-11/P-13/P-14) nunca
   relaxam.
 
+- **`read_router`** (roteador de leitura — o hook que barra a leitura cara, ADR-0021): `on` (default **on**;
+  ver `token-efficiency.md` §9). Com `on`, `hooks/pre-tool-read-router.sh` **bloqueia** `Read`/`cat`/`head`/
+  `tail`/`sed -n` de arquivo acima de `read_router_threshold` linhas sem leitura dirigida (`offset`+`limit`)
+  e **nomeia a rota barata**: o worker `bulk-reader` (haiku, só bullets voltam ao contexto). Leitura
+  dirigida, arquivo pequeno, saída pipada e os arquivos do bloco de contexto fixo passam. **Knob de
+  economia, não de rigor** — fica fora da trava "só aperta" (ADR-0020); os gates (CI + `adversarial-reviewer`
+  + `security-reviewer`) não mudam em nenhum valor. `off` desliga (tudo abre no modelo caro — o custo volta a
+  depender de o modelo "lembrar" de ler dirigido, que é a versão que a Spotify viu falhar).
+- **`read_router_threshold`** (limiar do roteador, em linhas): `350` (default **350**, o mesmo do relato de
+  origem). Abaixo dele a ida-e-volta ao worker custa mais do que economiza; acima, a leitura inteira é
+  barrada. Suba se o repo tem arquivos legitimamente longos e coesos que o `bulk-reader` reabre com
+  frequência (o `finops-steward` mede a taxa de "delegação que precisou reabrir"); baixe se o contexto do
+  driver ainda infla com leituras de 300 linhas.
+
 ### Arquitetura cognitiva (ADR-0005 — knobs de memória e verificação)
 > Ver [`docs/ai-first/memory.md`](memory.md). Todos ajustáveis a qualquer momento (P-15); defaults conservadores.
 - **`memory_retention`** (higiene da memória episódica — limite dos ledgers antes de consolidar/podar):

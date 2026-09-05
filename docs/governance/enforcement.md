@@ -18,6 +18,7 @@ saudável, sustentável, auditável, uniforme e coesa.
 |---|---|---|---|---|
 | 1 | **Bootstrap de sessão** | injeta o bloco fixo + a pipeline no turno 0 de toda sessão | **força** | `hooks/session-start.sh` |
 | 2 | **Guarda de ação** | barra push/commit direto em main/develop antes de acontecer | **força** | `hooks/pre-tool-guard.sh` |
+| 2b | **Roteador de leitura** | barra a leitura **cara** (arquivo grande inteiro no modelo forte) e nomeia a rota barata — leitura dirigida ou worker `bulk-reader` | **força** | `hooks/pre-tool-read-router.sh` (ADR-0021) |
 | 3 | **Gate no servidor** | recusa o merge sem CI verde + disciplina de fluxo | **força** | `ai-first-guard.yml` + branch protection |
 | 4 | **Fitness functions** | build quebra quando a arquitetura/invariante desvia — e cada regra **prova que dispara** | **força** | `scripts/ai-first-fitness.mjs` (+ `--verify` sobre `scripts/fitness-fixtures/`) + `scripts/check-workflows.mjs` (comportamento dos grafos, ADR-0019) |
 | 4b | **Trava de política** | a régua não pode ser baixada em silêncio: superfícies seladas por digest + knobs de rigor que **só apertam** | **força** | `scripts/policy-lock.mjs` + `docs/governance/policy.lock.json` + `templates/governance/CODEOWNERS` (ADR-0020) |
@@ -49,7 +50,7 @@ branch compartilhada. A promoção `develop → main` é sempre por **PR/merge**
 guard não atrapalha o fluxo legítimo, só o proíbe de ser furado.
 
 ### Instalação dos hooks (dois caminhos)
-- **Nativo do plugin:** `hooks/hooks.json` registra ambos via `${CLAUDE_PLUGIN_ROOT}` — ativos ao
+- **Nativo do plugin:** `hooks/hooks.json` registra os três (session-start, guard, read-router) via `${CLAUDE_PLUGIN_ROOT}` — ativos ao
   instalar o plugin.
 - **Fallback version-independente (garantido):** o `/ai-first-init` copia os scripts para
   `.ai-first/hooks/` do repo-alvo e os registra no `.claude/settings.json` do projeto apontando para
@@ -63,12 +64,30 @@ guard não atrapalha o fluxo legítimo, só o proíbe de ser furado.
     "SessionStart": [{ "hooks": [
       { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR/.ai-first/hooks/session-start.sh\"" }
     ]}],
-    "PreToolUse": [{ "matcher": "Bash", "hooks": [
-      { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR/.ai-first/hooks/pre-tool-guard.sh\"" }
-    ]}]
+    "PreToolUse": [
+      { "matcher": "Bash", "hooks": [
+        { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR/.ai-first/hooks/pre-tool-guard.sh\"" }
+      ]},
+      { "matcher": "Read|Bash", "hooks": [
+        { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR/.ai-first/hooks/pre-tool-read-router.sh\"" }
+      ]}
+    ]
   }
 }
 ```
+
+## 2b · Roteador de leitura (`PreToolUse` em `Read|Bash`) — enforcement de **custo**
+`hooks/pre-tool-read-router.sh` intercepta a leitura **antes** de acontecer e **bloqueia (exit 2)** o
+`Read` de arquivo com mais de `read_router_threshold` linhas (default 350) sem `limit ≤ limiar`, e o
+`cat`/`head`/`tail`/`sed -n A,Bp` que despejaria o mesmo no contexto. A mensagem **nomeia a alternativa**
+(leitura dirigida `offset`+`limit`, ou o worker barato `bulk-reader` — só bullets voltam). É a mesma
+distinção das camadas 1–2 (documento orienta, hook força) aplicada ao **token**: a regra "prefira leituras
+dirigidas" já existia como prosa e o modelo a ignorava; o bloqueio não é ignorável. Deixa passar a leitura
+dirigida (editar precisa do arquivo real), o pequeno, o pipado/redirecionado, o binário e os arquivos do
+**bloco de contexto fixo** (lê-los inteiro é o desenho — são o prefixo cacheado). **Fail-open** no que não
+entende. Knobs `read_router`/`read_router_threshold` (genoma §8) — knobs de **economia**, fora da trava
+"só aperta" (não é régua de qualidade); o hook em si é superfície **selada** (§4b) e a fitness **F8**
+prova que está **registrado** para `Read`. Ver ADR-0021 e `docs/token-efficiency.md` §9.
 
 ## 3 · Gate no servidor (o "forçar" que ninguém fura)
 Hooks protegem a **sessão**; a branch protection protege o **repositório** — inclusive contra um humano
@@ -192,7 +211,8 @@ produto**; *pinar* uma versão dá reprodutibilidade; uma fitness function detec
 mantém **uniformidade entre repos e no tempo**.
 
 ## Checklist de adoção (o /ai-first-init executa)
-- [ ] `hooks/` (session-start + pre-tool-guard) instalados e registrados no `.claude/settings.json`.
+- [ ] `hooks/` (session-start + pre-tool-guard + pre-tool-read-router) instalados e registrados no `.claude/settings.json`
+      (`PreToolUse` com `Bash` **e** `Read|Bash`); fitness F8 verde.
 - [ ] `ai-first-guard.yml` em `.github/workflows/` (jobs `git-flow`, `fitness` e `policy-lock`).
 - [ ] Branch protection de `develop`/`main` com os required checks acima **+ "Require review from Code
       Owners"** (é o que dá dentes ao CODEOWNERS).

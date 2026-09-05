@@ -28,3 +28,4 @@ aplicada ao **gate**: uma checagem que nunca foi vista falhando não é uma chec
 | `F6/` | Footprint declarado | `plan.md` de feature sem bloco ` ```footprint ` |
 | `F7-digest/` | Trava de política | superfície de governança alterada sem reselo |
 | `F7-knob/` | Trava de política | knob de rigor AFROUXADO (`conservador` → `autônomo`) |
+| `F8/` | Roteador de leitura registrado | repo de plugin com `hooks/pre-tool-read-router.sh` no disco mas `hooks.json` sem o registro em `Read` — regra escrita, não bloqueio |

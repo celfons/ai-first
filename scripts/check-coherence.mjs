@@ -25,7 +25,7 @@ const CRITICAL_KNOBS = [
   'autonomy_level', 'daily_budget', 'budget_per_feature', 'growth_experiments_per_cycle',
   'canary_pct', 'guardrail_metrics', 'external_action_cap', 'verification_mode',
   'uncertainty_escalation', 'bdd_style', 'tdd_mode', 'fast_path', 'eval_gate', 'context_clear_policy',
-  'verification_parallelism',
+  'verification_parallelism', 'read_router', 'read_router_threshold',
 ];
 
 // ---- coleta de markdown (exclui dist/, node_modules, .git) ----------------------------------------

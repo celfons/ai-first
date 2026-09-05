@@ -38,6 +38,28 @@ sem reconstruir o passado lendo dez lugares.
 
 ## Linha do tempo
 
+### 2026-09-05 · A leitura cara passou a ser barrada, e o barato lê (meta · ADR-0021)
+- **Sinal:** 🔧 processo (economia de token — o ganho real é medido pelo `finops-steward`).
+- **Aprendizado:** a política de token (§1–§8) cortava o desperdício **entre** etapas e não olhava para
+  **dentro** delas — onde a maior parte do trabalho de um agente é **mover texto**, não raciocinar: abrir o
+  arquivo de 2.000 linhas inteiro para checar 20, digitar o 21º teste igual aos 20 vizinhos, tudo na tarifa
+  do modelo forte e re-cobrado em todo turno seguinte. O relato da Spotify Engineering (set/2026, ~90% de
+  economia em leituras em massa, medido pelo autor) ensinou três coisas de **método**: (1) **a versão em
+  prosa falhou** — a regra num `CLAUDE.md` era sugestão e o modelo a ignorava; virou real quando um
+  `PreToolUse` passou a **recusar** a leitura e nomear a alternativa (a nossa própria distinção "documento
+  orienta, hook força", que nunca tínhamos aplicado ao custo); (2) **fronteiras se declaram antes** —
+  editar precisa do arquivo real (leitura dirigida passa), raciocínio não se delega (o worker barato perdeu
+  um bug de thread-safety que o forte viu em segundos), o pequeno não compensa a ida-e-volta; (3) **a
+  instrução que mais economiza fecha o formato da saída** (só bullets / só código sem cerca) — saída aberta
+  devolve ao contexto o payload que o roteamento existe para proteger.
+- **O que fica como regra:** hook `pre-tool-read-router.sh` (`Read|Bash`, limiar `read_router_threshold`,
+  default 350, fail-open, isenta o bloco de contexto fixo) + workers `bulk-reader`/`code-writer` fixos em
+  haiku com contrato fechado + skills advisory `/bulk-read`/`/code-write`; **F8** prova que o hook está
+  registrado (script sem registro é a "primeira versão que falhou"); knobs de **economia**, fora da trava
+  "só aperta"; **gates intactos** — o worker tira do caro a digitação e a leitura, nunca a responsabilidade.
+- **Links:** ADR-0021 · `docs/token-efficiency.md` §9 · `docs/governance/enforcement.md` §2b ·
+  `hooks/pre-tool-read-router.sh` · `agents/bulk-reader.md` · `agents/code-writer.md`.
+
 ### 2026-08-19 · Ninguém guardava a régua — e nenhuma checagem provava que dispara (meta · ADR-0020)
 - **Sinal:** 🔧 processo (integridade do gate).
 - **Aprendizado:** um benchmarking do `nicolasmelo1/software-factory` expôs dois furos que o método

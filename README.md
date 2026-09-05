@@ -354,6 +354,12 @@ O que faz cada feature decidir **à luz das anteriores**, em vez de do zero:
   política** (superfícies de governança seladas por digest + knobs de rigor que **só apertam**).
   Baixar a régua para chegar ao verde deixa de ser um caminho silencioso — **em qualquer
   `autonomy_level`, inclusive `autônomo`**.
+- **Roteador de leitura** ([`docs/token-efficiency.md` §9](docs/token-efficiency.md), ADR-0021) — mover
+  texto não é raciocínio e não é cobrado como tal: um hook `PreToolUse` **barra** a leitura de arquivo
+  grande no modelo caro e nomeia a rota barata — leitura dirigida (`offset`+`limit`) para editar, ou o
+  worker `bulk-reader` (haiku, só bullets voltam) para entender; o `code-writer` escreve o código
+  repetitivo direto no disco a partir de um irmão de referência. A regra em prosa era sugestão; o hook
+  é a única camada que diz não. Julgamento nunca é delegado; gates intactos.
 - **Resultado real** (`outcome-analyst`) — o uso mostra o que funcionou; o PO dobra no que deu certo e
   itera/para no que não deu. É a retroalimentação mais valiosa e a mais esquecida em automação.
 

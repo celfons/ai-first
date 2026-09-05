@@ -32,6 +32,9 @@
 //   F6 · Footprint declarado em todo plano de feature (ADR-0007).
 //   F7 · Trava de política íntegra (ADR-0020) — nenhuma superfície de governança derivou sem reselo e
 //        nenhum knob de rigor AFROUXOU. É o freio contra o caminho fácil do verde: baixar a régua.
+//   F8 · Roteador de leitura REGISTRADO (ADR-0021) — o hook que barra a leitura cara está ligado a
+//        `Read` (plugin: hooks.json; repo armado: .claude/settings.json). Regra de custo só na prosa é
+//        sugestão; o modelo a ignora — o que a torna real é o registro do hook.
 
 import { readFileSync, existsSync, readdirSync, statSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -216,6 +219,38 @@ async function f7_policyLock({ ctx, ok, bad, skip }) {
   if (!findings.length) ok('trava de política íntegra (superfícies seladas · knobs de rigor só apertaram)');
 }
 
+// ---- F8 · Roteador de leitura registrado (ADR-0021) -----------------------------------------------
+// A lição do caso Spotify: as regras de economia viveram num CLAUDE.md e o modelo as ignorou; virou
+// enforcement só quando o hook passou a barrar a leitura. Aqui a fitness function garante que o hook
+// está REGISTRADO para `Read` — script no disco sem registro é regra escrita, não bloqueio.
+function f8_readRouterRegistered({ ctx, ok, bad, skip }) {
+  const HOOK = 'pre-tool-read-router.sh';
+  const registra = (cfg, cmdRe) => {
+    const pre = (cfg && cfg.hooks && cfg.hooks.PreToolUse) || [];
+    return pre.some((e) => /(^|\|)Read(\||$)/.test(String(e.matcher || '')) &&
+      (e.hooks || []).some((h) => cmdRe.test(String(h.command || ''))));
+  };
+  const parse = (rel) => { try { return JSON.parse(ctx.read(rel)); } catch (e) { bad(`${rel} não é JSON válido: ${e.message}`); return null; } };
+
+  if (ctx.isPluginRepo) {
+    if (!ctx.has(`hooks/${HOOK}`)) return bad(`hooks/${HOOK} ausente — o roteador de leitura (ADR-0021) precisa existir no plugin`);
+    if (!ctx.has('hooks/hooks.json')) return bad('hooks/hooks.json ausente — nenhum hook do plugin registrado');
+    const cfg = parse('hooks/hooks.json');
+    if (!cfg) return;
+    if (registra(cfg, new RegExp(`hooks/${HOOK}`))) ok(`hooks/hooks.json registra ${HOOK} em PreToolUse com matcher Read`);
+    else bad(`hooks/hooks.json NÃO registra hooks/${HOOK} em PreToolUse para \`Read\` — regra de custo sem enforcement (ADR-0021)`);
+    return;
+  }
+  if (!ctx.isArmed) return skip('repo de produto não armado (roteador é instalado pela gênese)');
+  if (/\*\*`read_router`\*\*[^\n]*?:\s*`off`/.test(ctx.read('docs/ai-first/project.md'))) return skip('read_router: off no genoma (desligado de propósito)');
+  const SETTINGS = '.claude/settings.json';
+  if (!ctx.has(SETTINGS)) return bad(`${SETTINGS} ausente — o roteador de leitura não está registrado (a gênese o instala em .ai-first/hooks/)`);
+  const cfg = parse(SETTINGS);
+  if (!cfg) return;
+  if (registra(cfg, new RegExp(HOOK))) ok(`${SETTINGS} registra ${HOOK} em PreToolUse com matcher Read`);
+  else bad(`${SETTINGS} NÃO registra ${HOOK} em PreToolUse para \`Read\` (ADR-0021) — copie o hook e registre, ou declare \`read_router: off\` no genoma`);
+}
+
 // ---- registro -------------------------------------------------------------------------------------
 export const CHECKS = [
   { id: 'F1', titulo: 'Trilha de ADR append-only', run: f1_adrTrail, fixtures: ['F1'] },
@@ -225,6 +260,7 @@ export const CHECKS = [
   { id: 'F5', titulo: 'Grafos contratados (build-one-feature · build-many-features)', run: f5_contractedWorkflow, fixtures: ['F5'] },
   { id: 'F6', titulo: 'Footprint declarado em todo plano de feature (ADR-0007)', run: f6_footprintDeclared, fixtures: ['F6'] },
   { id: 'F7', titulo: 'Trava de política íntegra (ADR-0020)', run: f7_policyLock, fixtures: ['F7-digest', 'F7-knob'] },
+  { id: 'F8', titulo: 'Roteador de leitura registrado (ADR-0021)', run: f8_readRouterRegistered, fixtures: ['F8'] },
 ];
 
 // ---- execução -------------------------------------------------------------------------------------
